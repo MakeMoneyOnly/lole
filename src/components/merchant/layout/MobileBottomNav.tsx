@@ -26,7 +26,7 @@ const MOBILE_MENU_ITEMS = [
     { label: 'Staff', href: '/merchant/staff', icon: Users },
     { label: 'Analytics', href: '/merchant/analytics', icon: BarChart3 },
     { label: 'Settings', href: '/merchant/settings', icon: Settings },
-    { label: 'Help', href: '/merchant/help', icon: HelpCircle },
+    { label: 'Help', href: '/merchant/help-support', icon: HelpCircle },
 ];
 
 export function MobileBottomNav() {

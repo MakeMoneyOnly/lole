@@ -45,17 +45,18 @@ export function OfflineIndicator({
 }: OfflineIndicatorProps) {
     const { operatingMode, pendingCount, isSyncing, lastSyncAt, sync, bootstrapStatus } =
         useSyncStatus();
+
+    // Don't show the banner if we are fully online and synced
+    if (operatingMode === 'online') {
+        return null;
+    }
+
     const mode = MODE_STYLES[operatingMode];
     const Icon = mode.icon;
 
     const handleRetry = useCallback(() => {
         void sync();
     }, [sync]);
-
-    // Don't show the banner if we are fully online and synced
-    if (operatingMode === 'online') {
-        return null;
-    }
 
     return (
         <div
@@ -79,15 +80,13 @@ export function OfflineIndicator({
                     {lastSyncAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
             ) : null}
-            {operatingMode !== 'online' ? (
-                <button
-                    onClick={handleRetry}
-                    disabled={isSyncing}
-                    className="rounded bg-black/20 px-2 py-0.5 text-xs font-bold hover:bg-black/30 disabled:opacity-50"
-                >
-                    {operatingMode === 'reconciling' ? 'Syncing' : 'Retry'}
-                </button>
-            ) : null}
+            <button
+                onClick={handleRetry}
+                disabled={isSyncing}
+                className="rounded bg-black/20 px-2 py-0.5 text-xs font-bold hover:bg-black/30 disabled:opacity-50"
+            >
+                {operatingMode === 'reconciling' ? 'Syncing' : 'Retry'}
+            </button>
             {operatingMode === 'degraded' && bootstrapStatus.message ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-black/20 px-2 py-0.5 text-xs font-medium">
                     <CloudOff className="h-3 w-3" />

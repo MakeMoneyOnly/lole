@@ -974,7 +974,7 @@ let rawPowerSyncDb: WebPowerSyncDatabase | null = null;
 let powerSyncDb: PowerSyncDatabase | null = null;
 let initPromise: Promise<PowerSyncDatabase | null> | null = null;
 
-async function ensureLocalSchema(database: WebPowerSyncDatabase): Promise<void> {
+async function ensureLocalSchema(_database: WebPowerSyncDatabase): Promise<void> {
     // PowerSync's Schema() already creates internal views for all defined tables.
     // We must NOT re-create those tables or attempt to index the views (SQLite error:
     // "views may not be indexed"). We only need to run CREATE INDEX on tables that

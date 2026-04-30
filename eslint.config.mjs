@@ -21,6 +21,7 @@ const eslintConfig = defineConfig([
         'scaffold-dashboard.js',
         'tests/load/**',
         'tests/performance/**',
+        'public/@powersync/**',
     ]),
     {
         rules: {

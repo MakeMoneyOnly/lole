@@ -1,7 +1,7 @@
 // Staff Domain - Service Layer
 // Business logic layer - PIN hashing, role validation, etc.
 import { staffRepository, StaffRow, StaffListOptions } from './repository';
-import { buildStaffSessionExpiry, hashStaffPin } from './pin';
+import { hashStaffPin } from './pin';
 
 export interface CreateStaffInput {
     restaurantId: string;
@@ -34,7 +34,7 @@ export const VALID_ROLES = [
     'expeditor',
 ] as const;
 export type StaffRole = (typeof VALID_ROLES)[number];
-export { buildStaffSessionExpiry, hashStaffPin } from './pin';
+export { hashStaffPin } from './pin';
 
 /**
  * Check if a role is valid
