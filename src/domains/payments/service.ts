@@ -10,7 +10,7 @@ import {
 
 export interface InitiatePaymentInput {
     orderId: string;
-    amount: number;
+    amountSantim: number;
     idempotencyKey: string;
     restaurantId?: string;
     currency?: string;
@@ -115,7 +115,7 @@ export class PaymentsService {
      */
     async initiatePayment(input: InitiatePaymentInput): Promise<PaymentResult> {
         // Validate amount
-        if (input.amount <= 0) {
+        if (input.amountSantim <= 0) {
             return { success: false, payment: null, error: 'Amount must be greater than 0' };
         }
 
@@ -154,7 +154,7 @@ export class PaymentsService {
         const payment = await paymentsRepository.createPayment({
             restaurant_id: input.restaurantId ?? '',
             order_id: input.orderId,
-            amount: input.amount,
+            amount: input.amountSantim,
             currency: input.currency ?? 'ETB',
             provider: provider,
             payment_method: paymentMethod,

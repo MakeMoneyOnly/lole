@@ -46,22 +46,22 @@ function generateOrderNumber(): string {
 }
 
 function calculateItemTotal(
-    unitPrice: number,
+    unitPriceSantim: number,
     quantity: number,
     modifiers?: Record<string, unknown>
 ): number {
-    let total = unitPrice * quantity;
+    let totalSantim = unitPriceSantim * quantity;
 
     // Add modifier price adjustments
     if (modifiers && typeof modifiers === 'object') {
         Object.values(modifiers).forEach((modifier: unknown) => {
             if (modifier && typeof modifier === 'object' && 'priceAdjustment' in modifier) {
-                total += (modifier as { priceAdjustment: number }).priceAdjustment * quantity;
+                totalSantim += (modifier as { priceAdjustment: number }).priceAdjustment * quantity;
             }
         });
     }
 
-    return total;
+    return totalSantim;
 }
 
 // Lazy initialization of Supabase client
@@ -194,22 +194,26 @@ export class OrdersService {
         }
 
         // Calculate totals
-        let totalPrice = 0;
+        let totalPriceSantim = 0;
         const menuItems = await getMenuItemsByIds(input.items.map(item => item.menuItemId));
         const menuItemMap = new Map(
             menuItems.map(item => [String(item.id), item as Record<string, unknown>])
         );
         const orderItems = input.items.map(item => {
             const menuItem = menuItemMap.get(item.menuItemId);
-            const unitPrice =
+            const unitPriceSantim =
                 typeof menuItem?.price === 'number' ? menuItem.price : Number(menuItem?.price ?? 0);
-            const itemTotal = calculateItemTotal(unitPrice, item.quantity, item.modifiers);
-            totalPrice += itemTotal;
+            const itemTotalSantim = calculateItemTotal(
+                unitPriceSantim,
+                item.quantity,
+                item.modifiers
+            );
+            totalPriceSantim += itemTotalSantim;
 
             return {
                 item_id: item.menuItemId,
                 quantity: item.quantity,
-                price: itemTotal,
+                price: itemTotalSantim,
                 modifiers: item.modifiers,
                 notes: item.notes,
                 name: typeof menuItem?.name === 'string' ? menuItem.name : '',
@@ -234,7 +238,7 @@ export class OrdersService {
             table_number: input.tableId ?? '',
             order_number: generateOrderNumber(),
             order_type: input.type,
-            total_price: totalPrice,
+            total_price: totalPriceSantim,
             notes: input.notes,
             guest_fingerprint: input.guestId,
             idempotency_key: input.idempotencyKey,
@@ -278,7 +282,7 @@ export class OrdersService {
             await publishEvent('order.completed', {
                 orderId: order.id,
                 restaurantId: order.restaurant_id,
-                totalPrice: order.total_price,
+                totalPriceSantim: order.total_price,
             });
         }
 
