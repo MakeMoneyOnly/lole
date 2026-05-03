@@ -38,4 +38,23 @@ describe('gateway entrypoint helpers', () => {
 
         expect(existsSync(journalPath)).toBe(true);
     });
+
+    it('throws on missing required env vars', () => {
+        delete process.env.RESTAURANT_ID;
+        delete process.env.LOCATION_ID;
+        delete process.env.GATEWAY_BOOTSTRAP_SECRET;
+
+        expect(() => getStandaloneGatewayConfig()).toThrow();
+    });
+
+    it('uses custom GATEWAY_ID when set', () => {
+        process.env.RESTAURANT_ID = 'rest-2';
+        process.env.LOCATION_ID = 'loc-2';
+        process.env.GATEWAY_BOOTSTRAP_SECRET = 'bootstrap-secret';
+        process.env.GATEWAY_ID = 'custom-gw-id';
+
+        const config = getStandaloneGatewayConfig();
+
+        expect(config.gatewayId).toBe('custom-gw-id');
+    });
 });

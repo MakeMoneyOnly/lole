@@ -22,6 +22,7 @@ import {
     type StoreGatewayConfig,
     type StoreOperatingMode,
 } from '@/lib/gateway/config';
+import { GatewayError, GatewayErrorCode } from '@/lib/gateway/errors';
 import type { MqttClient } from 'mqtt';
 
 export interface GatewayCommandMessage {
@@ -52,21 +53,39 @@ function resolveScopeForCommand(type: string): MqttScope {
     return 'system';
 }
 
+export interface DeviceConnectionRecord {
+    deviceId: string;
+    connectedAt: string;
+    lastHeartbeatAt: string;
+    status: 'connected' | 'disconnected';
+}
+
 export class StoreGatewayService {
     private readonly config: StoreGatewayConfig;
     private client: MqttClient | null = null;
     private readonly handlers = new Map<string, GatewayHandler>();
     private currentMode: StoreOperatingMode;
     private readonly sequenceByAggregate = new Map<string, number>();
+    private readonly maxRetries: number;
+    private readonly retryBaseMs: number;
+    private readonly connectedDevices = new Map<string, DeviceConnectionRecord>();
 
-    constructor(config?: StoreGatewayConfig | null) {
+    constructor(
+        config?: StoreGatewayConfig | null,
+        retryOptions?: {
+            maxRetries?: number;
+            retryBaseMs?: number;
+        }
+    ) {
         const resolvedConfig = config ?? getStoreGatewayConfig();
         if (!resolvedConfig) {
-            throw new Error('Store gateway config missing');
+            throw new GatewayError(GatewayErrorCode.INVALID_CONFIG, 'Store gateway config missing');
         }
 
         this.config = resolvedConfig;
         this.currentMode = resolvedConfig.defaultOperatingMode;
+        this.maxRetries = retryOptions?.maxRetries ?? 3;
+        this.retryBaseMs = retryOptions?.retryBaseMs ?? 100;
     }
 
     async start(): Promise<void> {
@@ -114,6 +133,8 @@ export class StoreGatewayService {
 
         registerLanMessageHandler(this.client, (_topic, raw) => {
             try {
+                logger.debug('[Gateway] Raw message received', { topic: _topic });
+
                 const parsed = JSON.parse(String(raw)) as
                     | GatewayCommandMessage
                     | { type: string; payload: Record<string, unknown> };
@@ -121,9 +142,22 @@ export class StoreGatewayService {
                     'schema' in (parsed as Record<string, unknown>)
                         ? (parsed as { type: string; payload: Record<string, unknown> })
                         : (parsed as GatewayCommandMessage);
+
+                logger.debug('[Gateway] Parsed command', {
+                    type: commandLike.type,
+                    aggregate: (commandLike as GatewayCommandMessage).aggregate,
+                });
+
                 const handler = this.handlers.get(commandLike.type);
                 if (handler) {
+                    logger.debug('[Gateway] Routing command to handler', {
+                        type: commandLike.type,
+                    });
                     void handler(commandLike as GatewayCommandMessage);
+                } else {
+                    logger.debug('[Gateway] No handler registered for command', {
+                        type: commandLike.type,
+                    });
                 }
             } catch (error) {
                 logger.error('[Gateway] Failed to process command message', error);
@@ -144,7 +178,11 @@ export class StoreGatewayService {
         }
 
         if (!this.client) {
-            throw new Error('Gateway MQTT client unavailable');
+            throw new GatewayError(
+                GatewayErrorCode.BROKER_UNAVAILABLE,
+                'Gateway MQTT client unavailable',
+                { aggregate: message.aggregate, type: message.type }
+            );
         }
 
         const aggregateKey = `${message.aggregate}:${message.aggregateId}`;
@@ -161,7 +199,31 @@ export class StoreGatewayService {
                     : 'commands',
         });
 
-        await publishJson(this.client, topic, toGatewayLanEvent(message, nextSequence), { qos: 1 });
+        const event = toGatewayLanEvent(message, nextSequence);
+        let lastError: unknown;
+
+        for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
+            try {
+                await publishJson(this.client, topic, event, { qos: 1 });
+                return;
+            } catch (err) {
+                lastError = err;
+                if (attempt < this.maxRetries) {
+                    const delay = this.retryBaseMs * Math.pow(2, attempt);
+                    logger.warn(
+                        `[Gateway] Publish attempt ${attempt + 1} failed, retrying in ${delay}ms`,
+                        { type: message.type }
+                    );
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+
+        throw new GatewayError(
+            GatewayErrorCode.COMMAND_DISPATCH_FAILED,
+            `Failed to publish command after ${this.maxRetries + 1} attempts`,
+            { type: message.type, error: String(lastError) }
+        );
     }
 
     async publishMode(mode: StoreOperatingMode): Promise<void> {
@@ -196,6 +258,36 @@ export class StoreGatewayService {
         return buildGatewayHealthSnapshot(this.config, this.currentMode);
     }
 
+    onDeviceConnected(deviceId: string): void {
+        const now = new Date().toISOString();
+        this.connectedDevices.set(deviceId, {
+            deviceId,
+            connectedAt: now,
+            lastHeartbeatAt: now,
+            status: 'connected',
+        });
+        logger.info('[Gateway] Device connected', {
+            deviceId,
+            totalDevices: this.connectedDevices.size,
+        });
+    }
+
+    onDeviceDisconnected(deviceId: string): void {
+        this.connectedDevices.delete(deviceId);
+        logger.info('[Gateway] Device disconnected', {
+            deviceId,
+            totalDevices: this.connectedDevices.size,
+        });
+    }
+
+    getConnectedDeviceIds(): string[] {
+        return [...this.connectedDevices.keys()];
+    }
+
+    getConnectedDeviceCount(): number {
+        return this.connectedDevices.size;
+    }
+
     async stop(): Promise<void> {
         if (!this.client) {
             return;
@@ -203,7 +295,15 @@ export class StoreGatewayService {
 
         await closeLanMqttClient(this.client);
         this.client = null;
+        this.connectedDevices.clear();
     }
+}
+
+export function createStoreGatewayService(
+    config?: StoreGatewayConfig | null,
+    options?: { maxRetries?: number; retryBaseMs?: number }
+): StoreGatewayService {
+    return new StoreGatewayService(config, options);
 }
 
 let gatewayService: StoreGatewayService | null = null;
@@ -218,6 +318,6 @@ export function getStoreGatewayService(): StoreGatewayService | null {
         return null;
     }
 
-    gatewayService = new StoreGatewayService(config);
+    gatewayService = createStoreGatewayService(config);
     return gatewayService;
 }

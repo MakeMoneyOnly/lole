@@ -29,6 +29,39 @@ export interface RawGatewayCommandLike<TPayload = Record<string, unknown>> {
 export class LocalGatewaySequenceTracker {
     private readonly seenMessageIds = new Map<string, number>();
     private readonly latestSequenceByAggregate = new Map<string, number>();
+    private lastPruneTime = Date.now();
+    private readonly pruneIntervalMs: number;
+    private readonly pruneInterval?: ReturnType<typeof setInterval>;
+
+    constructor(pruneIntervalMs = 60_000) {
+        this.pruneIntervalMs = pruneIntervalMs;
+        this.pruneInterval = setInterval(() => {
+            this.pruneExpired();
+        }, pruneIntervalMs);
+    }
+
+    private pruneExpired(): void {
+        const now = Date.now();
+        const expiry = now - 5 * 60_000;
+
+        for (const [messageId, timestamp] of this.seenMessageIds.entries()) {
+            if (timestamp < expiry) {
+                this.seenMessageIds.delete(messageId);
+            }
+        }
+
+        for (const [aggregateKey, _sequence] of this.latestSequenceByAggregate.entries()) {
+            if (this.seenMessageIds.size === 0) {
+                this.latestSequenceByAggregate.delete(aggregateKey);
+            }
+        }
+    }
+
+    stop(): void {
+        if (this.pruneInterval) {
+            clearInterval(this.pruneInterval);
+        }
+    }
 
     shouldProcess(input: {
         messageId?: string | null;
@@ -54,13 +87,10 @@ export class LocalGatewaySequenceTracker {
         }
 
         if (this.seenMessageIds.size > 500) {
-            const expiry = now - 5 * 60_000;
-            for (const [messageId, timestamp] of this.seenMessageIds.entries()) {
-                if (timestamp < expiry) {
-                    this.seenMessageIds.delete(messageId);
-                }
-            }
+            this.pruneExpired();
         }
+
+        this.lastPruneTime = now;
 
         return true;
     }

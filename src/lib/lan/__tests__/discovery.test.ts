@@ -37,6 +37,8 @@ describe('gateway discovery', () => {
             advertisedAt: '2026-04-21T00:00:00.000Z',
         });
 
-        expect(parseGatewayDiscoveryRecord(serialized)?.gatewayId).toBe('gw-1');
+        const result = parseGatewayDiscoveryRecord(serialized);
+        expect(result.ok).toBe(true);
+        expect(result.value?.gatewayId).toBe('gw-1');
     });
 });

@@ -103,5 +103,6 @@ describe('StoreGatewayService', () => {
     it('throws if no config available', () => {
         vi.mocked(config.getStoreGatewayConfig).mockReturnValue(null as any);
         expect(() => new StoreGatewayService()).toThrow('Store gateway config missing');
+        expect(() => new StoreGatewayService()).toThrowError('Store gateway config missing');
     });
 });

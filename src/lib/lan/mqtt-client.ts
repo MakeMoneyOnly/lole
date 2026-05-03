@@ -24,11 +24,12 @@ export interface PublishJsonOptions {
     retain?: boolean;
 }
 
-export type LanMessageHandler = (topic: string, payload: Uint8Array) => void;
+export type LanMessageHandler = (topic: string, payload: Buffer) => void;
 
 export function createLanMqttClient(config: MqttTransportConfig): MqttClient {
+    const uniqueClientId = `${config.clientId}-${Math.random().toString(36).substring(2, 8)}`;
     const options: IClientOptions = {
-        clientId: config.clientId,
+        clientId: uniqueClientId,
         username: config.username,
         password: config.password,
         keepalive: config.keepaliveSeconds ?? 30,
@@ -81,11 +82,8 @@ export async function publishJson(
 }
 
 export function registerLanMessageHandler(client: MqttClient, handler: LanMessageHandler): void {
-    (
-        client as unknown as {
-            on(event: 'message', callback: LanMessageHandler): void;
-        }
-    ).on('message', handler);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (client as any).on('message', handler);
 }
 
 export async function subscribeTopic(

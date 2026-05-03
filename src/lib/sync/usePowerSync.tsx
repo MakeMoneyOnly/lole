@@ -175,6 +175,7 @@ export function PowerSyncProvider({ children }: { children: ReactNode }) {
         bootstrapState: bootstrapStatus.state,
         pendingCount,
         isSyncing,
+        isMqttConnected: true,
     });
 
     const value: PowerSyncContextValue = {

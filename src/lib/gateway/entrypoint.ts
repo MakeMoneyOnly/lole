@@ -7,6 +7,7 @@ import { getDeviceContext } from '../api/authz';
 import { resolveGatewayIdentityVersion } from '../auth/offline-authz';
 import { createGatewayBootstrapPayload } from './bootstrap';
 import { DeviceProfileSchema, HardwareDeviceTypeSchema } from '../devices/config';
+import { createGatewayBroker, type BrokerInstance } from './mqtt-broker';
 
 interface StandaloneGatewayConfig {
     restaurantId: string;
@@ -65,13 +66,17 @@ async function readBody(request: import('http').IncomingMessage): Promise<string
 
 export async function startStandaloneGatewayServer(
     config: StandaloneGatewayConfig = getStandaloneGatewayConfig()
-): Promise<void> {
+): Promise<{ broker: BrokerInstance; close(): Promise<void> }> {
     const journalPath = initPersistentStorage(config.dataDir);
+
+    const broker = createGatewayBroker(config.host, 1884);
+    await broker.start();
 
     const server = createServer(async (request, response) => {
         const url = new URL(request.url ?? '/', `http://${config.host}:${config.port}`);
 
         if (url.pathname === '/health') {
+            const brokerMetrics = broker.metrics;
             const payload = JSON.stringify({
                 health: {
                     gatewayId: config.gatewayId,
@@ -83,11 +88,43 @@ export async function startStandaloneGatewayServer(
                     queueDurabilityMode: 'persistent-local-queue',
                     timestamp: new Date().toISOString(),
                     journalPath,
+                    broker: {
+                        connectedClients: brokerMetrics.connectedClients,
+                        messagesPublished: brokerMetrics.messagesPublished,
+                        messagesReceived: brokerMetrics.messagesReceived,
+                        uptimeSeconds: brokerMetrics.uptimeSeconds,
+                    },
                 },
             });
 
             response.writeHead(200, { 'content-type': 'application/json' });
             response.end(payload);
+            return;
+        }
+
+        if (url.pathname === '/metrics') {
+            const mqttBrokerConnected = broker.broker.closed ? 0 : 1;
+            const metricsPayload = [
+                '# HELP gateway_uptime_seconds Time since gateway started',
+                '# TYPE gateway_uptime_seconds gauge',
+                `gateway_uptime_seconds ${broker.metrics.uptimeSeconds}`,
+                '# HELP gateway_mqtt_connections_total Current connected MQTT clients',
+                '# TYPE gateway_mqtt_connections_total gauge',
+                `gateway_mqtt_connections_total ${broker.metrics.connectedClients}`,
+                '# HELP gateway_mqtt_messages_published_total MQTT messages published',
+                '# TYPE gateway_mqtt_messages_published_total counter',
+                `gateway_mqtt_messages_published_total ${broker.metrics.messagesPublished}`,
+                '# HELP gateway_mqtt_messages_received_total MQTT messages received',
+                '# TYPE gateway_mqtt_messages_received_total counter',
+                `gateway_mqtt_messages_received_total ${broker.metrics.messagesReceived}`,
+                '# HELP gateway_health_status 1 if healthy',
+                '# TYPE gateway_health_status gauge',
+                `gateway_health_status ${mqttBrokerConnected}`,
+                '',
+            ].join('\n');
+
+            response.writeHead(200, { 'content-type': 'text/plain' });
+            response.end(metricsPayload);
             return;
         }
 
@@ -187,8 +224,22 @@ export async function startStandaloneGatewayServer(
         gatewayId: config.gatewayId,
         host: config.host,
         port: config.port,
+        brokerPort: 1884,
         journalPath,
     });
+
+    return {
+        broker,
+        close: async () => {
+            await new Promise<void>((resolve, reject) => {
+                server.close(error => {
+                    if (error) reject(error);
+                    else resolve();
+                });
+            });
+            await broker.stop();
+        },
+    };
 }
 
 const executedPath = process.argv[1];
@@ -196,8 +247,18 @@ const isDirectRun =
     executedPath !== undefined && import.meta.url === pathToFileURL(executedPath).href;
 
 if (isDirectRun) {
-    void startStandaloneGatewayServer().catch(error => {
-        logger.error('[Gateway] Failed to start standalone gateway', error);
-        process.exitCode = 1;
-    });
+    void startStandaloneGatewayServer()
+        .then(({ broker, close }) => {
+            const shutdown = async () => {
+                logger.info('[Gateway] Shutting down...');
+                await close();
+                process.exit(0);
+            };
+            process.on('SIGINT', shutdown);
+            process.on('SIGTERM', shutdown);
+        })
+        .catch(error => {
+            logger.error('[Gateway] Failed to start standalone gateway', error);
+            process.exitCode = 1;
+        });
 }

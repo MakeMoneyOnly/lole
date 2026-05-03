@@ -14,7 +14,7 @@ describe('gateway http server', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        process.env.GATEWAY_SESSION_SECRET = 'test-gateway-secret';
+        process.env.GATEWAY_SESSION_SECRET = 'test-gateway-secret-with-32-chars!';
     });
 
     afterEach(async () => {

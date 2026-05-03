@@ -3,6 +3,12 @@ import type { DeviceProfile, HardwareDeviceType } from '@/lib/devices/config';
 import type { GatewayCapability, OfflineStaffOutagePolicy } from '@/lib/auth/offline-authz';
 
 export interface GatewaySessionClaims {
+    sub: string;
+    iss: string;
+    aud: string;
+    iat: number;
+    exp: number;
+    alg: string;
     deviceId: string;
     restaurantId: string;
     locationId: string;
@@ -26,17 +32,17 @@ export interface GatewaySessionBundle {
 }
 
 function getGatewaySessionSecret(): string {
-    const configuredSecret =
-        process.env.GATEWAY_SESSION_SECRET ||
-        process.env.DEVICE_TOKEN_SIGNATURE_SECRET ||
-        process.env.AUTH_SECRET;
+    const configuredSecret = process.env.GATEWAY_SESSION_SECRET;
 
     if (configuredSecret) {
+        if (configuredSecret.length < 32) {
+            throw new Error('GATEWAY_SESSION_SECRET must be at least 32 characters');
+        }
         return configuredSecret;
     }
 
     if (process.env.NODE_ENV === 'test') {
-        return 'test-gateway-session-secret';
+        return 'test-gateway-session-secret-32chars!!';
     }
 
     throw new Error('GATEWAY_SESSION_SECRET is required for gateway session issuance');
@@ -64,8 +70,16 @@ export function issueGatewaySessionToken(input: {
     staffOutagePolicy?: OfflineStaffOutagePolicy;
 }): GatewaySessionBundle {
     const issuedAt = new Date();
+    const iatSec = Math.floor(issuedAt.getTime() / 1000);
     const expiresAt = new Date(issuedAt.getTime() + (input.expiresInMinutes ?? 60) * 60 * 1000);
+    const expSec = Math.floor(expiresAt.getTime() / 1000);
     const claims: GatewaySessionClaims = {
+        sub: input.deviceId,
+        iss: input.gatewayId,
+        aud: 'lole-store',
+        iat: iatSec,
+        exp: expSec,
+        alg: 'HS256',
         deviceId: input.deviceId,
         restaurantId: input.restaurantId,
         locationId: input.locationId,
@@ -110,8 +124,8 @@ export function verifyGatewaySessionToken(token: string): GatewaySessionClaims |
     } catch {
         return null;
     }
-    const expectedBuffer = Buffer.from(expectedSignature, 'utf8');
-    const providedBuffer = Buffer.from(providedSignature, 'utf8');
+    const expectedBuffer = Buffer.from(expectedSignature, 'base64url');
+    const providedBuffer = Buffer.from(providedSignature, 'base64url');
 
     if (
         expectedBuffer.length !== providedBuffer.length ||
@@ -124,7 +138,8 @@ export function verifyGatewaySessionToken(token: string): GatewaySessionClaims |
         const claims = JSON.parse(
             Buffer.from(encodedClaims, 'base64url').toString('utf8')
         ) as GatewaySessionClaims;
-        if (new Date(claims.expiresAt).getTime() < Date.now()) {
+        const nowSec = Math.floor(Date.now() / 1000);
+        if (typeof claims.exp === 'number' && claims.exp < nowSec) {
             return null;
         }
 

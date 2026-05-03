@@ -18,7 +18,7 @@ vi.mock('@/lib/gateway/service', () => ({
 
 describe('gateway bootstrap payload', () => {
     it('returns discovery, health, and scoped session material', () => {
-        process.env.GATEWAY_SESSION_SECRET = 'test-gateway-secret';
+        process.env.GATEWAY_SESSION_SECRET = 'test-gateway-secret-with-32-chars!';
 
         const payload = createGatewayBootstrapPayload({
             deviceId: 'device-1',

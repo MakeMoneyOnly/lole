@@ -69,10 +69,10 @@ async function discoverGatewayRecord(
 
     try {
         return await new Promise<GatewayDiscoveryRecord | null>(async resolve => {
-            const timer = window.setTimeout(() => resolve(null), timeoutMs);
+            const timer = globalThis.setTimeout(() => resolve(null), timeoutMs);
 
             await observeGatewayDiscoveryTopic(client, restaurantId, locationId, record => {
-                window.clearTimeout(timer);
+                globalThis.clearTimeout(timer);
                 resolve(record);
             });
         });

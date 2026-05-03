@@ -28,21 +28,34 @@ export function serializeGatewayDiscoveryRecord(record: GatewayDiscoveryRecord):
     return JSON.stringify(record);
 }
 
-export function parseGatewayDiscoveryRecord(raw: string): GatewayDiscoveryRecord | null {
-    try {
-        const parsed = JSON.parse(raw) as GatewayDiscoveryRecord;
-        if (
-            typeof parsed.gatewayId !== 'string' ||
-            typeof parsed.restaurantId !== 'string' ||
-            typeof parsed.locationId !== 'string' ||
-            typeof parsed.brokerUrl !== 'string' ||
-            typeof parsed.healthPort !== 'number'
-        ) {
-            return null;
-        }
+export interface ParseResult<T> {
+    ok: boolean;
+    value?: T;
+    reason?: 'parse_error' | 'invalid_shape';
+}
 
-        return parsed;
+export function parseGatewayDiscoveryRecord(raw: string): ParseResult<GatewayDiscoveryRecord> {
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(raw);
     } catch {
-        return null;
+        return { ok: false, reason: 'parse_error' };
     }
+
+    if (!parsed || typeof parsed !== 'object') {
+        return { ok: false, reason: 'invalid_shape' };
+    }
+
+    const record = parsed as Record<string, unknown>;
+    if (
+        typeof record.gatewayId !== 'string' ||
+        typeof record.restaurantId !== 'string' ||
+        typeof record.locationId !== 'string' ||
+        typeof record.brokerUrl !== 'string' ||
+        typeof record.healthPort !== 'number'
+    ) {
+        return { ok: false, reason: 'invalid_shape' };
+    }
+
+    return { ok: true, value: record as unknown as GatewayDiscoveryRecord };
 }

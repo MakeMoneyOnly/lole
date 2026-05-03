@@ -39,11 +39,11 @@ export async function observeGatewayDiscoveryTopic(
             return;
         }
 
-        const record = parseGatewayDiscoveryRecord(String(rawPayload));
-        if (!record) {
+        const result = parseGatewayDiscoveryRecord(String(rawPayload));
+        if (!result.ok || !result.value) {
             return;
         }
 
-        onRecord(record);
+        onRecord(result.value);
     });
 }
