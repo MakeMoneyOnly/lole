@@ -7,7 +7,7 @@
         "pnpm": ">=10.0.0"
     },
     "scripts": {
-        "dev": "next dev",
+        "dev": "next dev -p 4000",
         "build": "next build",
         "build:analyze": "ANALYZE=true next build",
         "start": "next start",
@@ -46,7 +46,11 @@
         "@capacitor/cli": "^8.3.0",
         "@capacitor/core": "^8.3.0",
         "@capacitor/device": "^8.0.2",
+        "@capacitor/biometric": "^8.0.0",
         "@capacitor/preferences": "^8.0.1",
+        "@capacitor/push-notifications": "^8.0.0",
+        "@capacitor-community/barcode-scanner": "^5.0.0",
+        "@capacitor-community/sqlite": "^6.0.0",
         "@journeyapps/wa-sqlite": "^1.5.0",
         "@point-of-sale/receipt-printer-encoder": "^3.0.3",
         "@powersync/react": "^1.9.0",
@@ -66,6 +70,7 @@
         "@types/three": "^0.183.1",
         "@upstash/qstash": "^2.9.0",
         "@upstash/redis": "^1.37.0",
+        "aedes": "^1.0.2",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "dataloader": "^2.2.3",
