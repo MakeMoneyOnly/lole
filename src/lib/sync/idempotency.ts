@@ -176,7 +176,7 @@ export async function queueSyncOperation(
  */
 export async function getPendingSyncOperations(limit: number = 50): Promise<
     Array<{
-        id: number;
+        id: string;
         operation: string;
         table_name: string;
         record_id: string;
@@ -191,7 +191,7 @@ export async function getPendingSyncOperations(limit: number = 50): Promise<
     if (!db) return [];
 
     const results = await db.getAllAsync<{
-        id: number;
+        id: string;
         operation: string;
         table_name: string;
         record_id: string;
@@ -210,7 +210,7 @@ export async function getPendingSyncOperations(limit: number = 50): Promise<
 /**
  * Mark a sync operation as failed
  */
-export async function markSyncOperationFailed(id: number, error: string): Promise<void> {
+export async function markSyncOperationFailed(id: string, error: string): Promise<void> {
     const db = getPowerSync();
     if (!db) return;
 
@@ -226,7 +226,7 @@ export async function markSyncOperationFailed(id: number, error: string): Promis
 /**
  * Mark a sync operation as completed
  */
-export async function markSyncOperationCompleted(id: number): Promise<void> {
+export async function markSyncOperationCompleted(id: string): Promise<void> {
     const db = getPowerSync();
     if (!db) return;
 

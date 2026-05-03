@@ -223,7 +223,7 @@ describe('SyncWorker', () => {
         it('should process pending operations when online', async () => {
             const mockOperations = [
                 {
-                    id: 1,
+                    id: '1',
                     operation: 'INSERT',
                     table_name: 'orders',
                     record_id: 'order-1',
@@ -266,7 +266,7 @@ describe('SyncWorker', () => {
         it('should emit operation:success event for successful operations', async () => {
             const mockOperations = [
                 {
-                    id: 1,
+                    id: '1',
                     operation: 'INSERT',
                     table_name: 'orders',
                     record_id: 'order-1',
@@ -307,7 +307,7 @@ describe('SyncWorker', () => {
         it('should emit operation:failed event for failed operations', async () => {
             const mockOperations = [
                 {
-                    id: 1,
+                    id: '1',
                     operation: 'INSERT',
                     table_name: 'orders',
                     record_id: 'order-1',
@@ -384,7 +384,7 @@ describe('SyncWorker', () => {
         it('should send batch sync request to /api/sync', async () => {
             const mockOperations = [
                 {
-                    id: 1,
+                    id: '1',
                     operation: 'INSERT',
                     table_name: 'orders',
                     record_id: 'order-1',
@@ -395,7 +395,7 @@ describe('SyncWorker', () => {
                     created_at: new Date().toISOString(),
                 },
                 {
-                    id: 2,
+                    id: '2',
                     operation: 'UPDATE',
                     table_name: 'orders',
                     record_id: 'order-2',
@@ -435,7 +435,7 @@ describe('SyncWorker', () => {
         it('should fall back to individual operations on batch failure', async () => {
             const mockOperations = [
                 {
-                    id: 1,
+                    id: '1',
                     operation: 'INSERT',
                     table_name: 'orders',
                     record_id: 'order-1',
@@ -471,7 +471,7 @@ describe('SyncWorker', () => {
         it('should handle invalid JSON payload gracefully', async () => {
             const mockOperations = [
                 {
-                    id: 1,
+                    id: '1',
                     operation: 'INSERT',
                     table_name: 'orders',
                     record_id: 'order-1',
@@ -508,7 +508,7 @@ describe('SyncWorker', () => {
         it('should handle unknown table gracefully', async () => {
             const mockOperations = [
                 {
-                    id: 1,
+                    id: '1',
                     operation: 'INSERT',
                     table_name: 'unknown_table',
                     record_id: 'record-1',
@@ -543,7 +543,7 @@ describe('SyncWorker', () => {
         it('should mark operation as failed after max retries', async () => {
             const mockOperations = [
                 {
-                    id: 1,
+                    id: '1',
                     operation: 'INSERT',
                     table_name: 'orders',
                     record_id: 'order-1',
@@ -570,14 +570,14 @@ describe('SyncWorker', () => {
             worker = createSyncWorker({ onError });
             await worker.syncOnce();
 
-            expect(mockedMarkSyncOperationFailed).toHaveBeenCalledWith(1, 'Server error');
+            expect(mockedMarkSyncOperationFailed).toHaveBeenCalledWith('1', 'Server error');
             expect(onError).toHaveBeenCalled();
         });
 
         it('should not mark as failed if under max retries', async () => {
             const mockOperations = [
                 {
-                    id: 1,
+                    id: '1',
                     operation: 'INSERT',
                     table_name: 'orders',
                     record_id: 'order-1',
@@ -612,7 +612,7 @@ describe('SyncWorker', () => {
         it('should emit all expected events during successful sync', async () => {
             const mockOperations = [
                 {
-                    id: 1,
+                    id: '1',
                     operation: 'INSERT',
                     table_name: 'orders',
                     record_id: 'order-1',
@@ -651,7 +651,7 @@ describe('SyncWorker', () => {
         it('should detect conflict from batch sync response', async () => {
             const mockOperations = [
                 {
-                    id: 1,
+                    id: '1',
                     operation: 'INSERT',
                     table_name: 'orders',
                     record_id: 'order-1',
@@ -688,7 +688,7 @@ describe('SyncWorker', () => {
         it('should detect conflict from HTTP 409 response', async () => {
             const mockOperations = [
                 {
-                    id: 1,
+                    id: '1',
                     operation: 'UPDATE',
                     table_name: 'orders',
                     record_id: 'order-1',
@@ -727,7 +727,7 @@ describe('SyncWorker', () => {
         it('should include conflictsDetected in sync:complete event', async () => {
             const mockOperations = [
                 {
-                    id: 1,
+                    id: '1',
                     operation: 'INSERT',
                     table_name: 'orders',
                     record_id: 'order-1',
@@ -764,7 +764,7 @@ describe('SyncWorker', () => {
         it('should call reconcileWithServer after successful individual sync', async () => {
             const mockOperations = [
                 {
-                    id: 1,
+                    id: '1',
                     operation: 'INSERT',
                     table_name: 'orders',
                     record_id: 'order-1',

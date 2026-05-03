@@ -99,8 +99,7 @@ export async function findStaleDevices(config: StaleDeviceConfig = DEFAULT_CONFI
             device_name,
             device_type,
             last_sync_at,
-            sync_status,
-            restaurants!inner(name)
+            sync_status
         `
         )
         .eq('sync_status', 'offline')
@@ -117,6 +116,22 @@ export async function findStaleDevices(config: StaleDeviceConfig = DEFAULT_CONFI
 
     if (!devices || devices.length === 0) {
         return { warning: [], critical: [] };
+    }
+
+    const restaurantIds = [...new Set(devices.map(d => d.restaurant_id))];
+    const restaurantMap = new Map<string, string>();
+
+    if (restaurantIds.length > 0) {
+        const { data: restaurants } = await admin
+            .from('restaurants')
+            .select('id, name')
+            .in('id', restaurantIds);
+
+        if (restaurants) {
+            for (const r of restaurants) {
+                if (typeof r.name === 'string') restaurantMap.set(r.id, r.name);
+            }
+        }
     }
 
     const now = Date.now();
@@ -136,13 +151,10 @@ export async function findStaleDevices(config: StaleDeviceConfig = DEFAULT_CONFI
             device_type: device.device_type,
             last_sync_at: device.last_sync_at,
             sync_status: device.sync_status,
-            restaurant_name: Array.isArray(device.restaurants)
-                ? device.restaurants[0]?.name
-                : (device.restaurants as { name: string })?.name,
+            restaurant_name: restaurantMap.get(device.restaurant_id) ?? undefined,
             minutes_since_sync: minutesSinceSync,
         };
 
-        // Check if critical threshold exceeded
         if (!device.last_sync_at || new Date(device.last_sync_at) < new Date(criticalThreshold)) {
             critical.push(deviceStatus);
         } else {

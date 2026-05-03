@@ -102,6 +102,26 @@ const eslintConfig = defineConfig([
                             message:
                                 'offlineQueue is deprecated. Use @/lib/sync instead. See src/lib/sync/index.ts.',
                         },
+                        {
+                            name: '@/lib/mobile/offline-order-manager',
+                            message:
+                                'Deleted. Use @/lib/sync (orderSync) instead. See src/lib/sync/index.ts.',
+                        },
+                        {
+                            name: '@/lib/mobile/offline-conflict-resolver',
+                            message:
+                                'Deleted. Use @/lib/sync (conflict-resolution) instead.',
+                        },
+                        {
+                            name: '@/lib/mobile/background-sync',
+                            message:
+                                'Deleted. Use @/lib/sync (syncWorker) instead.',
+                        },
+                        {
+                            name: '@/features/kds/lib/offlineQueue',
+                            message:
+                                'Deleted. Use @/lib/sync (kdsSync + syncAdapter) instead.',
+                        },
                     ],
                     patterns: [
                         {
@@ -112,7 +132,27 @@ const eslintConfig = defineConfig([
                         {
                             group: ['**/lib/offlineQueue', '**/lib/offlineQueue.ts'],
                             message:
-                                'offlineQueue is deprecated. Use @/lib/sync instead. See src/lib/sync/index.ts.',
+                                'offlineQueue is deprecated. Use @/lib/sync instead.',
+                        },
+                        {
+                            group: ['**/lib/mobile/offline-order-manager', '**/lib/mobile/offline-order-manager.ts'],
+                            message:
+                                'Deleted. Use @/lib/sync (orderSync) instead.',
+                        },
+                        {
+                            group: ['**/lib/mobile/offline-conflict-resolver', '**/lib/mobile/offline-conflict-resolver.ts'],
+                            message:
+                                'Deleted. Use @/lib/sync (conflict-resolution) instead.',
+                        },
+                        {
+                            group: ['**/lib/mobile/background-sync', '**/lib/mobile/background-sync.ts'],
+                            message:
+                                'Deleted. Use @/lib/sync (syncWorker) instead.',
+                        },
+                        {
+                            group: ['**/features/kds/lib/offlineQueue', '**/features/kds/lib/offlineQueue.ts'],
+                            message:
+                                'Deleted. Use @/lib/sync (kdsSync) instead.',
                         },
                     ],
                 },

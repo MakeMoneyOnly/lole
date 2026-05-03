@@ -46,6 +46,7 @@ export const canonicalLocalTableNames = [
     'sync_conflict_logs',
     'sync_replay_checkpoints',
     'local_sequence_counters',
+    'cart_items',
 ] as const;
 
 export const powerSyncSchema = `
@@ -90,7 +91,7 @@ export const powerSyncSchema = `
         fired_at TEXT,
         created_at TEXT NOT NULL,
         synced_at TEXT,
-        FOREIGN KEY (order_id) REFERENCES orders(id)
+        FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
     );
 
     CREATE TABLE IF NOT EXISTS kds_items (
@@ -108,7 +109,7 @@ export const powerSyncSchema = `
         synced_at TEXT,
         version INTEGER NOT NULL DEFAULT 1,
         last_modified TEXT,
-        FOREIGN KEY (order_id) REFERENCES orders(id)
+        FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
     );
 
     CREATE TABLE IF NOT EXISTS table_sessions (
@@ -154,7 +155,7 @@ export const powerSyncSchema = `
         created_by TEXT,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
-        FOREIGN KEY (order_id) REFERENCES orders(id)
+        FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
     );
 
     CREATE TABLE IF NOT EXISTS order_check_split_items (
@@ -167,8 +168,8 @@ export const powerSyncSchema = `
         line_amount REAL NOT NULL DEFAULT 0,
         idempotency_key TEXT,
         created_at TEXT NOT NULL,
-        FOREIGN KEY (order_id) REFERENCES orders(id),
-        FOREIGN KEY (split_id) REFERENCES order_check_splits(id)
+        FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+        FOREIGN KEY (split_id) REFERENCES order_check_splits(id) ON DELETE CASCADE
     );
 
     CREATE TABLE IF NOT EXISTS payment_sessions (
@@ -306,7 +307,7 @@ export const powerSyncSchema = `
     );
 
     CREATE TABLE IF NOT EXISTS sync_queue (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id TEXT PRIMARY KEY,
         operation TEXT NOT NULL,
         table_name TEXT NOT NULL,
         record_id TEXT NOT NULL,
@@ -340,7 +341,7 @@ export const powerSyncSchema = `
         rerouted_from_job_id TEXT,
         created_at TEXT NOT NULL,
         printed_at TEXT,
-        FOREIGN KEY (order_id) REFERENCES orders(id)
+        FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
     );
 
     CREATE TABLE IF NOT EXISTS fiscal_jobs (
@@ -358,13 +359,27 @@ export const powerSyncSchema = `
         created_at TEXT NOT NULL,
         submitted_at TEXT,
         synced_at TEXT,
-        FOREIGN KEY (order_id) REFERENCES orders(id)
+        FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
     );
 
     CREATE TABLE IF NOT EXISTS restaurant_settings (
         restaurant_id TEXT PRIMARY KEY,
         settings_json TEXT NOT NULL,
         synced_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS cart_items (
+        unique_id TEXT PRIMARY KEY,
+        menu_item_id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        price_santim INTEGER NOT NULL,
+        quantity INTEGER NOT NULL DEFAULT 1,
+        instructions TEXT,
+        image_url TEXT,
+        course TEXT,
+        restaurant_id TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
     );
 
     CREATE TABLE IF NOT EXISTS local_journal (
@@ -473,6 +488,7 @@ export interface PowerSyncConfig {
     accessToken: string;
     restaurantId?: string;
     debug?: boolean;
+    storageBackend?: 'wasqlite' | 'capacitor-sqlite' | 'auto';
 }
 
 type QueryContext = Pick<Transaction, 'execute' | 'getAll' | 'getOptional'> | WebPowerSyncDatabase;
@@ -496,6 +512,29 @@ function realColumns(names: string[]) {
         string,
         typeof column.real
     >;
+}
+
+async function resolveStorageBackend(): Promise<'wasqlite' | 'capacitor-sqlite'> {
+    if (typeof window === 'undefined') return 'wasqlite';
+
+    try {
+        // Dynamic import — @capacitor/core may not be installed in web context
+        const cap = await Function('return import("@capacitor/core")')().catch(() => null);
+        if (!cap) return 'wasqlite';
+
+        try {
+            await Function('return import("@capacitor-community/sqlite")')().catch(() => null);
+            logger.info('[PowerSync] Capacitor SQLite plugin available, using native backend');
+            return 'capacitor-sqlite';
+        } catch {
+            logger.info(
+                '[PowerSync] Capacitor runtime detected but SQLite plugin not available, using WA-SQLite'
+            );
+            return 'wasqlite';
+        }
+    } catch {
+        return 'wasqlite';
+    }
 }
 
 const powerSyncAppSchema = new Schema({
@@ -599,33 +638,30 @@ const powerSyncAppSchema = new Schema({
         ...integerColumns(['quantity']),
         ...realColumns(['line_amount']),
     }),
-    payment_sessions: new Table(
-        {
-            ...textColumns([
-                'restaurant_id',
-                'order_id',
-                'surface',
-                'channel',
-                'intent_type',
-                'status',
-                'selected_method',
-                'selected_provider',
-                'currency',
-                'checkout_url',
-                'provider_transaction_id',
-                'provider_reference',
-                'metadata_json',
-                'authorized_at',
-                'captured_at',
-                'expires_at',
-                'created_by',
-                'created_at',
-                'updated_at',
-            ]),
-            ...realColumns(['amount']),
-        },
-        { localOnly: true }
-    ),
+    payment_sessions: new Table({
+        ...textColumns([
+            'restaurant_id',
+            'order_id',
+            'surface',
+            'channel',
+            'intent_type',
+            'status',
+            'selected_method',
+            'selected_provider',
+            'currency',
+            'checkout_url',
+            'provider_transaction_id',
+            'provider_reference',
+            'metadata_json',
+            'authorized_at',
+            'captured_at',
+            'expires_at',
+            'created_by',
+            'created_at',
+            'updated_at',
+        ]),
+        ...realColumns(['amount']),
+    }),
     payments: new Table({
         ...textColumns([
             'restaurant_id',
@@ -650,48 +686,42 @@ const powerSyncAppSchema = new Schema({
         ]),
         ...realColumns(['amount', 'tip_amount']),
     }),
-    payment_events: new Table(
-        {
-            ...textColumns([
-                'restaurant_id',
-                'payment_session_id',
-                'payment_id',
-                'order_id',
-                'split_id',
-                'event_type',
-                'status',
-                'provider',
-                'provider_reference',
-                'idempotency_key',
-                'payload_json',
-                'metadata_json',
-                'occurred_at',
-                'created_at',
-            ]),
-        },
-        { localOnly: true }
-    ),
-    reconciliation_entries: new Table(
-        {
-            ...textColumns([
-                'restaurant_id',
-                'payment_id',
-                'payment_session_id',
-                'ledger_type',
-                'ledger_id',
-                'source_type',
-                'source_id',
-                'status',
-                'notes',
-                'metadata_json',
-                'created_by',
-                'created_at',
-                'updated_at',
-            ]),
-            ...realColumns(['expected_amount', 'settled_amount', 'delta_amount']),
-        },
-        { localOnly: true }
-    ),
+    payment_events: new Table({
+        ...textColumns([
+            'restaurant_id',
+            'payment_session_id',
+            'payment_id',
+            'order_id',
+            'split_id',
+            'event_type',
+            'status',
+            'provider',
+            'provider_reference',
+            'idempotency_key',
+            'payload_json',
+            'metadata_json',
+            'occurred_at',
+            'created_at',
+        ]),
+    }),
+    reconciliation_entries: new Table({
+        ...textColumns([
+            'restaurant_id',
+            'payment_id',
+            'payment_session_id',
+            'ledger_type',
+            'ledger_id',
+            'source_type',
+            'source_id',
+            'status',
+            'notes',
+            'metadata_json',
+            'created_by',
+            'created_at',
+            'updated_at',
+        ]),
+        ...realColumns(['expected_amount', 'settled_amount', 'delta_amount']),
+    }),
     domain_events: new Table(
         {
             ...textColumns([
@@ -717,6 +747,22 @@ const powerSyncAppSchema = new Schema({
     restaurant_settings: new Table({
         ...textColumns(['restaurant_id', 'settings_json', 'synced_at']),
     }),
+    cart_items: new Table(
+        {
+            ...textColumns([
+                'menu_item_id',
+                'title',
+                'instructions',
+                'image_url',
+                'course',
+                'restaurant_id',
+                'created_at',
+                'updated_at',
+            ]),
+            ...integerColumns(['price_santim', 'quantity']),
+        },
+        { localOnly: true }
+    ),
     sync_queue: new Table(
         {
             ...textColumns([
@@ -891,11 +937,7 @@ let bootstrapStatus: PowerSyncBootstrapStatus = createBootstrapStatus(
 
 export function getPowerSyncConfig(): PowerSyncConfig {
     const endpoint = process.env.NEXT_PUBLIC_POWERSYNC_ENDPOINT ?? POWERSYNC_INSTANCE_URL;
-    const accessToken =
-        process.env.NEXT_PUBLIC_POWERSYNC_DEV_TOKEN ??
-        process.env.NEXT_PUBLIC_POWERSYNC_ACCESS_TOKEN ??
-        process.env.NEXT_PUBLIC_POWERSYNC_API_KEY ??
-        '';
+    const accessToken = process.env.NEXT_PUBLIC_POWERSYNC_ACCESS_TOKEN ?? '';
 
     if (!endpoint) {
         bootstrapStatus = createBootstrapStatus(
@@ -1008,9 +1050,22 @@ export async function initPowerSync(): Promise<PowerSyncDatabase | null> {
 
     initPromise = (async () => {
         try {
+            const isCapacitor =
+                typeof window !== 'undefined' &&
+                (window.location.protocol === 'capacitor:' ||
+                    window.location.protocol === 'ionic:');
+
+            const wasqliteWorker = isCapacitor
+                ? 'public/@powersync/worker/WASQLiteDB.umd.js'
+                : '/@powersync/worker/WASQLiteDB.umd.js';
+
+            const syncWorkerPath = isCapacitor
+                ? 'public/@powersync/worker/SharedSyncImplementation.umd.js'
+                : '/@powersync/worker/SharedSyncImplementation.umd.js';
+
             const factory = new WASQLiteOpenFactory({
                 dbFilename: 'lole_offline.db',
-                worker: '/@powersync/worker/WASQLiteDB.umd.js',
+                worker: wasqliteWorker,
                 flags: {
                     useWebWorker: true,
                     enableMultiTabs: false,
@@ -1022,7 +1077,7 @@ export async function initPowerSync(): Promise<PowerSyncDatabase | null> {
                 schema: powerSyncAppSchema,
                 database: factory,
                 sync: {
-                    worker: '/@powersync/worker/SharedSyncImplementation.umd.js',
+                    worker: syncWorkerPath,
                 },
             });
 
@@ -1030,6 +1085,8 @@ export async function initPowerSync(): Promise<PowerSyncDatabase | null> {
             await rawPowerSyncDb.init();
 
             logger.info('[PowerSync] Raw database initialized.');
+            await rawPowerSyncDb.execute('PRAGMA journal_mode=WAL;');
+            logger.info('[PowerSync] WAL journal mode enabled.');
             await ensureLocalSchema(rawPowerSyncDb);
 
             powerSyncDb = new WrappedPowerSyncDatabase(rawPowerSyncDb);

@@ -9,21 +9,15 @@ import {
 describe('powersync-config', () => {
     const originalEndpoint = process.env.NEXT_PUBLIC_POWERSYNC_ENDPOINT;
     const originalToken = process.env.NEXT_PUBLIC_POWERSYNC_ACCESS_TOKEN;
-    const originalApiKey = process.env.NEXT_PUBLIC_POWERSYNC_API_KEY;
-    const originalDevToken = process.env.NEXT_PUBLIC_POWERSYNC_DEV_TOKEN;
 
     afterEach(() => {
         process.env.NEXT_PUBLIC_POWERSYNC_ENDPOINT = originalEndpoint;
         process.env.NEXT_PUBLIC_POWERSYNC_ACCESS_TOKEN = originalToken;
-        process.env.NEXT_PUBLIC_POWERSYNC_API_KEY = originalApiKey;
-        process.env.NEXT_PUBLIC_POWERSYNC_DEV_TOKEN = originalDevToken;
     });
 
-    it('uses explicit endpoint env and dev token env', () => {
+    it('uses explicit endpoint env and access token', () => {
         process.env.NEXT_PUBLIC_POWERSYNC_ENDPOINT = 'https://sync.example.com';
-        process.env.NEXT_PUBLIC_POWERSYNC_DEV_TOKEN = 'dev-token';
-        delete process.env.NEXT_PUBLIC_POWERSYNC_ACCESS_TOKEN;
-        delete process.env.NEXT_PUBLIC_POWERSYNC_API_KEY;
+        process.env.NEXT_PUBLIC_POWERSYNC_ACCESS_TOKEN = 'dev-token';
 
         expect(getPowerSyncConfig()).toMatchObject({
             endpoint: 'https://sync.example.com',
@@ -33,9 +27,7 @@ describe('powersync-config', () => {
 
     it('uses bundled instance URL when endpoint env missing', () => {
         delete process.env.NEXT_PUBLIC_POWERSYNC_ENDPOINT;
-        process.env.NEXT_PUBLIC_POWERSYNC_DEV_TOKEN = 'dev-token';
-        delete process.env.NEXT_PUBLIC_POWERSYNC_ACCESS_TOKEN;
-        delete process.env.NEXT_PUBLIC_POWERSYNC_API_KEY;
+        process.env.NEXT_PUBLIC_POWERSYNC_ACCESS_TOKEN = 'dev-token';
 
         expect(getPowerSyncConfig()).toMatchObject({
             endpoint: 'https://69b2c04ad42a43395101a793.powersync.journeyapps.com',
@@ -45,9 +37,7 @@ describe('powersync-config', () => {
 
     it('reports not configured status when endpoint missing', () => {
         process.env.NEXT_PUBLIC_POWERSYNC_ENDPOINT = '';
-        delete process.env.NEXT_PUBLIC_POWERSYNC_DEV_TOKEN;
         delete process.env.NEXT_PUBLIC_POWERSYNC_ACCESS_TOKEN;
-        delete process.env.NEXT_PUBLIC_POWERSYNC_API_KEY;
 
         getPowerSyncConfig();
 

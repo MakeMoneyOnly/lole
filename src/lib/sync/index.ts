@@ -131,6 +131,27 @@ export {
     type SyncConflictLog,
 } from './conflict-resolution';
 
+// Reconciliation
+export {
+    processPendingReconciliation,
+    getReconciliationStats,
+    type ReconciliationEntry,
+    type ReconciliationResult,
+} from './reconciliation-worker';
+
+// Checkpoints
+export {
+    startCheckpoint,
+    updateCheckpoint,
+    completeCheckpoint,
+    failCheckpoint,
+    getCheckpoint,
+    getLatestCursor,
+    cleanupOldCheckpoints,
+    type SyncReplayCheckpoint,
+    type CheckpointStatus,
+} from './replay-checkpoints';
+
 // React Hooks
 export { PowerSyncProvider, usePowerSync, useOfflineMode, useSyncStatus } from './usePowerSync';
 

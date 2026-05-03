@@ -239,11 +239,11 @@ describe('Idempotency Key Manager', () => {
     describe('markSyncOperationFailed', () => {
         it('should increment attempts and set error', async () => {
             const { markSyncOperationFailed } = await import('../idempotency');
-            await markSyncOperationFailed(1, 'Network error');
+            await markSyncOperationFailed('1', 'Network error');
 
             expect(mockExecute).toHaveBeenCalledWith(
                 expect.stringContaining('attempts = attempts + 1'),
-                ['Network error', 1]
+                ['Network error', '1']
             );
         });
 
@@ -254,7 +254,7 @@ describe('Idempotency Key Manager', () => {
             );
 
             const { markSyncOperationFailed } = await import('../idempotency');
-            await markSyncOperationFailed(1, 'error');
+            await markSyncOperationFailed('1', 'error');
 
             expect(mockExecute).not.toHaveBeenCalled();
         });
@@ -263,11 +263,11 @@ describe('Idempotency Key Manager', () => {
     describe('markSyncOperationCompleted', () => {
         it('should update status to completed', async () => {
             const { markSyncOperationCompleted } = await import('../idempotency');
-            await markSyncOperationCompleted(1);
+            await markSyncOperationCompleted('1');
 
             expect(mockExecute).toHaveBeenCalledWith(
                 expect.stringContaining("status = 'completed'"),
-                expect.arrayContaining([expect.any(String), 1])
+                expect.arrayContaining([expect.any(String), '1'])
             );
         });
 
@@ -278,7 +278,7 @@ describe('Idempotency Key Manager', () => {
             );
 
             const { markSyncOperationCompleted } = await import('../idempotency');
-            await markSyncOperationCompleted(1);
+            await markSyncOperationCompleted('1');
 
             expect(mockExecute).not.toHaveBeenCalled();
         });

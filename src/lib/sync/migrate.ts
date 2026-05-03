@@ -18,12 +18,11 @@ interface DexieDatabase {
 /**
  * Get the old Dexie database instance
  */
-function getDexieDatabase(): DexieDatabase | null {
+async function getDexieDatabase(): Promise<DexieDatabase | null> {
     try {
-        /* eslint-disable @typescript-eslint/no-require-imports */
-        const Dexie = require('dexie');
-        /* eslint-enable @typescript-eslint/no-require-imports */
-        return new Dexie('loleOrders');
+        const DexieModule = await import('dexie');
+        const Dexie = DexieModule.default ?? DexieModule;
+        return new Dexie('loleOrders') as DexieDatabase;
     } catch {
         return null;
     }
@@ -38,7 +37,7 @@ export async function migrateDexieOrdersToPowerSync(): Promise<{
     errors: string[];
 }> {
     const db = getPowerSync();
-    const oldDb = getDexieDatabase();
+    const oldDb = await getDexieDatabase();
 
     if (!db) {
         return { migrated: 0, failed: 0, errors: ['PowerSync not initialized'] };
@@ -226,7 +225,7 @@ export async function isMigrationNeeded(): Promise<{
     kdsLocalStorage: boolean;
     cartLocalStorage: boolean;
 }> {
-    const oldDb = getDexieDatabase();
+    const oldDb = await getDexieDatabase();
     const dexieOrders = !!oldDb;
 
     let kdsLocalStorage = false;

@@ -12,13 +12,13 @@ import {
     getSyncQueueStatus,
 } from './idempotency';
 import { logger } from '@/lib/logger';
-import { handleSyncConflict, reconcileWithServer } from './conflict-resolution';
+import { reconcileWithServer } from './conflict-resolution';
 
 /**
  * Sync operation row type from the database
  */
 interface SyncOperationRow {
-    id: number;
+    id: string;
     operation: string;
     table_name: string;
     record_id: string;
@@ -46,6 +46,63 @@ const SYNC_ENDPOINTS: Record<string, string> = {
     payments: '/api/payments',
     guests: '/api/guests',
 } as const;
+
+/**
+ * Cache of endpoint health status (table_name → reachable boolean)
+ */
+let endpointHealthCache: Record<string, boolean> = {};
+
+/**
+ * Validate configured sync endpoints via HEAD request.
+ * Skips tables with unreachable endpoints in subsequent sync cycles.
+ */
+async function validateSyncEndpoints(): Promise<void> {
+    const health: Record<string, boolean> = {};
+
+    await Promise.all(
+        Object.entries(SYNC_ENDPOINTS).map(async ([tableName, endpoint]) => {
+            try {
+                const response = await fetch(endpoint + '/_health', {
+                    method: 'HEAD',
+                    signal: AbortSignal.timeout(5000),
+                });
+                health[tableName] = response.ok;
+            } catch {
+                health[tableName] = false;
+            }
+        })
+    );
+
+    try {
+        const batchResponse = await fetch(SYNC_API_ENDPOINT + '/_health', {
+            method: 'HEAD',
+            signal: AbortSignal.timeout(5000),
+        });
+        health['batch'] = batchResponse.ok;
+    } catch {
+        health['batch'] = false;
+    }
+
+    endpointHealthCache = health;
+
+    const unhealthy = Object.entries(health).filter(([, ok]) => !ok);
+    if (unhealthy.length > 0) {
+        logger.warn('[SyncWorker] Unreachable endpoints', {
+            endpoints: unhealthy.map(([name]) => name),
+        });
+    }
+}
+
+/**
+ * Check if a table's endpoint is reachable.
+ * If health cache is empty (never validated), assume reachable.
+ */
+function isEndpointReachable(tableName: string): boolean {
+    if (Object.keys(endpointHealthCache).length === 0) {
+        return true; // Not yet validated, assume reachable
+    }
+    return endpointHealthCache[tableName] !== false;
+}
 
 /**
  * Exponential backoff configuration
@@ -170,9 +227,9 @@ export function createSyncWorker(config: Partial<SyncWorkerConfig> = {}): SyncWo
     async function executeBatchSync(operations: SyncOperationRow[]): Promise<{
         succeeded: number;
         failed: number;
-        results: Map<number, { success: boolean; error?: string }>;
+        results: Map<string, { success: boolean; error?: string }>;
     }> {
-        const results = new Map<number, { success: boolean; error?: string }>();
+        const results = new Map<string, { success: boolean; error?: string }>();
         let succeeded = 0;
         let failed = 0;
 
@@ -403,156 +460,6 @@ export function createSyncWorker(config: Partial<SyncWorkerConfig> = {}): SyncWo
     }
 
     /**
-     * HIGH-006: Process detected conflicts using the conflict resolution engine
-     */
-    async function _processConflicts(
-        operations: SyncOperationRow[]
-    ): Promise<{ resolved: number; failed: number }> {
-        let resolved = 0;
-        let failed = 0;
-
-        for (const op of operations) {
-            try {
-                const endpoint = SYNC_ENDPOINTS[op.table_name];
-                if (!endpoint) continue;
-
-                const response = await fetch(`${endpoint}/${op.record_id}`, {
-                    headers: { 'Content-Type': 'application/json' },
-                });
-
-                if (!response.ok) continue;
-
-                const serverResult = (await response.json()) as {
-                    data?: Record<string, unknown>;
-                    version?: number;
-                } & Record<string, unknown>;
-                const serverRecord = serverResult?.data ?? serverResult;
-
-                if (!serverRecord || !serverRecord.version) continue;
-
-                const result = await handleSyncConflict({
-                    entityType: op.table_name,
-                    entityId: op.record_id,
-                    clientData: {
-                        version: op.attempts || 0,
-                        last_modified: op.created_at,
-                        ...((): Record<string, unknown> => {
-                            try {
-                                return JSON.parse(op.payload) as Record<string, unknown>;
-                            } catch {
-                                return {};
-                            }
-                        })(),
-                    },
-                    serverData: serverRecord as Record<string, unknown> & {
-                        version: number;
-                        last_modified: string;
-                    },
-                });
-
-                if (result.resolved) {
-                    resolved++;
-                    logger.info('[SyncWorker] Conflict resolved', {
-                        operationId: op.id,
-                        entityType: op.table_name,
-                    });
-                } else {
-                    failed++;
-                }
-            } catch (error) {
-                failed++;
-                logger.error('[SyncWorker] Conflict resolution failed', {
-                    operationId: op.id,
-                    error: error instanceof Error ? error.message : 'Unknown error',
-                });
-            }
-        }
-
-        return { resolved, failed };
-    }
-
-    /**
-     * Process pending sync operations individually (legacy method)
-     * Used as fallback when batch sync fails
-     */
-    async function _processSyncOperationsIndividually(): Promise<{
-        processed: number;
-        succeeded: number;
-        failed: number;
-    }> {
-        const operations = await getPendingSyncOperations(cfg.batchSize);
-
-        let processed = 0;
-        let succeeded = 0;
-        let failed = 0;
-
-        for (const op of operations) {
-            processed++;
-
-            const retryCount = op.attempts || 0;
-
-            try {
-                logger.info('Processing sync operation', {
-                    operation: op.operation,
-                    table: op.table_name,
-                    recordId: op.record_id,
-                    attempt: retryCount + 1,
-                });
-
-                // HIGH-013: Execute actual API call
-                const result = await executeSyncOperation(op);
-
-                if (result.success) {
-                    await markSyncOperationCompleted(op.id);
-                    succeeded++;
-                    logger.info('Successfully synced operation', { operationId: op.id });
-                } else {
-                    // Check if we should retry
-                    if (retryCount < MAX_RETRIES) {
-                        const delay = calculateBackoffDelay(retryCount);
-                        logger.info('Operation failed, scheduling retry', {
-                            operationId: op.id,
-                            retry: retryCount + 1,
-                            maxRetries: MAX_RETRIES,
-                            delay,
-                        });
-
-                        // Schedule retry with exponential backoff
-                        setTimeout(async () => {
-                            // The operation will be picked up in the next sync cycle
-                            // with an incremented retry count
-                        }, delay);
-
-                        failed++;
-                    } else {
-                        logger.error('Operation failed after max retries', {
-                            operationId: op.id,
-                            maxRetries: MAX_RETRIES,
-                            error: result.error,
-                        });
-                        await markSyncOperationFailed(
-                            op.id,
-                            result.error || 'Max retries exceeded'
-                        );
-                        failed++;
-                        cfg.onError?.(new Error(result.error || 'Sync operation failed'));
-                    }
-                }
-            } catch (error) {
-                logger.error('Unexpected error for operation', {
-                    operationId: op.id,
-                    error,
-                });
-                await markSyncOperationFailed(op.id, String(error));
-                failed++;
-                cfg.onError?.(new Error(String(error)));
-            }
-        }
-
-        return { processed, succeeded, failed };
-    }
-
-    /**
      * Process pending print jobs
      */
     async function processPrinterQueue(): Promise<{
@@ -596,6 +503,11 @@ export function createSyncWorker(config: Partial<SyncWorkerConfig> = {}): SyncWo
 
         logger.info('Starting sync cycle');
         emitEvent('sync:start', { timestamp: new Date().toISOString() });
+
+        // Validate endpoint health before processing (every 5th cycle)
+        if (Math.random() < 0.2) {
+            await validateSyncEndpoints();
+        }
 
         try {
             const syncResult = await processSyncOperations();

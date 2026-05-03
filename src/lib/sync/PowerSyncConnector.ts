@@ -21,12 +21,7 @@ function getConfiguredEndpoint(): string {
 }
 
 function getDevelopmentToken(): string {
-    return (
-        process.env.NEXT_PUBLIC_POWERSYNC_DEV_TOKEN ??
-        process.env.NEXT_PUBLIC_POWERSYNC_ACCESS_TOKEN ??
-        process.env.NEXT_PUBLIC_POWERSYNC_API_KEY ??
-        ''
-    );
+    return process.env.NEXT_PUBLIC_POWERSYNC_ACCESS_TOKEN ?? '';
 }
 
 function getOperationType(updateType: UpdateType): SyncApiOperation['operation'] {

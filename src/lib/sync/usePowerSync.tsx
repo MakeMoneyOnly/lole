@@ -169,13 +169,17 @@ export function PowerSyncProvider({ children }: { children: ReactNode }) {
         }
     }, [isOnline, isInitialized]);
 
+    const isMqttConfigured =
+        typeof process !== 'undefined' &&
+        !!(process.env.NEXT_PUBLIC_LAN_MQTT_URL || process.env.NEXT_PUBLIC_MQTT_URL);
+
     const operatingMode = resolveStoreOperatingMode({
         isOnline,
         isInitialized,
         bootstrapState: bootstrapStatus.state,
         pendingCount,
         isSyncing,
-        isMqttConnected: true,
+        isMqttConnected: !isMqttConfigured,
     });
 
     const value: PowerSyncContextValue = {
