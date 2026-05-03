@@ -1,0 +1,17 @@
+{
+    "totalChunks": 1104,
+    "domains": [
+        "foundation",
+        "security",
+        "product",
+        "operations",
+        "infrastructure",
+        "integrations",
+        "reports",
+        "runbooks",
+        "reference",
+        "general",
+        "archive"
+    ],
+    "sources": 106
+}

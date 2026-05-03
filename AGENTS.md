@@ -61,6 +61,35 @@ Use the minimal set of skills that covers the task. Prefer stack-specific skills
 - `/.agents/skills/creative-design/frontend-design/SKILL.md`
     - Use for net-new UI surfaces and design system maintenance.
 
+### Enterprise Development (Superpowers)
+
+- `/.agents/skills/superpowers/using-superpowers/SKILL.md`
+    - Core bootstrap for the superpower ecosystem.
+- `/.agents/skills/superpowers/brainstorming/SKILL.md`
+    - Use for requirements gathering and design specs.
+- `/.agents/skills/superpowers/writing-plans/SKILL.md`
+    - Use for generating detailed implementation plans.
+- `/.agents/skills/superpowers/executing-plans/SKILL.md`
+    - Use for executing plans with discipline and checkpoints.
+- `/.agents/skills/superpowers/subagent-driven-development/SKILL.md`
+    - Use for high-quality, task-isolated implementation.
+- `/.agents/skills/superpowers/dispatching-parallel-agents/SKILL.md`
+    - Use for managing multiple independent investigation streams.
+- `/.agents/skills/superpowers/requesting-code-review/SKILL.md`
+    - Use for formal quality gates before merging.
+- `/.agents/skills/superpowers/receiving-code-review/SKILL.md`
+    - Use for technical evaluation of feedback.
+- `/.agents/skills/superpowers/using-git-worktrees/SKILL.md`
+    - Use for workspace isolation and context management.
+- `/.agents/skills/superpowers/systematic-debugging/SKILL.md`
+    - Use for finding root causes before implementing fixes.
+- `/.agents/skills/superpowers/test-driven-development/SKILL.md`
+    - Use for implementing behavior with failing tests first.
+- `/.agents/skills/superpowers/verification-before-completion/SKILL.md`
+    - Use for proving correctness before claiming success.
+- `/.agents/skills/superpowers/finishing-a-development-branch/SKILL.md`
+    - Use for merging and cleaning up after work is complete.
+
 ## Definition of Done (Enterprise Grade)
 
 A task is not done until all applicable items pass:
@@ -70,3 +99,16 @@ A task is not done until all applicable items pass:
 - **Performance**: No regressions against SLO/CWV expectations.
 - **Tests**: Appropriate unit/integration/e2e coverage updated.
 - **Docs**: Relevant docs updated for behavior changes.
+
+## Cognitive Orchestration Layer (COL)
+
+The `.col/` directory contains the proactive orchestrator system:
+
+- **Entry point**: `npx tsx .col/index.ts [command]`
+    - `cycle` - Run full sense-plan-act-reflect cycle
+    - `sense` - Run sense phase only
+    - `health` - Check orchestrator health
+
+- **Validation**: `pnpm exec tsx .col/validation/validator.ts`
+
+- **Memory hooks**: `bash .col/hooks/update-memory.sh`

@@ -22,6 +22,7 @@ const eslintConfig = defineConfig([
         'tests/load/**',
         'tests/performance/**',
         'public/@powersync/**',
+        'temp_vercel/**',
     ]),
     {
         rules: {
@@ -59,7 +60,7 @@ const eslintConfig = defineConfig([
         },
     },
     {
-        files: ['**/*.test.ts', '**/*.test.tsx', '**/__tests__/**/*', 'e2e/**/*', 'tests/**'],
+        files: ['**/*.test.ts', '**/*.test.tsx', '**/__tests__/**/*', 'e2e/**/*', 'tests/**', '.col/**/*', 'scripts/**/*'],
         rules: {
             '@typescript-eslint/no-explicit-any': 'off',
             '@typescript-eslint/no-unused-vars': 'off',
@@ -91,12 +92,27 @@ const eslintConfig = defineConfig([
                             message:
                                 'Direct database lane is infra-only. Request/runtime code must use app-safe pooler lane.',
                         },
+                        {
+                            name: '@/lib/offlineQueue',
+                            message:
+                                'offlineQueue is deprecated. Use @/lib/sync instead. See src/lib/sync/index.ts.',
+                        },
+                        {
+                            name: '@/lib/offlineQueue.ts',
+                            message:
+                                'offlineQueue is deprecated. Use @/lib/sync instead. See src/lib/sync/index.ts.',
+                        },
                     ],
                     patterns: [
                         {
                             group: ['**/lib/db/admin', '**/lib/db/admin.ts'],
                             message:
                                 'Direct database lane is infra-only. Request/runtime code must not import admin lane.',
+                        },
+                        {
+                            group: ['**/lib/offlineQueue', '**/lib/offlineQueue.ts'],
+                            message:
+                                'offlineQueue is deprecated. Use @/lib/sync instead. See src/lib/sync/index.ts.',
                         },
                     ],
                 },
