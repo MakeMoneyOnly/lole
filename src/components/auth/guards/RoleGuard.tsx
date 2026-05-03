@@ -17,7 +17,11 @@ export function RoleGuard(props: RoleGuardProps) {
     const [isE2EBypass, setIsE2EBypass] = useState(false);
 
     useEffect(() => {
-        if (window.localStorage.getItem('__e2e_bypass_auth') === 'true') {
+        if (
+            process.env.NODE_ENV !== 'production' &&
+            typeof window !== 'undefined' &&
+            window.localStorage.getItem('__e2e_bypass_auth') === 'true'
+        ) {
             setIsE2EBypass(true);
         }
     }, []);

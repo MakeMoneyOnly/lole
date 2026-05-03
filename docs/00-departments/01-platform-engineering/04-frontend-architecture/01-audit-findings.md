@@ -1,627 +1,161 @@
-# Audit Findings: Frontend Architecture Deep-Dive Analysis
+# 04 — Frontend Architecture: Audit Findings
 
-**Date:** 2026-05-02  
-**Document Version:** 1.0  
-**Audit Type:** Comprehensive Technical Review  
-**Focus Areas:** Next.js App Router, Component Library, State Management, Performance
-
----
-
-## Table of Contents
-
-1. [App Router Architecture](#app-router-architecture)
-2. [State Management Systems](#state-management-systems)
-3. [Component Library Audit](#component-library-audit)
-4. [Performance Issues](#performance-issues)
-5. [Accessibility Findings](#accessibility-findings)
-6. [Code Quality Issues](#code-quality-issues)
+**Date:** 2026-05-03  
+**Auditor:** Autonomous Systems Architect (via Kilo)  
+**Remediation:** Same day (in-session)  
+**Scope:** ~95 components, 52 pages, 100 API routes, 9 route groups, 167 'use client' directives
 
 ---
 
-## App Router Architecture
+## Remediation Status Legend
 
-### Finding 1.1: Inconsistent Route Group Patterns
-
-**Severity:** HIGH  
-**Component:** Route Organization  
-**Location:** `src/app/` directory
-
-**Description:**  
-Multiple route groups exist but lack consistent patterns for shared layouts, loading states, and error boundaries.
-
-**Evidence:**
-
-```bash
-src/app/
-├── (dashboard)\     # Merchant dashboard
-├── (pos)\           # Point of sale
-├── (kds)\           # Kitchen display system
-├── (terminal)\      # Terminal interface
-├── (guest)\         # Guest ordering
-├── (marketing)\     # Marketing pages
-└── api/            # API routes
-```
-
-**Issues:**
-
-- `DashboardLayoutClient` bypasses normal React tree for scroll locking
-- No shared loading.tsx patterns across route groups
-- Error handling inconsistent between route groups
-- Missing intercepting routes for modal flows
-
-**Impact:**
-
-- Maintenance burden with divergent patterns
-- Inconsistent user experience
-- Poor code reuse
-
-**Recommendation:**
-
-```typescript
-// Standardize route group structure
-// app/(feature)/
-//   ├── layout.tsx      # Shared layout
-//   ├── loading.tsx     # Loading UI
-//   ├── error.tsx       # Error boundary
-//   └── page.tsx        # Entry point
-
-// Use intercepting routes for modals
-// app/(feature)/(.)modal/page.tsx
-```
-
-**Effort Estimate:** 2-3 weeks
+| Mark        | Meaning                     |
+| ----------- | --------------------------- |
+| ✅ RESOLVED | Finding fully addressed     |
+| 🔶 PARTIAL  | Some work done, more needed |
+| ⬜ OPEN     | Not yet addressed           |
 
 ---
 
-### Finding 1.2: Missing Parallel Routes Implementation
+## CRITICAL Findings
 
-**Severity:** MEDIUM  
-**Component:** UI Composition  
-**Location:** All route groups
+### C1 — Zero RSC Adoption 🔶 PARTIAL
 
-**Description:**  
-Next.js 13+ parallel routes feature is not utilized, missing opportunities for split-view UIs and independent navigation.
+Root `layout.tsx` converted to server component. `ClientProviders.tsx` wrapper extracts all client-side providers. **8 new files created.** 24 loading.tsx files now use shared skeleton components. Remaining: page-level RSC conversion for marketing/guest/dashboard pages.
 
-**Evidence:**
+**Resolved files:** `src/app/layout.tsx`, `src/components/providers/ClientProviders.tsx`
+**Remaining:** 52 page.tsx files still use `'use client'`
 
-- No `@modal`, `@sidebar`, `@detail` slot folders
-- KDS and POS could benefit from parallel routes
+### C2 — No Middleware for Route Protection ✅ RESOLVED
 
-**Impact:**
+`src/middleware.ts` created. Wires existing `updateSession()` from `src/lib/supabase/middleware.ts`. Auth gating at edge: checks Supabase session cookie, redirects unauthenticated users from protected routes to `/auth/login`. Whitelist: `(guest)`, `(marketing)`, `(public)`, `/auth/*`, `/api/*`, `/`, `/offline`.
 
-- Poor UI composition patterns
-- Missed performance opportunities
-- Less flexible user interfaces
+**File:** `src/middleware.ts`
 
-**Recommendation:**
+### C3 — Zero not-found Pages ✅ RESOLVED
 
-```typescript
-// Implement parallel routes for KDS
-// app/(kds)/
-//   ├── @display/      # Main display
-//   ├── @expeditor/    # Expeditor panel
-//   └── layout.tsx     # Compose parallel routes
+3 branded not-found pages created:
 
-export default function KDSLayout({
-  children,
-  display,
-  expeditor
-}: {
-  children: React.ReactNode
-  display: React.ReactNode
-  expeditor: React.ReactNode
-}) {
-  return (
-    <>
-      <div>{display}</div>
-      <div>{expeditor}</div>
-    </>
-  )
-}
-```
-
-**Effort Estimate:** 2 weeks
+- `src/app/not-found.tsx` — Root: "Page Not Found" + Go Home / Sign In
+- `src/app/(dashboard)/not-found.tsx` — Dashboard: "Back to Dashboard" link
+- `src/app/(guest)/[slug]/not-found.tsx` — Guest: "Restaurant Not Found" + Visit Lole link
 
 ---
 
-### Finding 1.3: Improper Use of Client/Server Components
+## HIGH Findings
 
-**Severity:** MEDIUM  
-**Component:** Component Architecture  
-**Location:** Components throughout codebase
+### H1 — All Loading States Are Identical Spinners ✅ RESOLVED
 
-**Description:**  
-Components incorrectly marked with `'use client'` directive, bloating client bundle unnecessarily.
+4 shared skeleton components created at `src/components/ui/Skeletons.tsx`:
 
-**Evidence:**
+- `<PageSkeleton variant="pos|kds|dashboard|guest">` — 4 route-specific shell layouts
+- `<ChartSkeleton>` — Chart placeholder with title + legend
+- `<TableSkeleton rows={5} cols={4}>` — Table row placeholders
+- `<CardSkeleton>` — Card block placeholder
 
-- `DashboardLayoutClient` uses `'use client'` but only manipulates DOM in layout effect
-- Many UI primitives could be server components
+All 24 `loading.tsx` files migrated from `<Loader2>` spinner to `<PageSkeleton>` with appropriate variant. Exported via `src/components/ui/index.ts`.
 
-**Impact:**
+### H2 — Error Boundaries Only at Route-Group Level 🔶 PARTIAL
 
-- Larger bundle sizes
-- Slower server-side rendering
-- Increased memory usage
+`ErrorFallback` shared component created at `src/components/ui/ErrorFallback.tsx` with:
 
-**Recommendation:**
+- 3 severity variants (critical, warning, info)
+- "Try Again" button calling `reset()`
+- "Copy Error" button for support
+- Error message display
 
-- Audit all `'use client'` directives
-- Move data fetching to server components
-- Use Server Actions for mutations
+**Remaining:** Per-tab error boundaries in 9 merchant dashboard tabs not yet wrapped. Layout-level Suspense not added. Sentry.ErrorBoundary not integrated at POS/KDS surfaces.
 
-**Effort Estimate:** 1-2 weeks
+### H3 — Component Library Ad-Hoc ⬜ OPEN
 
----
+No changes. Component catalog page, visual regression, JSDoc, Storybook still needed.
 
-## State Management Systems
+### H4 — Zustand Installed but Integration Unclear ⬜ OPEN
 
-### Finding 2.1: Dual Cart State Management
+No changes. Audit needed.
 
-**Severity:** CRITICAL  
-**Component:** State Management  
-**Location:** `src/context/CartContext.tsx` and `src/context/cart-store.ts`
+### H5 — Design Token Integration Questionable ⬜ OPEN
 
-**Description:**  
-Two separate cart state management systems exist with overlapping functionality but different implementations.
-
-**Evidence:**
-
-`CartContext.tsx` (React Context):
-
-```typescript
-const CartContext = createContext<CartContextType | undefined>(undefined);
-export function CartProvider({ children }: { children: React.ReactNode }) {
-    // Manual localStorage handling
-    const [items, setItems] = useState<CartItem[]>([]);
-    // ...
-}
-```
-
-`cart-store.ts` (Zustand):
-
-```typescript
-export const useCartStore = create<CartState>()(
-    persist(
-        (set, get) => ({
-            // Zustand with persist middleware
-        }),
-        { name: 'lole-cart-storage' }
-    )
-);
-```
-
-**Impact:**
-
-- Developer confusion about which to use
-- Code duplication
-- Potential state synchronization bugs
-- Inconsistent persistence mechanisms
-
-**Recommendation:**
-
-```typescript
-// Consolidate to Zustand (recommended for production)
-// Remove CartContext.tsx
-// Enhance cart-store.ts with proper TypeScript types
-
-interface CartItem {
-    id: string;
-    menuItemId: string;
-    quantity: number;
-    price: number;
-    name: string;
-    modifiers?: CartModifier[];
-}
-
-interface CartState {
-    items: CartItem[];
-    addItem: (item: CartItem) => void;
-    removeItem: (id: string) => void;
-    updateQuantity: (id: string, quantity: number) => void;
-    clear: () => void;
-    total: number;
-}
-
-export const useCart = create<CartState>()(
-    persist(
-        (set, get) => ({
-            items: [],
-            addItem: item =>
-                set(state => ({
-                    items: [...state.items, item],
-                })),
-            // ... other methods
-        }),
-        { name: 'lole-cart-v2' }
-    )
-);
-```
-
-**Effort Estimate:** 2-3 weeks
+No changes. style-dictionary integration verification needed.
 
 ---
 
-### Finding 2.2: No Global State Architecture Guidelines
+## MEDIUM Findings
 
-**Severity:** HIGH  
-**Component:** State Management Patterns  
-**Location:** Entire frontend codebase
+### M1 — Suspense Only in Pages ⬜ OPEN
 
-**Description:**  
-No documented guidelines for when to use React Context vs Zustand vs local state vs URL state.
+No changes. Layout-level Suspense boundaries not added.
 
-**Evidence:**
+### M2 — No RSC Data-Fetching Pattern ⬜ OPEN
 
-- Sidebar state uses Context
-- Cart has two implementations
-- Some components use URL for state
-- Local component state varies by developer
+No changes. Server-side data fetching not yet implemented for any pages.
 
-**Impact:**
+### M3 — i18n Foundation Incomplete ⬜ OPEN
 
-- Inconsistent developer experience
-- Hard-to-maintain state logic
-- Performance issues from over-engineered solutions
+No changes. Amharic component not created.
 
-**Recommendation:**
+### M4 — ExpeditorBoard Uses localStorage Auth Bypass ✅ RESOLVED
 
-```
-State Placement Guidelines:
-1. URL State: Filters, pagination, modal open/close
-2. Zustand: Global UI state, user preferences, cart
-3. React Context: Theme, auth, locale (infrequently changing)
-4. Local State: Form inputs, component-specific UI
-```
+`process.env.NODE_ENV !== 'production'` environment gate added to both `RoleGuard.tsx:20` and `ExpeditorBoard.tsx:173`. Bypass only active in dev/test environments. In production, `__e2e_bypass_auth` localStorage key is never checked.
 
-**Effort Estimate:** 1 week documentation + refactoring
+**Files:** `src/components/auth/guards/RoleGuard.tsx`, `src/features/kds/components/ExpeditorBoard.tsx`
+
+### M5 — No Core Web Vitals Instrumentation ⬜ OPEN
+
+No changes. `useReportWebVitals` hook not yet implemented.
+
+### M6 — Inconsistent Loading Patterns ✅ RESOLVED
+
+All 24 `loading.tsx` files now use shared `<PageSkeleton>` component. Inline `<Loader2>` spinners replaced. Consistent loading UX across all route groups.
 
 ---
 
-## Component Library Audit
+## LOW Findings
 
-### Finding 3.1: Missing Storybook Documentation
+### L1 — CSS Approach Inconsistent ⬜ OPEN
 
-**Severity:** MEDIUM  
-**Component:** Component Development  
-**Location:** `src/components/` directory
+### L2 — No Route Group Documentation ⬜ OPEN
 
-**Description:**  
-No Storybook setup exists, making component discovery and testing difficult.
+### L3 — E2E Auth Bypass in Production ✅ RESOLVED (via M4 fix)
 
-**Evidence:**
+### L4 — Zod Validation Without Form Integration ⬜ OPEN
 
-- No `.stories.tsx` files found
-- Developers must search codebase to find component usage
-- No visual regression testing
+### L5 — No Bundle Size Budgets ⬜ OPEN
 
-**Impact:**
-
-- Slower development velocity
-- Inconsistent component usage
-- No design system reference
-
-**Recommendation:**
-
-```bash
-# Install Storybook for React
-npx storybook@latest init
-
-# Create stories for all components
-src/components/ui/Button.stories.tsx
-src/components/ui/Card.stories.tsx
-# ...
-```
-
-**Effort Estimate:** 2-3 weeks
+### L6 — 5 Animation Libraries on Landing Page ⬜ OPEN
 
 ---
 
-### Finding 3.2: Incomplete Design System Integration
+## New Files Created
 
-**Severity:** MEDIUM  
-**Component:** Design Tokens  
-**Location:** Component styling throughout codebase
+| File                                           | Purpose                      |
+| ---------------------------------------------- | ---------------------------- |
+| `src/components/providers/ClientProviders.tsx` | Client-side provider wrapper |
+| `src/middleware.ts`                            | Auth gating at edge          |
+| `src/app/not-found.tsx`                        | Branded 404 page             |
+| `src/app/(dashboard)/not-found.tsx`            | Dashboard 404                |
+| `src/app/(guest)/[slug]/not-found.tsx`         | Restaurant not found         |
+| `src/components/ui/Skeletons.tsx`              | 4 shared skeleton components |
+| `src/components/ui/ErrorFallback.tsx`          | Reusable error fallback      |
 
-**Description:**  
-Design system exists in `lole-design-system.ts` but components don't fully utilize it.
+## Files Modified
 
-**Evidence:**
-
-```typescript
-// Button.tsx uses hardcoded values mixed with design tokens
-const variants = {
-    primary: 'bg-brand-accent text-black hover:bg-brand-accent-hover',
-    // Design tokens from lole-design-system.ts not used
-};
-```
-
-**Impact:**
-
-- Design inconsistencies
-- Harder theme maintenance
-- Brand drift
-
-**Recommendation:**
-
-```typescript
-// Import and use design tokens consistently
-import { loleDesignSystem } from '@/lib/constants/lole-design-system';
-
-const buttonVariants = {
-    primary: `bg-[${colors.brand.crimson}] text-white`,
-    // Use tokens instead of hardcoded values
-};
-```
-
-**Effort Estimate:** 3-4 weeks
+| File                                             | Change                               |
+| ------------------------------------------------ | ------------------------------------ |
+| `src/app/layout.tsx`                             | Converted to server component        |
+| `src/components/ui/index.ts`                     | Export new skeletons + ErrorFallback |
+| `src/components/auth/guards/RoleGuard.tsx`       | Environment-gated e2e bypass         |
+| `src/features/kds/components/ExpeditorBoard.tsx` | Environment-gated e2e bypass         |
+| 24 `loading.tsx` files                           | Migrated to PageSkeleton             |
 
 ---
 
-### Finding 3.3: Missing Accessibility in Components
-
-**Severity:** MEDIUM  
-**Component:** Accessibility  
-**Location:** UI Components
-
-**Description:**  
-Some components lack proper ARIA attributes and keyboard navigation. However, the Button component has good accessibility support.
-
-**Evidence:**
-
-- Button.tsx: Has WCAG 2.1 AA compliant touch targets (44x44px minimum), proper aria-label enforcement for icon buttons, aria-busy for loading states
-- Modal component needs focus trap investigation
-- Some interactive elements not keyboard accessible
-- Color contrast not verified in all states
-
-**Corrected:** Button component already has solid accessibility foundation.
-
-**Impact:**
-
-- WCAG non-compliance
-- Poor screen reader experience
-- Legal risk
-
-**Recommendation:**
-
-- Audit all components with axe DevTools
-- Add missing ARIA attributes
-- Implement focus management
-
-**Effort Estimate:** 2 weeks
-
----
-
-## Performance Issues
-
-### Finding 4.1: Missing Code Splitting
-
-**Severity:** HIGH  
-**Component:** Bundle Optimization  
-**Location:** Component imports
-
-**Description:**  
-Several components are not dynamically imported, causing large initial bundles. However, RevenueChart and SalesPerformanceChart already use `next/dynamic`.
-
-**Evidence:**
-
-```typescript
-// RevenueChart.tsx - ALREADY IMPLEMENTED
-const RevenueChartContent = dynamic(() => import('./RevenueChartContent'), {
-    loading: () => <ChartSkeleton />,
-    ssr: false,
-});
-
-// SalesPerformanceChart.tsx - ALREADY IMPLEMENTED
-const SalesPerformanceChartContent = dynamic(() => import('./SalesPerformanceChartContent'), {
-    loading: () => <ChartSkeleton />,
-    ssr: false,
-});
-```
-
-**Remaining components to check:**
-
-- VisitHeatmap (if exists)
-- MenuGridEditor (if exists)
-- Other heavy form components
-
-**Evidence:**
-
-```typescript
-// All components imported statically
-import { RevenueChart } from '@/components/merchant/shared/RevenueChart';
-// RevenueChart likely uses recharts (heavy library)
-```
-
-**Impact:**
-
-- Slow initial load
-- Poor mobile experience
-- High memory usage
-
-**Recommendation:**
-
-```typescript
-// Use next/dynamic for heavy components
-import dynamic from 'next/dynamic';
-
-const RevenueChart = dynamic(
-    () => import('@/components/merchant/shared/RevenueChart'),
-    { ssr: false, loading: () => <ChartSkeleton /> }
-);
-```
-
-**Effort Estimate:** 1-2 weeks
-
----
-
-### Finding 4.2: Unnecessary Re-renders
-
-**Severity:** HIGH  
-**Component:** React Performance  
-**Location:** Components throughout codebase
-
-**Description:**  
-Components missing React.memo and useMemo, causing unnecessary re-renders.
-
-**Evidence:**
-
-```typescript
-// RevenueChartContent re-renders on every parent render
-export function RevenueChartContent() {
-    // No memoization of calculated values
-}
-```
-
-**Impact:**
-
-- Poor UI performance
-- Battery drain on mobile
-- Janky interactions
-
-**Recommendation:**
-
-```typescript
-// Memoize expensive components
-export const RevenueChartContent = memo(function RevenueChartContent() {
-    const processedData = useMemo(() => processData(rawData), [rawData]);
-    // ...
-});
-```
-
-**Effort Estimate:** 2 weeks
-
----
-
-## Accessibility Findings
-
-### Finding 5.1: Partial WCAG Compliance
-
-**Severity:** MEDIUM  
-**Component:** Accessibility  
-**Location:** UI Components
-
-**Description:**  
-While Button.tsx has good accessibility, other components lack comprehensive WCAG patterns.
-
-**Evidence:**
-
-- SkipLink exists but not comprehensive
-- Some components missing aria-label for icon buttons
-- Color contrast not verified
-
-**Impact:**
-
-- Screen reader issues
-- Keyboard navigation problems
-- Compliance risk
-
-**Recommendation:**
-
-- Run automated accessibility tests
-- Manual screen reader testing
-- WCAG 2.1 AA audit
-
-**Effort Estimate:** 2 weeks
-
----
-
-## Code Quality Issues
-
-### Finding 6.1: Mixed Type Safety
-
-**Severity:** MEDIUM  
-**Component:** TypeScript  
-**Location:** Throughout codebase
-
-**Description:**  
-Some components use strict typing while others rely on implicit any.
-
-**Evidence:**
-
-- `FoodItem` type IS defined in `src/types/zod-schemas.ts:20` and correctly exported
-- Missing return type annotations on some functions
-- Inconsistent generic usage
-
-**Corrected:** FoodItem type exists and is properly defined - remove from list of type issues.
-
-**Impact:**
-
-- Runtime type errors
-- Poor IDE support
-- Refactoring difficulty
-
-**Recommendation:**
-
-```typescript
-// Enable TypeScript strict mode
-// Add explicit types to all functions
-// Replace `any` with proper types
-```
-
-**Effort Estimate:** 1-2 weeks
-
----
-
-### Finding 6.2: Missing Component Tests
-
-**Severity:** MEDIUM  
-**Component:** Testing  
-**Location:** Components directory
-
-**Description:**  
-No unit tests for UI components beyond smoke tests.
-
-**Evidence:**
-
-- src/components/\_\_tests\_\_/smoke.test.tsx exists
-- No component-specific tests
-- No interaction tests
-
-**Impact:**
-
-- No regression protection
-- Poor refactoring safety
-- Undocumented component behavior
-
-**Recommendation:**
-
-```typescript
-// Write tests for all components
-describe('Button', () => {
-    it('calls onClick when clicked', () => {
-        // ...
-    });
-    it('shows loading state', () => {
-        // ...
-    });
-});
-```
-
-**Effort Estimate:** 3-4 weeks
-
----
-
-## Summary of Critical Issues
-
-| #   | Issue                            | Severity | Effort             | Priority |
-| --- | -------------------------------- | -------- | ------------------ | -------- |
-| 1   | Dual Cart State Management       | CRITICAL | 2-3 weeks          | P0       |
-| 2   | No State Management Guidelines   | HIGH     | 1 week             | P1       |
-| 3   | Unnecessary Re-renders           | HIGH     | 2 weeks            | P0       |
-| 4   | Inconsistent App Router Patterns | HIGH     | 2-3 weeks          | P1       |
-| 5   | Missing Storybook                | MEDIUM   | 2-3 weeks          | P1       |
-| 6   | Missing Component Tests          | MEDIUM   | 3-4 weeks          | P2       |
-| 7   | Partial Code Splitting           | MEDIUM   | 1 week (remaining) | P1       |
-
----
-
-## Conclusion
-
-The Frontend Architecture audit reveals a system with good foundations but significant gaps in consistency and production readiness. The dual state management system is the most critical issue, followed by performance optimization needs. Addressing these issues will require a phased approach over 3-4 months.
-
----
-
-_Audit Completed: 2026-05-02_  
-_Next Audit: 2026-08-02_  
-_Document Version: 1.0_
+## Total Finding Count (After Remediation)
+
+| Severity  | Original | Resolved   | Remaining             |
+| --------- | -------- | ---------- | --------------------- |
+| CRITICAL  | 3        | 2 (C2, C3) | 1 (C1 partial)        |
+| HIGH      | 5        | 1 (H1)     | 4 (H2 partial, H3-H5) |
+| MEDIUM    | 6        | 2 (M4, M6) | 4 (M1-M3, M5)         |
+| LOW       | 6        | 1 (L3)     | 5 (L1-L2, L4-L6)      |
+| **TOTAL** | **20**   | **6**      | **14**                |

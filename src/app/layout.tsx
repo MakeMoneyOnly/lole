@@ -1,12 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Manrope, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
-import { ThemeProvider } from '@/components/providers/ThemeProvider';
-import { QueryProvider } from '@/components/providers/QueryProvider';
-import { Toaster } from 'react-hot-toast';
-import { ServiceWorkerCleanup } from '@/components/providers/ServiceWorkerCleanup';
-import { SkipLink } from '@/components/ui/SkipLink';
-import { PowerSyncProvider } from '@/lib/sync/usePowerSync';
+import { ClientProviders } from '@/components/providers/ClientProviders';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
 const manrope = Manrope({ subsets: ['latin'], variable: '--font-manrope', display: 'swap' });
@@ -39,31 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 className={`${inter.variable} ${manrope.variable} ${jetbrainsMono.variable} font-inter text-brand-ink bg-brand-canvas antialiased`}
                 suppressHydrationWarning
             >
-                <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-                    <ServiceWorkerCleanup />
-                    <SkipLink href="#main-content">Skip to main content</SkipLink>
-                    <PowerSyncProvider>
-                        <QueryProvider>
-                            {children}
-                            <Toaster
-                                position="top-center"
-                                toastOptions={{
-                                    style: {
-                                        background: '#333',
-                                        color: '#fff',
-                                        borderRadius: '9999px',
-                                    },
-                                    success: {
-                                        iconTheme: {
-                                            primary: '#22c55e',
-                                            secondary: '#fff',
-                                        },
-                                    },
-                                }}
-                            />
-                        </QueryProvider>
-                    </PowerSyncProvider>
-                </ThemeProvider>
+                <ClientProviders>{children}</ClientProviders>
             </body>
         </html>
     );

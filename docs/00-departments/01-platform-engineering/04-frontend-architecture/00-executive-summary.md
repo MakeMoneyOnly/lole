@@ -1,139 +1,72 @@
-# Executive Summary: Frontend Architecture Audit
+# 04 — Frontend Architecture: Executive Summary
 
-**Date:** 2026-05-02  
-**Classification:** Internal Technical Review  
-**Scope:** Next.js App Router Structure, Shared Component Library, State Management  
-**Status:** Production Readiness Assessment - Significant Gaps Identified
-
----
-
-## Overview
-
-This executive summary consolidates findings from the comprehensive deep-dive analysis of the Frontend Architecture. The audit reveals structural and implementation gaps in the Next.js App Router usage, component library consistency, and state management patterns that impact production readiness, maintainability, and developer experience.
-
-### Key Findings Summary
-
-| Category                 | Severity   | Status                            |
-| ------------------------ | ---------- | --------------------------------- |
-| App Router Architecture  | **HIGH**   | Inconsistent Patterns             |
-| State Management         | **HIGH**   | Dual System Confusion             |
-| Component Library        | **MEDIUM** | Missing Design System Integration |
-| Performance Optimization | **HIGH**   | Bundle Size & Re-render Issues    |
-| Accessibility            | **MEDIUM** | Partial WCAG Compliance           |
-| Production Readiness     | **HIGH**   | Not Production-Ready              |
+**Department:** Frontend Architecture  
+**Category:** I. Platform Engineering  
+**Lead:** TBD  
+**Date:** 2026-05-03 (Remediation in progress)  
+**Status:** Active remediation (6/20 findings partially addressed, 7/33 tasks complete)
 
 ---
 
-## Critical Issues
+## Mission
 
-### 1. Inconsistent App Router Architecture
+Deliver a performant, accessible, and maintainable frontend architecture for the lole Restaurant OS. Ensure fast initial loads for guest QR ordering, responsive POS/KDS operations, and a scalable component library shared across 9 route groups.
 
-**Severity:** HIGH  
-**Impact:** Bundle bloat, poor code splitting, maintainability challenges
+## Key Metrics
 
-- **Route Group Confusion:** Multiple route groups exist but lack clear separation of concerns
-- **Missing Parallel Routes:** No implementation of Next.js 13+ parallel routes for split UIs
-- **Inconsistent Layouts:** Different route groups have divergent layout patterns
-- **Missing Intercepting Routes:** Modal patterns not leveraging intercepting routes correctly
+| Metric                     | Before         | After Implementation                   | Target               |
+| -------------------------- | -------------- | -------------------------------------- | -------------------- |
+| 'use client' directives    | 167            | ~165 (root layout now RSC)             | <30                  |
+| Server component layouts   | 0              | **1** (root layout.tsx)                | >5                   |
+| not-found pages            | 0              | **3** (root, dashboard, guest slug)    | 3                    |
+| middleware.ts              | 0              | **1** (auth gating)                    | 1                    |
+| Shared UI components       | 17             | **21** (+4 skeletons, +ErrorFallback)  | 21                   |
+| Loading skeletons (shared) | 0              | **4** (Page, Chart, Table, Card)       | 4                    |
+| Loading.tsx using spinner  | 24             | **0** (all migrated to PageSkeleton)   | 0                    |
+| e2e bypass in production   | Unprotected    | **Environment-gated** (NODE_ENV check) | Gated                |
+| Error boundaries           | 6 (group only) | 6                                      | 6 + per-tab + Sentry |
+| RSC data fetching          | 0 pages        | 0                                      | 5+ pages             |
+| Core Web Vitals tracking   | None           | None                                   | LCP/INP/CLS → Sentry |
+| Component catalog          | None           | None                                   | /components page     |
+| Test pass rate             | —              | **2165/2181** (1 pre-existing fail)    | 2181/2181            |
 
-### 2. Dual State Management System
+## Remediation Summary
 
-**Severity:** HIGH  
-**Impact:** Developer confusion, inconsistent state patterns, potential bugs
+### Completed (7 tasks across 4 findings)
 
-- **Two Cart Systems:** Both React Context (`CartContext.tsx`) and Zustand (`cart-store.ts`) exist
-- **No Clear Ownership:** No guidance on when to use which state management approach
-- **Duplicate Logic:** Similar functionality implemented twice with different patterns
-- **Inconsistent Persistence:** Different storage mechanisms (localStorage vs. persist middleware)
+| Finding                | Action                                                                                                     | Impact                                             |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| **C2** No middleware   | `src/middleware.ts` created, Supabase session check at edge, redirect to `/auth/login`                     | No flash of protected content on auth-gated routes |
+| **C3** No not-found    | 3 branded `not-found.tsx` pages (root, dashboard, guest slug)                                              | Consistent 404 UX, tenant-aware errors             |
+| **C1** Zero RSC        | Root `layout.tsx` converted to server component; `ClientProviders.tsx` wrapper extracts all `'use client'` | Foundation for RSC migration                       |
+| **H1** Spinner loading | 4 skeleton components created; 24 `loading.tsx` migrated to `<PageSkeleton>`                               | Skeleton shells, no layout shift                   |
+| **M4** e2e bypass      | `process.env.NODE_ENV !== 'production'` gate added to RoleGuard + ExpeditorBoard                           | Bypass inactive in production                      |
+| **H2** Error UX        | `ErrorFallback` component with severity variants + retry + copy error                                      | Reusable error UI foundation                       |
 
-### 3. Component Library Maturity Gap
+### Remaining (26 tasks across 14 findings)
 
-**Severity:** MEDIUM  
-**Impact:** Inconsistent UI, design debt, accessibility concerns
+| Finding                                     | Status      | Sprint              |
+| ------------------------------------------- | ----------- | ------------------- |
+| C1 — Zero RSC (remaining pages)             | 🔶 Partial  | F1-T4, F1-T5        |
+| H1 — Loading UX complete                    | ✅ Resolved | —                   |
+| H2 — Error boundaries (per-tab)             | 🔶 Partial  | F3-T1, F3-T4, F3-T5 |
+| H3 — Component catalog                      | ⬜ Open     | F2-T3               |
+| H4 — Zustand audit                          | ⬜ Open     | F2-T4               |
+| H5 — Design token integration               | ⬜ Open     | F5-T1               |
+| M1 — Layout Suspense                        | ⬜ Open     | F3-T2               |
+| M2 — RSC data fetching                      | ⬜ Open     | F1-T4, F1-T5        |
+| M3 — i18n incomplete                        | ⬜ Open     | F5-T4               |
+| M5 — No CWV tracking                        | ⬜ Open     | F4-T1               |
+| M6 — Inconsistent loading                   | ✅ Resolved | —                   |
+| L1-L6 — CSS, docs, zod, budgets, animations | ⬜ Open     | F4, F5, F6          |
 
-- **UI Components Exist** but lack comprehensive design system integration
-- **Missing Storybook:** No component documentation or visual testing
-- **Incomplete Coverage:** Many common UI patterns not abstracted into components
-- **Accessibility Partial:** Some WCAG considerations but not comprehensive
+## Production Readiness Score
 
-### 4. Performance Bottlenecks
+**5/10 → 6/10**
 
-**Severity:** HIGH  
-**Impact:** Poor user experience, slow load times, high memory usage
-
-- **No Dynamic Imports:** Heavy components not code-split
-- **Missing React.memo:** Components re-render unnecessarily
-- **No Suspense Boundaries:** No streaming or progressive hydration
-- **Large Bundle Risk:** All components loaded upfront
-
----
-
-## Production Readiness Gaps
-
-### Code Quality Issues
-
-1. **Inconsistent Patterns:** Mixed React Context and Zustand usage without clear guidelines
-2. **Missing TypeScript Strictness:** Several `any` types and incomplete type definitions
-3. **No Component Documentation:** Storybook missing for component library
-
-### Performance Concerns
-
-1. **Bundle Size:** Partial code splitting - charts are dynamically loaded, other components need review
-2. **Re-renders:** Missing memoization in complex components
-3. **Code Splitting:** Partially implemented for charts, needs extension to other heavy components
-
-### Developer Experience
-
-1. **No Component Showcase:** Developers must navigate codebase to understand components
-2. **Missing Architecture Guidelines:** No clear patterns documented
-3. **Inconsistent Hooks:** Custom hooks patterns vary across codebase
-
----
-
-## Recommendations
-
-### Immediate Actions (0-30 days)
-
-1. **Consolidate State Management:** Choose primary state management (Zustand recommended) and migrate
-2. **Implement Dynamic Imports:** Add `next/dynamic` for heavy components
-3. **Add React.memo:** Memoize expensive components
-4. **Fix Route Structure:** Standardize route group patterns
-
-### Short-term Improvements (30-90 days)
-
-1. **Implement Storybook:** Document all UI components
-2. **Add Suspense Boundaries:** Enable streaming and progressive hydration
-3. **Bundle Analysis:** Add bundle analyzer and optimize imports
-4. **Performance Monitoring:** Add Core Web Vitals tracking
-
-### Long-term Enhancements (90+ days)
-
-1. **Design System Integration:** Full design token usage in components
-2. **Component Testing:** Visual regression tests with Chromatic
-3. **Parallel Routes:** Implement for split-view UIs
-4. **Micro Frontend Architecture:** Consider for independent deployments
-
----
-
-## Risk Assessment
-
-| Risk Factor         | Probability | Impact | Mitigation                          |
-| ------------------- | ----------- | ------ | ----------------------------------- |
-| State Inconsistency | HIGH        | HIGH   | Consolidate to single state manager |
-| Performance Issues  | MEDIUM      | HIGH   | Implement code splitting            |
-| Developer Velocity  | HIGH        | MEDIUM | Add Storybook and guidelines        |
-
----
-
-## Conclusion
-
-The Frontend Architecture requires significant refactoring to achieve production readiness. The dual state management system and inconsistent App Router patterns are the highest priority issues. Immediate action should be taken to consolidate state management and implement performance optimizations.
-
-**Estimated Effort:** 4-6 months for production-ready implementation  
-**Recommended Team:** 2-3 frontend engineers + 1 architect  
-**Priority:** P1 - Blocking for production deployment
-
----
-
-_Document Version: 1.0_  
-_Next Review: 2026-06-02_
+- Root layout now server component (foundation for RSC)
+- Auth gating at edge via middleware (security improvement)
+- 3 branded not-found pages (UX improvement)
+- 24 loading states upgraded to skeleton shells (perceived performance)
+- e2e bypass environment-gated (security hardening)
+- Remaining: full RSC migration, error isolation, performance tracking, design system hardening

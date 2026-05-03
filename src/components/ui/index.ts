@@ -66,3 +66,9 @@ export {
 
 // Export new Pagination components
 export { Pagination, PaginationInfo } from './Pagination';
+
+// Export Skeleton components
+export { PageSkeleton, ChartSkeleton, TableSkeleton, CardSkeleton } from './Skeletons';
+
+// Export ErrorFallback
+export { ErrorFallback } from './ErrorFallback';

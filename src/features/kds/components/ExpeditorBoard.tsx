@@ -170,6 +170,7 @@ export function ExpeditorBoard() {
     } = useRole(queryRestaurantId);
     const restaurantId = queryRestaurantId || roleRestaurantId;
     const bypassForE2E =
+        process.env.NODE_ENV !== 'production' &&
         typeof window !== 'undefined' &&
         window.localStorage.getItem('__e2e_bypass_auth') === 'true';
     const canFinalizeHandoff =
