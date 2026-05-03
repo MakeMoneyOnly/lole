@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Network Security Configuration
+    Certificate pinning for Lole API domains.
+    Update pin digests when certificates are rotated.
+-->
+<network-security-config>
+    <!-- Supabase API -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">supabase.co</domain>
+        <pin-set expiration="2027-05-03">
+            <pin digest="SHA-256">REPLACE_WITH_SUPABASE_CERT_PIN</pin>
+        </pin-set>
+    </domain-config>
+
+    <!-- Lole application domain -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">lole.dev</domain>
+        <pin-set expiration="2027-05-03">
+            <pin digest="SHA-256">REPLACE_WITH_LOLE_CERT_PIN</pin>
+        </pin-set>
+    </domain-config>
+
+    <!-- Staging: allow cleartext for local development -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>

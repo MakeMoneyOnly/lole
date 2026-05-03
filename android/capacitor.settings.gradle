@@ -7,3 +7,15 @@ project(':capacitor-device').projectDir = new File('../node_modules/.pnpm/@capac
 
 include ':capacitor-preferences'
 project(':capacitor-preferences').projectDir = new File('../node_modules/.pnpm/@capacitor+preferences@8.0.1_@capacitor+core@8.3.0/node_modules/@capacitor/preferences/android')
+
+include ':capacitor-community-sqlite'
+project(':capacitor-community-sqlite').projectDir = new File('../node_modules/.pnpm/@capacitor-community+sqlite@6.0.0_@capacitor+core@8.3.0/node_modules/@capacitor-community/sqlite/android')
+
+include ':capacitor-push-notifications'
+project(':capacitor-push-notifications').projectDir = new File('../node_modules/.pnpm/@capacitor+push-notifications@8.0.0_@capacitor+core@8.3.0/node_modules/@capacitor/push-notifications/android')
+
+include ':capacitor-biometric'
+project(':capacitor-biometric').projectDir = new File('../node_modules/.pnpm/@capacitor+biometric@8.0.0_@capacitor+core@8.3.0/node_modules/@capacitor/biometric/android')
+
+include ':capacitor-community-barcode-scanner'
+project(':capacitor-community-barcode-scanner').projectDir = new File('../node_modules/.pnpm/@capacitor-community+barcode-scanner@5.0.0_@capacitor+core@8.3.0/node_modules/@capacitor-community/barcode-scanner/android')

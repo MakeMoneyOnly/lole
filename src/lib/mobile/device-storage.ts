@@ -22,8 +22,8 @@ export interface StoredPrinterSelection {
     mac_address?: string | null;
 }
 
-const DEVICE_SESSION_KEY = 'gebata_device_session_v2';
-const PRINTER_SELECTION_KEY = 'gebata_printer_selection_v1';
+const DEVICE_SESSION_KEY = 'lole_device_session_v2';
+const PRINTER_SELECTION_KEY = 'lole_printer_selection_v1';
 
 function isValidPrinterConnectionType(value: unknown): value is PrinterConnectionType {
     return value === 'bluetooth' || value === 'usb' || value === 'network' || value === 'none';

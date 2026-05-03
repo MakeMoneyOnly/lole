@@ -41,7 +41,7 @@ describe('device-storage printer recovery', () => {
             mac_address: 'AA:BB:CC:DD',
         });
         expect(
-            JSON.parse(window.localStorage.getItem('gebata_printer_selection_v1') ?? '{}')
+            JSON.parse(window.localStorage.getItem('lole_printer_selection_v1') ?? '{}')
         ).toMatchObject({
             connection_type: 'network',
             device_id: 'printer-1',
