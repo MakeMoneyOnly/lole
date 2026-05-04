@@ -79,3 +79,6 @@ export { generateConfirmationToken, type ConfirmationToken } from './confirmatio
 
 // Environment Validation
 export { getRequiredEnvVar } from './validateEnv';
+
+// Startup Secret Validation
+export { validateSecrets, assertSecretsValid } from './startup-checks';

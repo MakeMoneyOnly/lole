@@ -15,6 +15,7 @@ function makeClaims(overrides: Partial<GatewaySessionClaims> = {}): GatewaySessi
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + 3600,
         alg: 'HS256',
+        kid: 'test',
         deviceId: 'device-1',
         restaurantId: 'rest-1',
         locationId: 'loc-1',

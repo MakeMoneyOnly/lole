@@ -179,7 +179,13 @@ export async function startStandaloneGatewayServer(
                     identityVersion: resolveGatewayIdentityVersion(context.device.metadata),
                     operatingMode: 'offline-local',
                 });
-            } else if (request.headers['x-gateway-bootstrap-secret'] === config.bootstrapSecret) {
+            } else if (
+                process.env.NODE_ENV !== 'production' &&
+                request.headers['x-gateway-bootstrap-secret'] === config.bootstrapSecret
+            ) {
+                logger.warn(
+                    '[Gateway] Bootstrap via static secret used — only allowed in non-production'
+                );
                 const deviceId =
                     typeof parsed.deviceId === 'string' && parsed.deviceId.length > 0
                         ? parsed.deviceId

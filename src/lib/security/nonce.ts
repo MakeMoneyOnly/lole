@@ -27,15 +27,19 @@ export function generateNonce(length: number = 16): string {
  * CSP Directive Builder with nonce support
  *
  * Builds CSP directives with nonce values for script-src and style-src
- * to replace unsafe-inline while maintaining functionality
+ * to replace unsafe-inline while maintaining functionality.
+ *
+ * Supports CSP-Report-Only mode via CSP_REPORT_ONLY=true env var.
  */
 export class CSPBuilder {
     private nonce: string;
     private isProduction: boolean;
+    private reportOnly: boolean;
 
     constructor(nonce: string, isProduction: boolean = process.env.NODE_ENV === 'production') {
         this.nonce = nonce;
         this.isProduction = isProduction;
+        this.reportOnly = process.env.CSP_REPORT_ONLY === 'true';
     }
 
     /**
@@ -54,9 +58,25 @@ export class CSPBuilder {
             this.formAction(),
             this.workerSrc(),
             this.objectSrc(),
+            this.reportUri(),
         ];
 
-        return directives.join('; ');
+        return directives.filter(Boolean).join('; ');
+    }
+
+    /**
+     * Get the appropriate CSP header name based on mode.
+     * Returns Content-Security-Policy-Report-Only when CSP_REPORT_ONLY=true.
+     */
+    buildHeaderName(): string {
+        return this.reportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy';
+    }
+
+    /**
+     * Check if CSP is in report-only mode
+     */
+    isReportOnly(): boolean {
+        return this.reportOnly;
     }
 
     /**
@@ -135,6 +155,14 @@ export class CSPBuilder {
 
     private objectSrc(): string {
         return "object-src 'none'";
+    }
+
+    private reportUri(): string {
+        const reportUri = process.env.CSP_REPORT_URI;
+        if (reportUri) {
+            return `report-uri ${reportUri}`;
+        }
+        return '';
     }
 }
 

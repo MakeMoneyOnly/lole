@@ -138,14 +138,20 @@ function createBroker(): Aedes {
     };
 
     broker.authenticate = (_client, username, password, callback) => {
-        const pwStr = password?.toString() ?? '';
-
-        if (!username && !password) {
-            clientClaims.set(_client.id, null);
-            callback(null, true);
+        if (!username || !password) {
+            logger.warn('[MQTT Auth] Rejected anonymous connection', {
+                clientId: _client?.id,
+                reason: 'Credentials required',
+            });
+            const err: Error & { returnCode: 4 | 5 } = new Error(
+                'Authentication required'
+            ) as Error & { returnCode: 4 | 5 };
+            err.returnCode = 4;
+            callback(err, false);
             return;
         }
 
+        const pwStr = password.toString();
         const claims = verifyGatewaySessionToken(pwStr);
         if (claims) {
             clientClaims.set(_client.id, claims);

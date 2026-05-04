@@ -36,13 +36,7 @@ export function authorizePublish(topic: string, claims: GatewaySessionClaims | n
     }
 
     if (!claims) {
-        if (isSystemTopic(topic)) {
-            return {
-                allowed: false,
-                reason: 'Anonymous clients may not publish to system topics',
-            };
-        }
-        return { allowed: true, reason: 'Anonymous publish allowed to scoped topics' };
+        return { allowed: false, reason: 'Authentication required to publish' };
     }
 
     if (claims.restaurantId !== tenant.restaurantId || claims.locationId !== tenant.locationId) {
@@ -56,6 +50,20 @@ export function authorizePublish(topic: string, claims: GatewaySessionClaims | n
         return {
             allowed: false,
             reason: 'Only gateway-privileged clients may publish to system topics',
+        };
+    }
+
+    const deviceType = claims.deviceType ?? 'unknown';
+    const topicGroup = topic.split('/')[6] ?? '';
+    const kdsGroups = ['kds', 'cooking', 'expedite'];
+    const posGroups = ['orders', 'tables', 'sessions'];
+    const isKdsGroup = kdsGroups.some(g => topicGroup.startsWith(g));
+    const isPosGroup = posGroups.some(g => topicGroup.startsWith(g));
+
+    if (deviceType === 'kds' && isPosGroup) {
+        return {
+            allowed: false,
+            reason: `KDS devices may not publish to ${topicGroup} topics`,
         };
     }
 
@@ -73,10 +81,7 @@ export function authorizeSubscribe(
     }
 
     if (!claims) {
-        if (isSystemTopic(topic)) {
-            return { allowed: true, reason: 'Anonymous subscribe allowed to system topics' };
-        }
-        return { allowed: true, reason: 'Anonymous subscribe allowed to scoped topics' };
+        return { allowed: false, reason: 'Authentication required to subscribe' };
     }
 
     if (claims.restaurantId !== tenant.restaurantId || claims.locationId !== tenant.locationId) {

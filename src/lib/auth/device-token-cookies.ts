@@ -10,10 +10,31 @@ const DEVICE_TOKEN_COOKIE_OPTIONS = {
     path: '/',
 };
 
-const TOKEN_SIGNATURE_SECRET =
-    process.env.DEVICE_TOKEN_SIGNATURE_SECRET ||
-    process.env.AUTH_SECRET ||
-    'development-secret-change-in-production';
+function getTokenSignatureSecret(): string {
+    const secret = process.env.DEVICE_TOKEN_SIGNATURE_SECRET || process.env.AUTH_SECRET;
+
+    if (!secret) {
+        throw new Error(
+            'DEVICE_TOKEN_SIGNATURE_SECRET is required. ' +
+                'Set it to a random 64-character hex string. ' +
+                "Generate: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\""
+        );
+    }
+
+    if (secret.length < 32) {
+        throw new Error(
+            `DEVICE_TOKEN_SIGNATURE_SECRET must be at least 32 characters (got ${secret.length})`
+        );
+    }
+
+    if (process.env.NODE_ENV !== 'production' && secret.includes('development-secret')) {
+        throw new Error('DEVICE_TOKEN_SIGNATURE_SECRET must not use placeholder values');
+    }
+
+    return secret;
+}
+
+const TOKEN_SIGNATURE_SECRET = getTokenSignatureSecret();
 
 export interface DeviceMetadata {
     device_type?: string;
