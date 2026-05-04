@@ -11,9 +11,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createloleEvent } from '@/lib/events/contracts';
-import { enqueueInternalJob, publishEvent } from '@/lib/events/runtime';
+import { publishEvent } from '@/lib/events/runtime';
 import { accrueLoyaltyPointsForCompletedOrder } from '@/lib/services/guestLoyaltyService';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { getERCAService } from '@/lib/fiscal/erca-service';
 
 const OrderCompletedEventSchema = z.object({
     order_id: z.string().uuid(),
@@ -62,38 +62,26 @@ async function handleLoyaltyAccrual(orderId: string): Promise<{
 }
 
 /**
- * Queue ERCA invoice submission for the completed order
+ * Submit ERCA invoice directly for the completed order.
+ * Uses the unified ERCAService instead of queuing a separate job.
  */
-async function queueERCAInvoice(orderId: string, restaurantId: string): Promise<void> {
+async function submitERCAForOrder(orderId: string): Promise<{
+    success: boolean;
+    erca_invoice_id?: string;
+    error?: string;
+}> {
     try {
-        await enqueueInternalJob({
-            path: '/api/jobs/erca/submit',
-            body: {
-                order_id: orderId,
-                restaurant_id: restaurantId,
-                trigger: 'order_completed',
-            },
-            deduplicationKey: `erca-${orderId}`,
-        });
+        const ercaService = getERCAService();
+        const result = await ercaService.submitInvoice(orderId);
+        return {
+            success: result.success,
+            erca_invoice_id: result.erca_invoice_id,
+            error: result.error,
+        };
     } catch (error) {
-        console.error(`[jobs] Failed to queue ERCA invoice for order ${orderId}:`, error);
-    }
-}
-
-/**
- * Check if ERCA is enabled for restaurant and queue if needed
- */
-async function checkAndQueueERCA(orderId: string, restaurantId: string): Promise<void> {
-    const admin = createServiceRoleClient();
-
-    const { data: restaurant } = await admin
-        .from('restaurants')
-        .select('erca_enabled, vat_number')
-        .eq('id', restaurantId)
-        .maybeSingle();
-
-    if (restaurant?.erca_enabled && restaurant?.vat_number) {
-        await queueERCAInvoice(orderId, restaurantId);
+        const message = error instanceof Error ? error.message : 'Unknown ERCA error';
+        console.error(`[jobs] ERCA submission failed for order ${orderId}:`, message);
+        return { success: false, error: message };
     }
 }
 
@@ -131,23 +119,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const results: {
         loyalty: { success: boolean; pointsAwarded?: number; error?: string };
-        erca: { queued: boolean; error?: string };
+        erca: { success: boolean; erca_invoice_id?: string; error?: string };
     } = {
         loyalty: { success: false },
-        erca: { queued: false },
+        erca: { success: false },
     };
 
     // Process loyalty points (only for authenticated guest orders)
     results.loyalty = await handleLoyaltyAccrual(order_id);
 
-    // Queue ERCA invoice submission (async, don't wait)
-    await checkAndQueueERCA(order_id, restaurant_id).catch(err => {
-        results.erca = {
-            queued: false,
-            error: err instanceof Error ? err.message : 'Unknown error',
-        };
-    });
-    results.erca = { queued: true };
+    // Submit ERCA invoice directly via unified service
+    results.erca = await submitERCAForOrder(order_id);
 
     // Publish completion event to stream for other consumers
     const completionEvent = createloleEvent('order.completed', {
@@ -157,7 +139,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         trigger,
         processed: {
             loyalty: results.loyalty.success,
-            erca: results.erca.queued,
+            erca: results.erca.success,
         },
     });
 
@@ -176,7 +158,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                     error: results.loyalty.error,
                 },
                 erca: {
-                    queued: results.erca.queued,
+                    success: results.erca.success,
+                    erca_invoice_id: results.erca.erca_invoice_id,
                     error: results.erca.error,
                 },
             },

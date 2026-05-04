@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createBrowserClient } from '@/lib/supabase/browser';
 import {
     Zap,
     Link2,
@@ -90,8 +91,7 @@ const INTEGRATIONS: Integration[] = [
         description:
             'Electronic Tax Receipt submission to the Ethiopian Revenue and Customs Authority. Every transaction generates a signed fiscal receipt. Failure to connect results in non-compliance penalties.',
         category: 'Tax Compliance',
-        status: 'connected',
-        lastSync: '2024-04-16T09:30:00Z',
+        status: 'connected' as IntegrationStatus, // overridden by live fetch
         docsUrl: 'https://etax.erca.gov.et',
     },
 ];
@@ -240,6 +240,46 @@ function IntegrationCard({
 
 export function IntegrationsTab() {
     const [integrations, setIntegrations] = useState<Integration[]>(INTEGRATIONS);
+    const [ercaStatus, setErcaStatus] = useState<IntegrationStatus>('disconnected');
+    const [ercaLastSync, setErcaLastSync] = useState<string | undefined>();
+
+    useEffect(() => {
+        const fetchErcaStatus = async () => {
+            try {
+                const supabase = createBrowserClient();
+                const {
+                    data: { session },
+                } = await supabase.auth.getSession();
+                if (!session) return;
+
+                const { data: staff } = await supabase
+                    .from('restaurant_staff')
+                    .select('restaurant_id')
+                    .eq('user_id', session.user.id)
+                    .single();
+
+                if (!staff?.restaurant_id) return;
+
+                const res = await fetch(`/api/restaurants/${staff.restaurant_id}/erca-status`);
+                if (!res.ok) return;
+
+                const body = await res.json();
+                const status = body.data?.status;
+
+                if (status === 'healthy') setErcaStatus('connected');
+                else if (status === 'warning') setErcaStatus('pending');
+                else if (status === 'error') setErcaStatus('error');
+                else setErcaStatus('disconnected');
+
+                if (body.data?.last_success_at) {
+                    setErcaLastSync(body.data.last_success_at);
+                }
+            } catch {
+                setErcaStatus('error');
+            }
+        };
+        fetchErcaStatus();
+    }, []);
 
     function toggleIntegration(id: string) {
         setIntegrations(prev =>
@@ -254,8 +294,21 @@ export function IntegrationsTab() {
         );
     }
 
-    const connectedCount = integrations.filter(i => i.status === 'connected').length;
-    const errorCount = integrations.filter(i => i.status === 'error').length;
+    const connectedCount = integrations.filter(i => {
+        if (i.id === 'erca') return ercaStatus === 'connected';
+        return i.status === 'connected';
+    }).length;
+    const errorCount = integrations.filter(i => {
+        if (i.id === 'erca') return ercaStatus === 'error';
+        return i.status === 'error';
+    }).length;
+
+    const liveIntegrations = integrations.map(i => {
+        if (i.id === 'erca') {
+            return { ...i, status: ercaStatus, lastSync: ercaLastSync };
+        }
+        return i;
+    });
 
     return (
         <div className="space-y-4">
@@ -272,7 +325,7 @@ export function IntegrationsTab() {
                     <div className="flex items-center gap-2">
                         <AlertTriangle className="h-4 w-4 text-amber-400" />
                         <span className="text-sm font-semibold text-gray-900">
-                            {integrations.length - connectedCount}
+                            {liveIntegrations.length - connectedCount}
                         </span>
                         <span className="text-xs text-gray-400">need setup</span>
                     </div>
@@ -307,15 +360,16 @@ export function IntegrationsTab() {
                         </div>
                         <p className="text-xs text-gray-400">
                             {
-                                integrations.filter(
+                                liveIntegrations.filter(
                                     i => i.category === category && i.status === 'connected'
                                 ).length
                             }{' '}
-                            of {integrations.filter(i => i.category === category).length} connected
+                            of {liveIntegrations.filter(i => i.category === category).length}{' '}
+                            connected
                         </p>
                     </div>
                     <div className="space-y-3 px-6 py-5">
-                        {integrations
+                        {liveIntegrations
                             .filter(i => i.category === category)
                             .map(integration => (
                                 <IntegrationCard

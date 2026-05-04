@@ -12,7 +12,7 @@ import {
     getActivePartners,
     normalizeDeliveryPartnerName,
 } from '@/lib/delivery/aggregator';
-import { createHmac } from 'crypto';
+import { createHmac, timingSafeEqual } from 'crypto';
 import { redisRateLimiters } from '@/lib/security';
 import { z } from 'zod';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -198,10 +198,21 @@ export async function POST(request: NextRequest) {
 
         // Validate webhook signature if secret is configured
         if (signature && process.env.DELIVERY_WEBHOOK_SECRET) {
-            const expectedSignature = createHmac('sha256', process.env.DELIVERY_WEBHOOK_SECRET)
+            const expectedHex = createHmac('sha256', process.env.DELIVERY_WEBHOOK_SECRET)
                 .update(rawBody)
                 .digest('hex');
-            if (signature !== expectedSignature) {
+            const expectedBase64 = createHmac('sha256', process.env.DELIVERY_WEBHOOK_SECRET)
+                .update(rawBody)
+                .digest('base64');
+            const expectedBuf = Buffer.from(expectedHex);
+            const providedBuf = Buffer.from(signature);
+            const base64Buf = Buffer.from(expectedBase64);
+            const isValid =
+                (expectedBuf.length === providedBuf.length &&
+                    timingSafeEqual(expectedBuf, providedBuf)) ||
+                (base64Buf.length === providedBuf.length &&
+                    timingSafeEqual(base64Buf, providedBuf));
+            if (!isValid) {
                 return NextResponse.json(
                     {
                         error: {

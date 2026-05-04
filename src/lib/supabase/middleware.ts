@@ -163,6 +163,78 @@ export async function updateSession(request: NextRequest) {
     const protectedPrefixes = ['/app', '/merchant', '/kds', '/staff', '/pos'];
     const isProtectedPath = protectedPrefixes.some(prefix => pathname.startsWith(prefix));
 
+    // SEC-006: Session timeout enforcement
+    // Checks idle timeout (SESSION_TIMEOUT_MINUTES) and max session lifetime
+    // (SESSION_MAX_LIFETIME_HOURS). Expired sessions clear all auth cookies
+    // and redirect to login.
+    if (user && isProtectedPath) {
+        const now = Date.now();
+        const sessionTimeoutMinutes = Math.max(
+            5,
+            Math.min(480, parseInt(process.env.SESSION_TIMEOUT_MINUTES || '30', 10))
+        );
+        const maxLifetimeHours = Math.max(
+            1,
+            Math.min(24, parseInt(process.env.SESSION_MAX_LIFETIME_HOURS || '8', 10))
+        );
+
+        const sessionStartCookie = request.cookies.get('geb_session_start');
+        const lastActiveCookie = request.cookies.get('geb_last_active');
+
+        let shouldTimeout = false;
+
+        if (sessionStartCookie) {
+            const sessionStart = parseInt(sessionStartCookie.value, 10);
+            if (!isNaN(sessionStart)) {
+                const sessionAgeHours = (now - sessionStart) / (60 * 60 * 1000);
+                if (sessionAgeHours > maxLifetimeHours) {
+                    shouldTimeout = true;
+                }
+            }
+        }
+
+        if (!shouldTimeout && lastActiveCookie) {
+            const lastActive = parseInt(lastActiveCookie.value, 10);
+            if (!isNaN(lastActive)) {
+                const idleMinutes = (now - lastActive) / (60 * 1000);
+                if (idleMinutes > sessionTimeoutMinutes) {
+                    shouldTimeout = true;
+                }
+            }
+        }
+
+        if (shouldTimeout) {
+            supabaseResponse.cookies.delete('sb-access-token');
+            supabaseResponse.cookies.delete('sb-refresh-token');
+            supabaseResponse.cookies.delete('geb_session_start');
+            supabaseResponse.cookies.delete('geb_last_active');
+            supabaseResponse.cookies.delete('geb_device_token');
+            supabaseResponse.cookies.delete('geb_device_token_metadata');
+            supabaseResponse.cookies.delete('geb_device_token_signature');
+
+            const url = request.nextUrl.clone();
+            url.pathname = '/auth/login';
+            url.searchParams.set('reason', 'session_expired');
+            return NextResponse.redirect(url);
+        }
+
+        supabaseResponse.cookies.set('geb_last_active', now.toString(), {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/',
+        });
+
+        if (!sessionStartCookie) {
+            supabaseResponse.cookies.set('geb_session_start', now.toString(), {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                path: '/',
+            });
+        }
+    }
+
     if (
         !user &&
         !pathname.startsWith('/auth') &&
