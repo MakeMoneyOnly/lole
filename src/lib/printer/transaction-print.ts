@@ -144,6 +144,7 @@ export function buildReceiptFromPaymentPayload(input: {
     transactionNumber: string;
     orderNumber?: string | null;
     paymentLabel?: string | null;
+    language?: 'en' | 'am';
     subtotal?: number | null;
     total?: number | null;
     taxSummary?: Array<{ label: string; amount: number }> | null;
@@ -164,6 +165,7 @@ export function buildReceiptFromPaymentPayload(input: {
         printed_at: new Date().toISOString(),
         order_label: input.orderNumber ? `Order ${input.orderNumber}` : null,
         payment_label: input.paymentLabel ?? null,
+        language: input.language ?? 'en',
         items:
             input.items?.map(item => ({
                 name: item.name,
@@ -175,6 +177,6 @@ export function buildReceiptFromPaymentPayload(input: {
         taxes: input.taxSummary ?? [],
         subtotal,
         total,
-        footer_lines: ['lole Restaurant OS'],
+        footer_lines: ['lole Restaurant OS', 'All amounts in Ethiopian Birr (Br)'],
     };
 }

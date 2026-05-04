@@ -53,11 +53,11 @@ const TOKEN_PREFIX = 'session_';
  */
 function getSupabaseAdmin() {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const serviceKey = process.env.SUPABASE_SECRET_KEY;
 
     if (!supabaseUrl || !serviceKey) {
         throw new Error(
-            'Supabase configuration missing. Please set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY'
+            'Supabase configuration missing. Please set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY'
         );
     }
 

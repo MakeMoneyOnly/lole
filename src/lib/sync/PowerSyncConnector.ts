@@ -21,7 +21,7 @@ function getConfiguredEndpoint(): string {
 }
 
 function getDevelopmentToken(): string {
-    return process.env.NEXT_PUBLIC_POWERSYNC_ACCESS_TOKEN ?? '';
+    return process.env.POWERSYNC_ACCESS_TOKEN ?? '';
 }
 
 function getOperationType(updateType: UpdateType): SyncApiOperation['operation'] {
@@ -55,8 +55,8 @@ export class Connector {
         const developmentToken = getDevelopmentToken();
 
         if (developmentToken) {
-            logger.info('[PowerSync] Using development/access token for remote sync', {
-                tokenPreview: developmentToken.substring(0, 10) + '...',
+            logger.info('[PowerSync] Using development token for remote sync', {
+                tokenLength: developmentToken.length,
             });
             return {
                 endpoint,

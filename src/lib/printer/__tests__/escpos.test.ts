@@ -187,7 +187,8 @@ describe('escpos', () => {
             const decoder = new TextDecoder();
             const text = decoder.decode(result);
 
-            expect(text).toContain('USD');
+            expect(text).toContain('Br 180.00');
+            expect(text).toContain('Br 360.00');
         });
 
         it('should default to ETB currency', async () => {
@@ -195,7 +196,7 @@ describe('escpos', () => {
             const decoder = new TextDecoder();
             const text = decoder.decode(result);
 
-            expect(text).toContain('ETB');
+            expect(text).toContain('Br 180.00');
         });
 
         it('should include item notes when provided', async () => {

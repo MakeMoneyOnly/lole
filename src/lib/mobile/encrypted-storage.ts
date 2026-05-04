@@ -55,29 +55,22 @@ async function getEncryptionKey(): Promise<string | null> {
 }
 
 function generateEncryptionKey(): string {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let key = '';
-    const array = new Uint8Array(32);
-    crypto.getRandomValues(array);
-    for (let i = 0; i < 32; i++) {
-        key += chars.charAt(array[i] % chars.length);
-    }
-    return key;
+    const rawKey = new Uint8Array(32);
+    crypto.getRandomValues(rawKey);
+    return btoa(String.fromCharCode(...rawKey));
 }
 
-async function simpleEncrypt(plaintext: string, key: string): Promise<string> {
+async function importCryptoKey(base64Key: string, usage: KeyUsage[]): Promise<CryptoKey> {
+    const rawKey = Uint8Array.from(atob(base64Key), c => c.charCodeAt(0));
+    return crypto.subtle.importKey('raw', rawKey, { name: 'AES-GCM' }, false, usage);
+}
+
+async function simpleEncrypt(plaintext: string, base64Key: string): Promise<string> {
     const encoder = new TextEncoder();
     const data = encoder.encode(plaintext);
-    const keyData = encoder.encode(key);
 
     const iv = crypto.getRandomValues(new Uint8Array(12));
-    const cryptoKey = await crypto.subtle.importKey(
-        'raw',
-        keyData.slice(0, 32),
-        { name: 'AES-GCM' },
-        false,
-        ['encrypt']
-    );
+    const cryptoKey = await importCryptoKey(base64Key, ['encrypt']);
 
     const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, cryptoKey, data);
 
@@ -88,22 +81,13 @@ async function simpleEncrypt(plaintext: string, key: string): Promise<string> {
     return btoa(String.fromCharCode(...combined));
 }
 
-async function simpleDecrypt(ciphertext: string, key: string): Promise<string | null> {
+async function simpleDecrypt(ciphertext: string, base64Key: string): Promise<string | null> {
     try {
-        const encoder = new TextEncoder();
-        const keyData = encoder.encode(key);
-
         const raw = Uint8Array.from(atob(ciphertext), c => c.charCodeAt(0));
         const iv = raw.slice(0, 12);
         const data = raw.slice(12);
 
-        const cryptoKey = await crypto.subtle.importKey(
-            'raw',
-            keyData.slice(0, 32),
-            { name: 'AES-GCM' },
-            false,
-            ['decrypt']
-        );
+        const cryptoKey = await importCryptoKey(base64Key, ['decrypt']);
 
         const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, cryptoKey, data);
 

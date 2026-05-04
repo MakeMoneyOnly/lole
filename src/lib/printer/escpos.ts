@@ -19,6 +19,7 @@ export interface EscPosReceiptPayload {
     order_label?: string | null;
     payment_label?: string | null;
     currency?: string;
+    language?: 'en' | 'am';
     items: EscPosLineItem[];
     taxes?: EscPosTaxLine[];
     subtotal: number;
@@ -49,7 +50,7 @@ function padLeft(value: string, width: number): string {
 }
 
 function money(value: number, currency: string): string {
-    return `${currency} ${value.toFixed(2)}`;
+    return `Br ${value.toFixed(2)}`;
 }
 
 function qrStoreBytes(data: string): number[] {
@@ -106,15 +107,34 @@ async function encodeWithOptionalLibrary(
         const encoder = new ReceiptPrinterEncoder({
             language: 'esc-pos',
         });
+        const isAmharic = payload.language === 'am';
+        const labels = isAmharic
+            ? {
+                  tin: 'ቲን',
+                  txn: 'የግብይት ቁጥር',
+                  subtotal: 'ድምር ዋጋ',
+                  total: 'ጠቅላላ ዋጋ',
+                  payment: 'የክፍያ ዘዴ',
+                  footer: 'ሎሌ ሬስቶራንት ኦኤስ',
+              }
+            : {
+                  tin: 'TIN',
+                  txn: 'Txn',
+                  subtotal: 'Subtotal',
+                  total: 'TOTAL',
+                  payment: 'Payment',
+                  footer: 'lole Restaurant OS',
+              };
+
         encoder.initialize();
         encoder.align('center');
         encoder.line(payload.restaurant_name);
 
         if (payload.restaurant_tin) {
-            encoder.line(`TIN: ${payload.restaurant_tin}`);
+            encoder.line(`${labels.tin}: ${payload.restaurant_tin}`);
         }
 
-        encoder.line(`Txn: ${payload.transaction_number}`);
+        encoder.line(`${labels.txn}: ${payload.transaction_number}`);
         encoder.line(payload.printed_at);
         encoder.newline();
         encoder.align('left');
@@ -129,12 +149,12 @@ async function encodeWithOptionalLibrary(
         });
 
         encoder.newline();
-        encoder.line(`Subtotal ${money(payload.subtotal, payload.currency ?? 'ETB')}`);
+        encoder.line(`${labels.subtotal} ${money(payload.subtotal, payload.currency ?? 'ETB')}`);
         payload.taxes?.forEach(tax => {
             encoder.line(`${tax.label} ${money(tax.amount, payload.currency ?? 'ETB')}`);
         });
         encoder.bold(true);
-        encoder.line(`TOTAL ${money(payload.total, payload.currency ?? 'ETB')}`);
+        encoder.line(`${labels.total} ${money(payload.total, payload.currency ?? 'ETB')}`);
         encoder.bold(false);
 
         if (payload.fiscal_warning) {
@@ -148,6 +168,7 @@ async function encodeWithOptionalLibrary(
         }
 
         payload.footer_lines?.forEach(line => encoder.line(line));
+        encoder.line(labels.footer);
         encoder.newline();
         encoder.cut();
         return encoder.encode();
@@ -163,22 +184,43 @@ export async function encodeReceiptToEscPos(payload: EscPosReceiptPayload): Prom
     }
 
     const currency = payload.currency ?? 'ETB';
+    const isAmharic = payload.language === 'am';
+    const labels = isAmharic
+        ? {
+              tin: 'ቲን',
+              txn: 'የግብይት ቁጥር',
+              subtotal: 'ድምር ዋጋ',
+              total: 'ጠቅላላ ዋጋ',
+              payment: 'የክፍያ ዘዴ',
+              separator: '─'.repeat(42),
+              footer: 'ሎሌ ሬስቶራንት ኦኤስ',
+          }
+        : {
+              tin: 'TIN',
+              txn: 'Txn',
+              subtotal: 'Subtotal',
+              total: 'TOTAL',
+              payment: 'Payment',
+              separator: '-'.repeat(42),
+              footer: 'lole Restaurant OS',
+          };
+
     const bytes: number[] = [];
     bytes.push(ESC, 0x40);
     bytes.push(ESC, 0x61, 0x01);
     bytes.push(ESC, 0x45, 0x01, ...newline(payload.restaurant_name), ESC, 0x45, 0x00);
 
     if (payload.restaurant_tin) {
-        bytes.push(...newline(`TIN: ${payload.restaurant_tin}`));
+        bytes.push(...newline(`${labels.tin}: ${payload.restaurant_tin}`));
     }
 
-    bytes.push(...newline(`Txn: ${payload.transaction_number}`));
+    bytes.push(...newline(`${labels.txn}: ${payload.transaction_number}`));
     bytes.push(...newline(payload.printed_at));
     if (payload.order_label) {
         bytes.push(...newline(payload.order_label));
     }
 
-    bytes.push(...newline('------------------------------------------'));
+    bytes.push(...newline(labels.separator));
     bytes.push(ESC, 0x61, 0x00);
 
     payload.items.forEach(item => {
@@ -193,9 +235,11 @@ export async function encodeReceiptToEscPos(payload: EscPosReceiptPayload): Prom
         }
     });
 
-    bytes.push(...newline('------------------------------------------'));
+    bytes.push(...newline(labels.separator));
     bytes.push(
-        ...newline(`${padRight('Subtotal', 20)}${padLeft(money(payload.subtotal, currency), 22)}`)
+        ...newline(
+            `${padRight(labels.subtotal, 20)}${padLeft(money(payload.subtotal, currency), 22)}`
+        )
     );
 
     payload.taxes?.forEach(tax => {
@@ -206,12 +250,12 @@ export async function encodeReceiptToEscPos(payload: EscPosReceiptPayload): Prom
 
     bytes.push(ESC, 0x45, 0x01);
     bytes.push(
-        ...newline(`${padRight('TOTAL', 20)}${padLeft(money(payload.total, currency), 22)}`)
+        ...newline(`${padRight(labels.total, 20)}${padLeft(money(payload.total, currency), 22)}`)
     );
     bytes.push(ESC, 0x45, 0x00);
 
     if (payload.payment_label) {
-        bytes.push(...newline(`Payment: ${payload.payment_label}`));
+        bytes.push(...newline(`${labels.payment}: ${payload.payment_label}`));
     }
 
     if (payload.fiscal_warning) {

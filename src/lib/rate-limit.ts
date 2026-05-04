@@ -424,10 +424,35 @@ async function getClientIP(request: NextRequest): Promise<string> {
     return `fp-${fingerprint}`;
 }
 
-const ABUSE_THRESHOLD = 5;
-const ABUSE_WINDOW_SECONDS = 300;
+function getAbuseThreshold(): number {
+    const envValue = process.env.RATE_LIMIT_ABUSE_THRESHOLD;
+    if (envValue) {
+        const parsed = parseInt(envValue, 10);
+        if (!isNaN(parsed) && parsed >= 1 && parsed <= 100) return parsed;
+    }
+    return 5;
+}
+
+function getAbuseWindowSeconds(): number {
+    const envValue = process.env.RATE_LIMIT_ABUSE_WINDOW_SECONDS;
+    if (envValue) {
+        const parsed = parseInt(envValue, 10);
+        if (!isNaN(parsed) && parsed >= 60 && parsed <= 3600) return parsed;
+    }
+    return 300;
+}
+
+function getEndpointAbuseThreshold(endpoint: string): number {
+    const base = getAbuseThreshold();
+    if (endpoint.includes('/api/auth/')) return Math.max(2, Math.floor(base / 2));
+    if (endpoint.includes('/api/payments/')) return Math.max(2, Math.floor(base / 2));
+    if (endpoint.includes('/api/orders/')) return base;
+    return base;
+}
 
 export async function checkRateLimitAbuse(ip: string, endpoint: string): Promise<boolean> {
+    const threshold = getEndpointAbuseThreshold(endpoint);
+    const windowSeconds = getAbuseWindowSeconds();
     const redis = getOrCreateRedisClient();
 
     if (redis) {
@@ -436,16 +461,16 @@ export async function checkRateLimitAbuse(ip: string, endpoint: string): Promise
             const count = await redis.incr(abuseKey);
 
             if (count === 1) {
-                await redis.expire(abuseKey, ABUSE_WINDOW_SECONDS);
+                await redis.expire(abuseKey, windowSeconds);
             }
 
-            if (count > ABUSE_THRESHOLD) {
+            if (count > threshold) {
                 logger.warn('Rate limit abuse detected', {
                     action: 'rate_limit:abuse_detected',
                     clientIp: ip,
                     endpoint,
                     abuseCount: count,
-                    windowSeconds: ABUSE_WINDOW_SECONDS,
+                    windowSeconds,
                 });
 
                 void logSecurityEvent({
@@ -457,8 +482,8 @@ export async function checkRateLimitAbuse(ip: string, endpoint: string): Promise
                         abuse_type: 'rate_limit_abuse',
                         endpoint,
                         abuse_count: count,
-                        window_seconds: ABUSE_WINDOW_SECONDS,
-                        threshold: ABUSE_THRESHOLD,
+                        window_seconds: windowSeconds,
+                        threshold,
                     },
                     timestamp: new Date(),
                 });
@@ -475,15 +500,15 @@ export async function checkRateLimitAbuse(ip: string, endpoint: string): Promise
     } else {
         const store = getMemoryStore();
         const abuseKey = `rl:abuse:${ip}:${endpoint}`;
-        const currentCount = store.get(abuseKey, ABUSE_WINDOW_SECONDS);
+        const currentCount = store.get(abuseKey, windowSeconds);
 
-        if (currentCount + 1 > ABUSE_THRESHOLD) {
+        if (currentCount + 1 > threshold) {
             logger.warn('Rate limit abuse detected (in-memory)', {
                 action: 'rate_limit:abuse_detected',
                 clientIp: ip,
                 endpoint,
                 abuseCount: currentCount + 1,
-                windowSeconds: ABUSE_WINDOW_SECONDS,
+                windowSeconds,
             });
 
             void logSecurityEvent({
@@ -495,8 +520,8 @@ export async function checkRateLimitAbuse(ip: string, endpoint: string): Promise
                     abuse_type: 'rate_limit_abuse',
                     endpoint,
                     abuse_count: currentCount + 1,
-                    window_seconds: ABUSE_WINDOW_SECONDS,
-                    threshold: ABUSE_THRESHOLD,
+                    window_seconds: windowSeconds,
+                    threshold,
                     store: 'in_memory',
                 },
                 timestamp: new Date(),
@@ -509,7 +534,7 @@ export async function checkRateLimitAbuse(ip: string, endpoint: string): Promise
             return true;
         }
 
-        await store.increment(abuseKey, ABUSE_WINDOW_SECONDS);
+        await store.increment(abuseKey, windowSeconds);
     }
 
     return false;
