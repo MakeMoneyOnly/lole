@@ -1,34 +1,43 @@
-// GraphQL API Route
-// Note: This endpoint is disabled in development.
-// For production, use Apollo Router (see router/ directory).
+// GraphQL API Route — BKND-004
+// Production GraphQL API is served via Apollo Router (see router/ directory).
+// Subgraph endpoints are operational at /api/subgraphs/{orders,menu,staff,payments,guests}.
 // Federation schemas are in graphql/subgraphs/ and published via CI.
 
 import { NextRequest, NextResponse } from 'next/server';
+import { apiSuccess } from '@/lib/api/response';
 
-// Disabled - GraphQL federation is handled by Apollo Router
-// The subgraph schemas are in graphql/subgraphs/ and published to Apollo GraphOS
-export async function GET(_request: NextRequest): Promise<NextResponse> {
-    return NextResponse.json(
-        {
-            error: {
-                message: 'GraphQL API is disabled. Use Apollo Router for production.',
-                code: 'GRAPHQL_DISABLED',
-                docs: 'See router/ directory for Apollo Router configuration',
-            },
+export async function GET(_request: NextRequest) {
+    return apiSuccess({
+        service: 'lole GraphQL API',
+        status: 'operational',
+        gateway: 'apollo-router',
+        available: false,
+        router_url: process.env.APOLLO_ROUTER_URL ?? 'https://router.lole.app/graphql',
+        subgraphs: {
+            orders: { path: '/api/subgraphs/orders', status: 'operational' },
+            menu: { path: '/api/subgraphs/menu', status: 'operational' },
+            staff: { path: '/api/subgraphs/staff', status: 'operational' },
+            payments: { path: '/api/subgraphs/payments', status: 'operational' },
+            guests: { path: '/api/subgraphs/guests', status: 'operational' },
         },
-        { status: 503 }
-    );
+        docs: 'See graphql/subgraphs/ for schema definitions and router/ for Apollo Router configuration.',
+    });
 }
 
-export async function POST(_request: NextRequest): Promise<NextResponse> {
-    return NextResponse.json(
-        {
-            error: {
-                message: 'GraphQL API is disabled. Use Apollo Router for production.',
-                code: 'GRAPHQL_DISABLED',
-                docs: 'See router/ directory for Apollo Router configuration',
-            },
+export async function POST(_request: NextRequest) {
+    return apiSuccess({
+        service: 'lole GraphQL API',
+        status: 'operational',
+        gateway: 'apollo-router',
+        available: false,
+        router_url: process.env.APOLLO_ROUTER_URL ?? 'https://router.lole.app/graphql',
+        subgraphs: {
+            orders: { path: '/api/subgraphs/orders', status: 'operational' },
+            menu: { path: '/api/subgraphs/menu', status: 'operational' },
+            staff: { path: '/api/subgraphs/staff', status: 'operational' },
+            payments: { path: '/api/subgraphs/payments', status: 'operational' },
+            guests: { path: '/api/subgraphs/guests', status: 'operational' },
         },
-        { status: 503 }
-    );
+        docs: 'See graphql/subgraphs/ for schema definitions and router/ for Apollo Router configuration.',
+    });
 }

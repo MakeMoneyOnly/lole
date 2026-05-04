@@ -26,8 +26,17 @@ type SuccessBody<T> = {
     data: T;
 };
 
+/**
+ * BKND-012/013: Generates request ID + API version headers.
+ * All success responses include x-request-id and x-api-version for tracing.
+ */
 export function apiSuccess<T>(data: T, status: number = 200, headers?: HeadersInit) {
-    return NextResponse.json<SuccessBody<T>>({ data }, { status, headers });
+    const requestId = randomUUID();
+    const allHeaders = new Headers(headers);
+    allHeaders.set('x-request-id', requestId);
+    allHeaders.set('x-api-version', 'v1');
+
+    return NextResponse.json<SuccessBody<T>>({ data }, { status, headers: allHeaders });
 }
 
 /**
@@ -84,7 +93,10 @@ export function apiError(
         }
     }
 
-    return NextResponse.json(body, { status });
+    return NextResponse.json(body, {
+        status,
+        headers: { 'x-request-id': requestId, 'x-api-version': 'v1' },
+    });
 }
 
 /**

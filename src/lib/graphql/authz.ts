@@ -3,6 +3,7 @@
 
 import { GraphQLError } from 'graphql';
 import { GraphQLContext } from './context';
+import { createClient } from '@supabase/supabase-js';
 
 /**
  * Context with authenticated user guaranteed to be present
@@ -27,7 +28,13 @@ export function requireAuth(context: GraphQLContext): AuthorizedContext {
 }
 
 /**
- * Throws an error if the user doesn't have access to the restaurant
+ * Throws an error if the user doesn't have access to the restaurant.
+ *
+ * BKND-006: Multi-restaurant staff support.
+ * Checks primary restaurantId match first, then queries restaurant_staff
+ * table for multi-restaurant membership. Uses the user's JWT from context
+ * to create an authenticated Supabase client.
+ *
  * @param context - The GraphQL context
  * @param restaurantId - The restaurant ID to check access for
  * @returns The context with user guaranteed to have access to the restaurant
@@ -39,20 +46,39 @@ export async function requireRestaurantAccess(
 ): Promise<AuthorizedContext> {
     const authContext = requireAuth(context);
 
-    // If user's restaurantId matches, allow access
+    // Primary restaurant match — fast path
     if (authContext.user.restaurantId === restaurantId) {
         return authContext;
     }
 
-    // TODO: Add database check for restaurant_staff membership if needed
-    // For multi-restaurant staff support, query restaurant_staff table:
-    // const { data } = await supabase
-    //     .from('restaurant_staff')
-    //     .select('id')
-    //     .eq('user_id', authContext.user.id)
-    //     .eq('restaurant_id', restaurantId)
-    //     .single();
-    // if (data) return authContext;
+    // Multi-restaurant staff check via database
+    if (authContext.token) {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+        if (supabaseUrl && supabaseKey) {
+            const supabase = createClient(supabaseUrl, supabaseKey, {
+                global: {
+                    headers: { Authorization: `Bearer ${authContext.token}` },
+                },
+            });
+
+            const { data } = await supabase
+                .from('restaurant_staff')
+                .select('id, role')
+                .eq('user_id', authContext.user.id)
+                .eq('restaurant_id', restaurantId)
+                .eq('is_active', true)
+                .maybeSingle();
+
+            if (data) {
+                // Update user's role to match their role in this restaurant
+                authContext.user.role = data.role as AuthorizedContext['user']['role'];
+                authContext.user.restaurantId = restaurantId;
+                return authContext;
+            }
+        }
+    }
 
     throw new GraphQLError('Access denied to restaurant', {
         extensions: {

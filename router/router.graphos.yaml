@@ -92,6 +92,29 @@ limits:
     max_tokens: 10000
     max_query_size: 524288 # 512KB
 
+# BKND-007: Persisted query list (operation safelist)
+# When enabled, only whitelisted operations can be executed.
+# This prevents malicious or accidental resource-intensive queries.
+# Uncomment and populate the safelist in production:
+# persisted_queries:
+#     enabled: ${PERSISTED_QUERIES_ENABLED:-false}
+#     safelist:
+#         enabled: true
+#     log_unknown: true
+
+# BKND-008: Query cost analysis (demand control)
+# Limits query execution based on estimated cost.
+# Prevents resource exhaustion from expensive queries.
+# Uncomment in production:
+# demand_control:
+#     enabled: ${DEMAND_CONTROL_ENABLED:-false}
+#     mode: measure  # measure | enforce
+#     strategy:
+#         static_estimated:
+#             list_size: 100
+#             max_cost: 5000
+#     break_on_first_error: true
+
 # Include subgraph errors in response (disable in production)
 include_subgraph_errors:
     all: ${INCLUDE_SUBGRAPH_ERRORS:-false}

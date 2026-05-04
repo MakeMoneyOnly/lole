@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { apiSuccess, apiError } from '@/lib/api/response';
 import {
     createPaymentSession,
     initiateHostedPaymentSession,
@@ -38,7 +39,7 @@ async function parseJsonBody(request: NextRequest) {
 export async function POST(request: NextRequest) {
     const parsed = await parseJsonBody(request);
     if (!parsed.success) {
-        return NextResponse.json({ success: false, error: parsed.error }, { status: 400 });
+        return apiError(parsed.error, 400, 'INVALID_JSON');
     }
 
     const data = parsed.data;
@@ -49,21 +50,15 @@ export async function POST(request: NextRequest) {
     const paymentChoice = data.payment_choice;
 
     if (!guestContext?.slug || !guestContext?.table || !guestContext?.sig || !guestContext?.exp) {
-        return NextResponse.json(
-            { success: false, error: 'Invalid guest context' },
-            { status: 400 }
-        );
+        return apiError('Invalid guest context', 400, 'INVALID_GUEST_CONTEXT');
     }
 
     if (!items || !Array.isArray(items) || items.length === 0) {
-        return NextResponse.json({ success: false, error: 'No items provided' }, { status: 400 });
+        return apiError('No items provided', 400, 'NO_ITEMS');
     }
 
     if (!POST_CHOICES.includes(paymentChoice as 'pay_now' | 'pay_later')) {
-        return NextResponse.json(
-            { success: false, error: 'Invalid payment choice' },
-            { status: 400 }
-        );
+        return apiError('Invalid payment choice', 400, 'INVALID_PAYMENT_CHOICE');
     }
 
     const db = createServiceRoleClient() as SupabaseClient<Database>;
@@ -72,7 +67,7 @@ export async function POST(request: NextRequest) {
     if (!guestCtxResult.valid) {
         const reason = guestCtxResult.reason ?? 'Invalid guest context signature';
         const status = guestCtxResult.status ?? 401;
-        return NextResponse.json({ success: false, error: reason }, { status });
+        return apiError(reason, status, 'GUEST_CONTEXT_INVALID');
     }
 
     const { restaurantId, tableId, tableNumber } = guestCtxResult.data;
@@ -84,10 +79,7 @@ export async function POST(request: NextRequest) {
         0
     );
     if (!orderValidation.isValid) {
-        return NextResponse.json(
-            { success: false, error: orderValidation.error ?? 'Invalid order items' },
-            { status: 400 }
-        );
+        return apiError(orderValidation.error ?? 'Invalid order items', 400, 'INVALID_ORDER');
     }
 
     const enrichedItems = orderValidation.enrichedItems ?? [];
@@ -97,12 +89,12 @@ export async function POST(request: NextRequest) {
 
     const duplicateCheck = await checkDuplicateOrder(db, idempotencyKey);
     if (duplicateCheck) {
-        return NextResponse.json({ success: false, error: 'Duplicate order' }, { status: 409 });
+        return apiError('Duplicate order', 409, 'DUPLICATE_ORDER');
     }
 
     const rateLimit = await checkRateLimit(db, fingerprint);
     if (!rateLimit.allowed) {
-        return NextResponse.json({ success: false, error: 'Rate limit exceeded' }, { status: 429 });
+        return apiError('Rate limit exceeded', 429, 'RATE_LIMIT_EXCEEDED');
     }
 
     const discountResult = await prepareOrderDiscount({
@@ -178,21 +170,18 @@ export async function POST(request: NextRequest) {
         }
     }
 
-    return NextResponse.json(
+    return apiSuccess(
         {
-            success: true,
-            data: {
-                session_id: session.id,
-                mode,
-                payment_choice: paymentChoice,
-                provider,
-                checkout_url: checkoutUrl,
-                payment_id: paymentId,
-                transaction_reference: transactionReference,
-                attempts,
-                fallback_applied: fallbackApplied,
-            },
+            session_id: session.id,
+            mode,
+            payment_choice: paymentChoice,
+            provider,
+            checkout_url: checkoutUrl,
+            payment_id: paymentId,
+            transaction_reference: transactionReference,
+            attempts,
+            fallback_applied: fallbackApplied,
         },
-        { status: 201 }
+        201
     );
 }

@@ -5,10 +5,11 @@
  * Verifies signature and updates payment status.
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { verifyTelebirrWebhookSignature } from '@/lib/payments/telebirr';
 import { createAuditedServiceRoleClient } from '@/lib/supabase/service-role';
 import { logger } from '@/lib/logger';
+import { apiSuccess, apiError } from '@/lib/api/response';
 
 export async function POST(request: NextRequest) {
     const startTime = Date.now();
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
         const appKey = process.env.TELEBIRR_APP_KEY;
         if (!appKey) {
             logger.error('[TelebirrWebhook] TELEBIRR_APP_KEY not configured');
-            return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 });
+            return apiError('Webhook not configured', 500, 'TELEBIRR_NOT_CONFIGURED');
         }
 
         const isValid = verifyTelebirrWebhookSignature(rawBody, signature, appKey);
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
             logger.warn('[TelebirrWebhook] Invalid signature', {
                 signature: signature.substring(0, 10) + '...',
             });
-            return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+            return apiError('Invalid signature', 401, 'INVALID_SIGNATURE');
         }
 
         // Parse the payload
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest) {
 
         if (findError) {
             logger.error('[TelebirrWebhook] Error finding payment', findError);
-            return NextResponse.json({ error: 'Database error' }, { status: 500 });
+            return apiError('Database error', 500, 'DB_ERROR', findError.message);
         }
 
         if (!payment) {
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
                 outTradeNo: payload.outTradeNo,
             });
             // Return success to prevent retries for unknown payments
-            return NextResponse.json({ received: true });
+            return apiSuccess({ received: true });
         }
 
         // Update payment status
@@ -109,7 +110,12 @@ export async function POST(request: NextRequest) {
 
         if (updateError) {
             logger.error('[TelebirrWebhook] Error updating payment', updateError);
-            return NextResponse.json({ error: 'Failed to update payment' }, { status: 500 });
+            return apiError(
+                'Failed to update payment',
+                500,
+                'PAYMENT_UPDATE_FAILED',
+                updateError.message
+            );
         }
 
         // If payment successful, update order status
@@ -136,7 +142,7 @@ export async function POST(request: NextRequest) {
             durationMs: duration,
         });
 
-        return NextResponse.json({ received: true });
+        return apiSuccess({ received: true });
     } catch (error) {
         const duration = Date.now() - startTime;
         logger.error('[TelebirrWebhook] Error processing webhook', {
@@ -144,11 +150,16 @@ export async function POST(request: NextRequest) {
             durationMs: duration,
         });
 
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        return apiError(
+            'Internal server error',
+            500,
+            'INTERNAL_ERROR',
+            error instanceof Error ? error.message : 'Unknown error'
+        );
     }
 }
 
 // Only allow POST requests
 export async function GET() {
-    return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+    return apiError('Method not allowed', 405, 'METHOD_NOT_ALLOWED');
 }
