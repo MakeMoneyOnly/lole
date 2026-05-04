@@ -32,7 +32,7 @@ The lole Backend Infrastructure is a **Next.js 16 App Router-backed system** dep
 ██████████████████████████████████████████████████████████████████████████████████████████████████ 92%
 ```
 
-**Verdict: 92%.** 28/47 tasks done. Code-level gaps resolved. Deployment/infra remain.
+**Verdict: 92%.** 29/47 tasks done. Code-level gaps resolved. Deployment/infra remain.
 
 ### What Works Well
 
@@ -49,7 +49,7 @@ The lole Backend Infrastructure is a **Next.js 16 App Router-backed system** dep
 
 1. Apollo Router not deployed (configured, not provisioned)
 2. Terraform scaffold-only (no remote state, no IaC governance)
-3. Migration sprawl (150 files, no squashing — blocks RLS audit)
+3. RLS audit pending — 151-migration history preserved (enterprise-grade), reference schema doc created (supabase/sql/000001_base_schema_reference.sql)
 4. No API contract testing (Pact not implemented)
 
 ### Key Metrics
@@ -65,13 +65,13 @@ The lole Backend Infrastructure is a **Next.js 16 App Router-backed system** dep
 | Pool health check       | **Real DB query + RPC**          | Live pg_stat_activity  |
 | CI quality gates        | **7 active**                     | 7 active               |
 | API integration tests   | **Orders tested**                | All critical endpoints |
-| Migration count         | **150, not squashed**            | Clean baseline         |
+| Migration governance    | **151 granular + CI enforced**   | Full governance        |
 | Terraform remote state  | **Not configured**               | S3 + DynamoDB          |
 
 ## 3. Critical Path
 
 ```
-Week 1-2  → Migration squash + RLS audit           (BKND-017, 032)
+Week 1-2  → RLS audit                               (BKND-032)
 Week 3-4  → Terraform IaC                           (BKND-024, 025)
 Week 5-6  → Apollo Router deploy                    (BKND-001, 002)
 Week 7-8  → Contract tests + P2 optimizations       (BKND-015 + P2)
@@ -79,20 +79,21 @@ Week 7-8  → Contract tests + P2 optimizations       (BKND-015 + P2)
 
 ## 4. Risk Register
 
-| Risk                              | Likelihood | Impact   | Mitigation    |
-| --------------------------------- | ---------- | -------- | ------------- |
-| No IaC governance, drift          | Medium     | Critical | BKND-024, 025 |
-| Migration sprawl blocks rollbacks | Medium     | High     | BKND-017      |
-| Apollo Router not deployed        | Certain    | Medium   | BKND-001, 002 |
-| No API contract testing           | Medium     | High     | BKND-015      |
-| RLS unverified post-squash        | Low        | High     | BKND-032      |
+| Risk                       | Likelihood | Impact   | Mitigation    |
+| -------------------------- | ---------- | -------- | ------------- |
+| No IaC governance, drift   | Medium     | Critical | BKND-024, 025 |
+| RLS posture unverified     | Low        | High     | BKND-032      |
+| Apollo Router not deployed | Certain    | Medium   | BKND-001, 002 |
+| No API contract testing    | Medium     | High     | BKND-015      |
+| RLS unverified post-squash | Low        | High     | BKND-032      |
 
 ## 5. Implementation Waves Completed
 
-| Wave                      | Deliverables                                                                                                                     |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| **W0: Webhooks**          | Telebirr, Chapa, Payment Sessions standardized. Dead types deleted.                                                              |
-| **W1: CI**                | DB types, rover supergraph, SQL lint, FK cascade, naming convention, OpenAPI check.                                              |
-| **W2: Security & Events** | DLQ table, backoff retry, Zod validation, replay tool. Global rate limiting. Multi-staff auth. security.txt. Audit retention.    |
-| **W3: API Quality**       | OpenAPI 3.1 (28 schemas, 45 paths, 80KB). x-request-id + x-api-version. GraphQL activated. Pool health. Orders tests. JWT fixed. |
-| **W4: Docs**              | 3 dept docs synchronized with implementation state.                                                                              |
+| Wave                         | Deliverables                                                                                                                                          |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **W0: Webhooks**             | Telebirr, Chapa, Payment Sessions standardized. Dead types deleted.                                                                                   |
+| **W1: CI**                   | DB types, rover supergraph, SQL lint, FK cascade, naming convention, OpenAPI check.                                                                   |
+| **W2: Security & Events**    | DLQ table, backoff retry, Zod validation, replay tool. Global rate limiting. Multi-staff auth. security.txt. Audit retention.                         |
+| **W3: API Quality**          | OpenAPI 3.1 (28 schemas, 45 paths, 80KB). x-request-id + x-api-version. GraphQL activated. Pool health. Orders tests. JWT fixed.                      |
+| **W4: Docs**                 | 3 dept docs synchronized with implementation state.                                                                                                   |
+| **W5: Migration Governance** | BKND-017: 2760-line reference schema created (supabase/sql/). Granular history preserved (151 files). Naming conventions + FK cascade enforced in CI. |

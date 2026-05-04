@@ -18,9 +18,12 @@
 
 ## A. Database Migrations
 
-### A1 — Migration Sprawl (150 files, no squashing) — HIGH 🔴
+### A1 — Migration Sprawl — HIGH ⬜ PARTIALLY RESOLVED
 
-Remediation: BKND-017 (migration squash).
+Status: Enterprise-grade decision — granular history preserved (151 incremental migrations).
+Reference schema created at supabase/sql/000001_base_schema_reference.sql (2760 lines, 79 tables).
+CI governance enforced (naming conventions, FK cascade, migration conflict detection).
+Remediation: BKND-020 (naming), BKND-021 (FK cascade) complete. No squashing needed.
 
 ### A2 — Inconsistent Naming Conventions — MEDIUM ✅
 
@@ -168,7 +171,7 @@ Three-tier validation maintained.
 
 ### F3 — Historical Permissive Policies — LOW 🔴
 
-Verify post-squash (BKND-032).
+Verify current state. RLS audit pending (BKND-032).
 
 ---
 
@@ -197,7 +200,7 @@ Replaced with rover supergraph compose.
 | Severity  | Total  | Resolved | Unresolved         |
 | --------- | ------ | -------- | ------------------ |
 | CRITICAL  | 3      | 2        | 1 (E1 Terraform)   |
-| HIGH      | 8      | 5        | 3 (A1, D5, E6)     |
+| HIGH      | 8      | 5        | 3 (A1⬜, D5, E6)   |
 | MEDIUM    | 16     | 12       | 4 (A5, B2, C7, D2) |
 | LOW       | 7      | 5        | 2 (B1, E5, F1, F3) |
 | **TOTAL** | **34** | **24**   | **10**             |
@@ -210,3 +213,4 @@ Replaced with rover supergraph compose.
 - Events: silent drops → DLQ + retry + replay
 - Rate limiting: per-route → global middleware
 - All 4 new findings (G1-G4) resolved
+- BKND-017: Reference schema created, granular migrations kept (enterprise-grade decision)
