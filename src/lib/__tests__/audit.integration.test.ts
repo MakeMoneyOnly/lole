@@ -24,7 +24,7 @@ vi.mock('@supabase/supabase-js', () => ({
 // Mock environment variables
 const mockEnv = {
     NEXT_PUBLIC_SUPABASE_URL: 'https://test.supabase.co',
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: 'test-anon-key',
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'test-publishable-key',
 };
 
 describe('audit integration tests', () => {
@@ -113,7 +113,7 @@ describe('audit integration tests', () => {
         it('should handle missing configuration gracefully', async () => {
             // Arrange - remove env vars to trigger fallback
             delete process.env.NEXT_PUBLIC_SUPABASE_URL;
-            delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+            delete process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
             const auditParams: ServiceRoleAuditParams = {
                 action: 'DELETE',
