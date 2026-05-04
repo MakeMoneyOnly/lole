@@ -110,3 +110,6 @@ plans/
 public/@powersync/
 
 .agents/
+
+# Local scratch and development tools
+.scratch/

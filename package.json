@@ -26,6 +26,8 @@
         "tokens:build": "style-dictionary build",
         "prepare": "husky && node scripts/security/enforce-hooks.mjs",
         "codegen": "graphql-codegen --config codegen.yml",
+        "openapi:generate": "npx tsx scripts/tools/generate-openapi.ts",
+        "openapi:check": "npx tsx scripts/tools/generate-openapi.ts --check",
         "security:precommit": "node scripts/security/precommit-security.mjs",
         "bundle:analyze": "next experimental-analyze",
         "security:audit": "pnpm audit --audit-level=high",

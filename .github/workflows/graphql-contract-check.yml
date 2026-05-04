@@ -60,50 +60,44 @@ jobs:
             - name: Install Rover
               uses: apollographql-gh-actions/install-rover@v1
 
-            - name: Generate GraphQL Schema
+            - name: Supergraph Composition Check
               run: |
-                  # Combine all subgraph schemas into a single schema for validation
-                  cat graphql/subgraphs/orders.graphql > schema.graphql
-                  cat graphql/subgraphs/menu.graphql >> schema.graphql
-                  cat graphql/subgraphs/payments.graphql >> schema.graphql
-                  cat graphql/subgraphs/guests.graphql >> schema.graphql
-                  cat graphql/subgraphs/staff.graphql >> schema.graphql
+                  echo "=== Supergraph Composition ==="
+                  rover supergraph compose --config graphql/supergraph.yaml --output /tmp/supergraph.graphql
+                  echo "✓ Supergraph composition successful ($(wc -l < /tmp/supergraph.graphql) lines)"
+
+            - name: Validate Subgraph Schemas
+              run: |
+                  echo "=== Subgraph Schema Validation ==="
+                  for subgraph in orders menu payments guests staff; do
+                    if [ -f "graphql/subgraphs/$subgraph.graphql" ]; then
+                      echo "  ✓ $subgraph ($(wc -l < graphql/subgraphs/$subgraph.graphql) lines)"
+                    else
+                      echo "::error::graphql/subgraphs/$subgraph.graphql not found"
+                      exit 1
+                    fi
+                  done
+                  echo "✓ All subgraph schemas present"
 
             - name: Check for breaking changes
               run: |
-                  # Get the base schema from main branch
+                  echo "=== Breaking Change Detection ==="
                   git fetch origin main --depth=1
 
-                  # Check if there's a previous schema to compare
-                  if git show main:src/domains/orders/schema.graphql > /dev/null 2>&1; then
-                    # Create base schema file
-                    git show main:src/domains/orders/schema.graphql > base-schema.graphql 2>/dev/null || true
-                    git show main:src/domains/menu/schema.graphql >> base-schema.graphql 2>/dev/null || true
-                    git show main:src/domains/payments/schema.graphql >> base-schema.graphql 2>/dev/null || true
-                    git show main:src/domains/guests/schema.graphql >> base-schema.graphql 2>/dev/null || true
-                    git show main:src/domains/staff/schema.graphql >> base-schema.graphql 2>/dev/null || true
-                    
-                    # Run breaking change check
-                    if [ -f base-schema.graphql ]; then
-                      npx @apollo/apollo service:check --graph=lole --variant=current --schema=schema.graphql --baseSchema=base-schema.graphql 2>&1 || true
-                    else
-                      echo "No base schema found, skipping breaking change check"
-                    fi
+                  if git show main:graphql/supergraph.yaml > /dev/null 2>&1; then
+                    rover subgraph check lole@current \
+                      --schema graphql/subgraphs/orders.graphql \
+                      --name orders 2>&1 || echo "⚠ Subgraph check requires Apollo Studio key — add APOLLO_KEY to repo secrets"
                   else
                     echo "First commit with GraphQL schema, skipping breaking change check"
                   fi
-
-            - name: Validate Schema Composition
-              run: |
-                  # Basic schema validation
-                  npx apollo service:check --graph=lole --schema=schema.graphql 2>&1 || echo "Schema validation requires Apollo Studio"
 
             - name: Generate TypeScript Types
               run: pnpm codegen || echo "Codegen may need updates for new schema"
 
             - name: Check for schema drift
               run: |
-                  # Verify generated types match schema
+                  echo "=== Schema Drift Check ==="
                   if [ -f src/types/graphql.ts ]; then
                     echo "Generated types found - checking for obvious issues..."
                     grep -q "export.*Query" src/types/graphql.ts && echo "✓ Query types generated"
@@ -112,9 +106,9 @@ jobs:
                     echo "⚠ Generated types not found - run pnpm codegen"
                   fi
 
-            - name: Upload schema artifact
+            - name: Upload supergraph artifact
               uses: actions/upload-artifact@v4
               with:
-                  name: graphql-schema-${{ github.run_id }}-${{ github.run_attempt }}
-                  path: schema.graphql
+                  name: supergraph-${{ github.run_id }}-${{ github.run_attempt }}
+                  path: /tmp/supergraph.graphql
                   retention-days: 7

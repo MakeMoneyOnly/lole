@@ -4,6 +4,7 @@ import 'fake-indexeddb/auto';
 
 // Set required environment variables for tests
 process.env.QR_HMAC_SECRET = 'test_secret_key_for_testing_purposes_only_32b';
+process.env.HMAC_SECRET = 'test_hmac_secret_for_testing_purposes_only_32b';
 process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
 process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY = 'test-anon-key-for-testing';
 process.env.REDIS_URL = '';

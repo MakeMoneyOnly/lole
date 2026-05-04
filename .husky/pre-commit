@@ -25,6 +25,22 @@ pnpm security:precommit
 # Lint staged files
 pnpm lint-staged
 
+# FK cascade check for new migrations (BKND-021)
+echo "🔍 Checking migration FK cascades..."
+STAGED_MIGRATIONS=$(git diff --cached --name-only --diff-filter=ACM 2>/dev/null | grep '^supabase/migrations/.*\.sql$' || true)
+if [ -n "$STAGED_MIGRATIONS" ]; then
+  for f in $STAGED_MIGRATIONS; do
+    if grep -q 'auth\.users' "$f" 2>/dev/null; then
+      if ! grep -q 'ON DELETE' "$f" 2>/dev/null; then
+        echo "⚠️  WARNING: $f references auth.users without ON DELETE clause"
+        echo "   Add ON DELETE CASCADE or ON DELETE SET NULL to FK references"
+        echo "   See supabase/migrations/README.md for guidance"
+      fi
+    fi
+  done
+  echo "✅ FK cascade check complete"
+fi
+
 # Type check
 echo "📋 Type checking..."
 pnpm type-check
