@@ -3,11 +3,30 @@
 
 import { Skill, AgentResult } from '../orchestrator/agent';
 
+export type TaskState =
+    | 'idle'
+    | 'operational'
+    | 'paused'
+    | 'error'
+    | 'awaiting_validation'
+    | 'blocked_by_subtask'
+    | 'requesting_human_input';
+
+export interface TaskForce {
+    id: string;
+    name: string;
+    leadAgents: string[]; // e.g., ['MobileAgent', 'SecAgent']
+    activeTaskIds: string[];
+    status: 'forming' | 'active' | 'blocked' | 'awaiting_validation' | 'disbanded';
+    workingMemory: Record<string, unknown>; // Shared short-term scratchpad
+}
+
 export interface DepartmentConfig {
     id: string;
     name: string;
     leadAgent: string;
     coreSkills: string[];
+    externalTools?: string[]; // e.g., ['context7', 'exa']
     responsibilities: string[];
     autonomyLevel: number; // 0-100, percentage of autonomous operation
     validationRequired: boolean;
@@ -15,7 +34,7 @@ export interface DepartmentConfig {
 
 export interface DepartmentState {
     id: string;
-    status: 'idle' | 'operational' | 'paused' | 'error';
+    status: TaskState;
     activeTasks: string[];
     completedToday: number;
     lastActivity: string;
@@ -24,10 +43,12 @@ export interface DepartmentState {
 export class DepartmentManager {
     private departments: Map<string, DepartmentConfig>;
     private departmentStates: Map<string, DepartmentState>;
+    private taskForces: Map<string, TaskForce>;
 
     constructor() {
         this.departments = this.loadDepartments();
         this.departmentStates = new Map();
+        this.taskForces = new Map();
         this.initializeStates();
     }
 
@@ -39,6 +60,7 @@ export class DepartmentManager {
                 name: 'Core Runtime & Gateway',
                 leadAgent: 'RuntimeAgent',
                 coreSkills: ['architecture-interface-design', 'local-bus-orchestration'],
+                externalTools: ['context7'], // Required for fetching latest library specs
                 responsibilities: ['Store Gateway logic', 'MQTT transport', 'Local-first runtime'],
                 autonomyLevel: 90,
                 validationRequired: true,
@@ -228,6 +250,7 @@ export class DepartmentManager {
                 name: 'AI & Orchestration (COL)',
                 leadAgent: 'COLAgent',
                 coreSkills: ['agent-skill-orchestration', 'governance-auto-alignment'],
+                externalTools: ['exa'], // Required for deep architectural and industry research
                 responsibilities: ['COL Engine maintenance', 'Agent alignment', 'Autonomous tasks'],
                 autonomyLevel: 100,
                 validationRequired: false,
@@ -365,6 +388,40 @@ export class DepartmentManager {
         }
         return undefined;
     }
+
+    // --- Dynamic Crew Assembly (Task Forces) ---
+    createTaskForce(
+        name: string,
+        departmentIds: string[],
+        initialTaskIds: string[] = []
+    ): TaskForce {
+        const id = 'tf-' + Date.now().toString(36);
+        const leadAgents = departmentIds
+            .map(dId => this.departments.get(dId)?.leadAgent)
+            .filter((agent): agent is string => !!agent);
+
+        const newForce: TaskForce = {
+            id,
+            name,
+            leadAgents,
+            activeTaskIds: initialTaskIds,
+            status: 'forming',
+            workingMemory: {},
+        };
+        this.taskForces.set(id, newForce);
+        return newForce;
+    }
+
+    getTaskForce(id: string): TaskForce | undefined {
+        return this.taskForces.get(id);
+    }
+
+    updateTaskForceState(id: string, updates: Partial<TaskForce>): void {
+        const tf = this.taskForces.get(id);
+        if (tf) {
+            Object.assign(tf, updates);
+        }
+    }
 }
 
 export class DepartmentAgent {
@@ -391,6 +448,10 @@ export class DepartmentAgent {
 
     requiresValidation(): boolean {
         return this.config.validationRequired;
+    }
+
+    getRequiredExternalTools(): string[] {
+        return this.config.externalTools || [];
     }
 
     async executeTask(

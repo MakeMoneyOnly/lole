@@ -107,6 +107,13 @@ The COL engine is calibrated to `.env.example` constraints:
 - **Reliability**: Offline-first for Addis Reality
 - **Compliance**: ERCA fiscal export ready
 
+## External Intelligence (MCP Servers)
+
+The COL Engine strictly mandates the use of external tools for intelligence gathering:
+
+- **Context7**: Mandatory for all Engineering and Design agents before implementing or refactoring code utilizing 3rd-party libraries. Fetches live, up-to-date documentation.
+- **Exa Search**: Mandatory for the Executive layer (C-Suite) during planning, brainstorming, and PRD generation to anchor decisions in state-of-the-art web research.
+
 ## Quarterly Planning Simulation
 
 ```typescript

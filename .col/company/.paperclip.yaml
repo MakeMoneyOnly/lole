@@ -1,0 +1,68 @@
+schema: paperclip/v1
+agents:
+  ceo:
+    adapter:
+      type: gemini_local
+      config:
+        model: gemini-2.5-pro
+    inputs:
+      env:
+        GH_TOKEN:
+          kind: secret
+          requirement: required
+  cto:
+    adapter:
+      type: gemini_local
+      config:
+        model: gemini-2.5-pro
+  vp-engineering:
+    inputs:
+      env:
+        GH_TOKEN:
+          kind: secret
+          requirement: required
+  eng-manager-core:
+    inputs:
+      env:
+        GH_TOKEN:
+          kind: secret
+          requirement: required
+  eng-manager-mobile:
+    inputs:
+      env:
+        GH_TOKEN:
+          kind: secret
+          requirement: required
+  eng-manager-platform:
+    inputs:
+      env:
+        GH_TOKEN:
+          kind: secret
+          requirement: required
+        SENTRY_AUTH_TOKEN:
+          kind: secret
+          requirement: required
+  eng-manager-frontend:
+    inputs:
+      env:
+        GH_TOKEN:
+          kind: secret
+          requirement: required
+  devops-lead:
+    inputs:
+      env:
+        GH_TOKEN:
+          kind: secret
+          requirement: required
+        SENTRY_AUTH_TOKEN:
+          kind: secret
+          requirement: required
+  compliance-manager:
+    inputs:
+      env:
+        ERCA_API_KEY:
+          kind: secret
+          requirement: required
+        MOR_FISCAL_API_KEY:
+          kind: secret
+          requirement: required
