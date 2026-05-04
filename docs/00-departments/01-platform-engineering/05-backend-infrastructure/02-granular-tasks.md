@@ -1,466 +1,163 @@
-# Backend Infrastructure - Granular Tasks
+# Backend Infrastructure — Granular Tasks
 
-**Department:** Platform Engineering  
-**Functional Unit:** Backend Infrastructure  
-**Document Version:** 1.0  
-**Last Updated:** 2026-05-02
-
----
-
-## Overview
-
-This document contains granular, actionable tasks derived from the audit findings for the Backend Infrastructure functional unit. Each task is designed to be completed by a single developer within 1-5 days and includes specific acceptance criteria, technical requirements, and dependencies.
+**Department:** 05 - Backend Infrastructure
+**Target:** Production-ready backend infrastructure
+**Total Tasks:** 47 (44 original + 3 immediate subtasks) across 7 epics
+**Completed:** 28 | **Remaining:** 19
+**Completed IDs:** BKND-003, 004, 005, 006, 007, 008, 010, 010a-c, 011, 012, 013, 018, 019, 020, 021, 027, 028, 033, 034, 035, 037, 038, 039, 040, 041, 042
+**Estimated Remaining Effort:** ~25 days (single) or ~2 weeks (3-engineer)
 
 ---
 
-## Task Categories
+## Priority Legend
 
-### 🔴 Critical Priority Tasks (Must Complete Immediately)
-
-#### Task 1.1: Deploy Apollo Router for GraphQL Federation
-
-**Estimated Effort:** 5 days  
-**Assigned To:** [Backend Engineer]  
-**Status:** Not Started  
-**Dependencies:** None
-
-**Description:**  
-Deploy Apollo Router to enable GraphQL federation. Configure subgraphs for orders, menu, payments, guests, and staff. Set up Apollo GraphOS publishing for schema management.
-
-**Technical Requirements:**
-
-```yaml
-# router.yaml
-supergraph:
-    listen: 0.0.0.0:4000
-    cors:
-        origins:
-            - 'https://app.example.com'
-        allow_credentials: true
-
-subgraphs:
-    orders:
-        routing_url: ${ORDERS_SUBGRAPH_URL}
-    menu:
-        routing_url: ${MENU_SUBGRAPH_URL}
-    payments:
-        routing_url: ${PAYMENTS_SUBGRAPH_URL}
-    guests:
-        routing_url: ${GUESTS_SUBGRAPH_URL}
-    staff:
-        routing_url: ${STAFF_SUBGRAPH_URL}
-```
-
-**Files to Modify:**
-
-- `router/router.yaml` - New file
-- `docker-compose.yml` - Add router service
-- `src/app/api/subgraphs/*/route.ts` - Update subgraph endpoints
-- `.github/workflows/deploy-router.yml` - New file
-
-**Acceptance Criteria:**
-
-- [ ] Apollo Router deployed and running
-- [ ] All 5 subgraphs connected
-- [ ] GraphQL queries working through federation
-- [ ] Error handling implemented
-- [ ] Monitoring configured
-- [ ] Deployment documented
-
-**Test Cases:**
-
-1. Query orders with menu items
-2. Query guests with loyalty data
-3. Query payments with order data
-4. Verify CORS configuration
-5. Test error responses
-
-**Review Checklist:**
-
-- [ ] Router configuration valid
-- [ ] Subgraph URLs correct
-- [ ] Security headers added
-- [ ] Logging configured
-- [ ] Documentation updated
+| Priority | Total | Done | Remaining |
+| -------- | ----- | ---- | --------- |
+| **P0**   | 18    | 13   | 5         |
+| **P1**   | 16    | 15   | 1         |
+| **P2**   | 13    | 0    | 13        |
 
 ---
 
-#### Task 1.2: Implement Edge Functions Foundation
+## Epic 1: Deploy Apollo Router & Activate GraphQL API
 
-**Estimated Effort:** 6 days  
-**Assigned To:** [Backend Engineer]  
-**Status:** Not Started  
-**Dependencies:** Task 1.1
+**Status:** Gateway active (200). Router configured. Not deployed.
 
-**Description:**  
-Create Edge Functions directory structure and implement webhook processing function for payment providers (Chapa, Telebirr) and delivery partners.
-
-**Technical Requirements:**
-
-```typescript
-// supabase/functions/webhook-handler/index.ts
-import 'jsr:@supabase/functions-js/std@0.1.0';
-
-Deno.serve(async (req: Request) => {
-    const signature = req.headers.get('x-signature');
-    const payload = await req.json();
-
-    // Verify webhook signature
-    const isValid = await verifySignature(payload, signature);
-    if (!isValid) {
-        return new Response('Invalid signature', { status: 401 });
-    }
-
-    // Process webhook based on type
-    const result = await processWebhook(payload);
-
-    return new Response(JSON.stringify(result), {
-        headers: { 'Content-Type': 'application/json' },
-    });
-});
-
-async function verifySignature(payload: unknown, signature: string | null): Promise<boolean> {
-    // Implementation for HMAC verification
-    return true;
-}
-```
-
-**Files to Modify:**
-
-- `supabase/functions/webhook-handler/index.ts` - New file
-- `supabase/functions/webhook-handler/deno.json` - New file
-- `supabase/functions/webhook-handler/import_map.json` - New file
-
-**Acceptance Criteria:**
-
-- [ ] Edge Functions directory populated
-- [ ] Webhook handler accepts all provider webhooks
-- [ ] Signature verification implemented
-- [ ] Error handling with proper responses
-- [ ] Unit tests for webhook processing
-- [ ] Integration tests with mock providers
-
-**Test Cases:**
-
-1. Valid Chapa webhook
-2. Valid Telebirr webhook
-3. Invalid signature rejection
-4. Unknown webhook type handling
-5. Retry on failure
-
-**Review Checklist:**
-
-- [ ] Signature verification secure
-- [ ] Error responses proper
-- [ ] Logging implemented
-- [ ] No secrets in code
-- [ ] Documentation complete
+| ID       | Pri | Task                                  | Status     |
+| -------- | --- | ------------------------------------- | ---------- |
+| BKND-001 | P0  | Deploy Apollo Router (Railway/Vercel) | 🔴 Pending |
+| BKND-002 | P0  | Verify 5 subgraphs behind Router      | 🔴 Pending |
+| BKND-003 | P0  | Fix placeholder JWT URL → env var     | ✅ DONE    |
+| BKND-004 | P0  | Activate /api/graphql (remove 503)    | ✅ DONE    |
+| BKND-005 | P1  | Rover supergraph compose in CI        | ✅ DONE    |
+| BKND-006 | P1  | Multi-restaurant staff auth           | ✅ DONE    |
+| BKND-007 | P1  | Persisted query safelist config       | ✅ DONE    |
+| BKND-008 | P1  | Demand control (cost analysis) config | ✅ DONE    |
+| BKND-009 | P2  | Subgraph resolver integration tests   | 🔴 Pending |
 
 ---
 
-#### Task 1.3: Consolidate Migration Files
+## Epic 2: REST API Contract Standardization
 
-**Estimated Effort:** 10 days  
-**Assigned To:** [Database Engineer]  
-**Status:** Not Started  
-**Dependencies:** None
+**Status:** 28 schemas, 45 paths, 80KB OpenAPI 3.1 spec. All webhooks standardized.
 
-**Description:**  
-Consolidate 32 advisor-related migration files into logical groups. Establish clear migration naming conventions and documentation.
-
-**Technical Requirements:**
-
-```sql
--- Consolidated migration file structure
--- 20260401_consolidated_advisor_cleanup_p0.sql
--- Contains: advisor index cleanup files (group 1)
--- Purpose: Remove unused indexes from advisory findings
-
--- 20260402_consolidated_advisor_cleanup_p1.sql
--- Contains: advisor security hardening files (group 2)
--- Purpose: Security invoker views and additional fixes
-
--- 20260403_consolidated_advisor_cleanup_p2.sql
--- Contains: remaining advisor-related files (group 3)
--- Purpose: Final consolidation and cleanup
-```
-
-**Files to Modify:**
-
-- `supabase/migrations/20260401_consolidated_advisor_cleanup_p0.sql` - New file
-- `supabase/migrations/20260402_consolidated_advisor_cleanup_p1.sql` - New file
-- `supabase/migrations/20260403_consolidated_advisor_cleanup_p2.sql` - New file
-- `supabase/migrations/README.md` - Update with categorization
-
-**Acceptance Criteria:**
-
-- [ ] 32 advisor-related migrations consolidated into logical groups
-- [ ] Clear naming convention established
-- [ ] Migration categories documented
-- [ ] Baseline state documented
-- [ ] Rollback paths verified
-
-**Test Cases:**
-
-1. Apply consolidated migrations to fresh database
-2. Verify index counts match expectations
-3. Test rollback scenarios
-4. Compare before/after migration counts
-
-**Review Checklist:**
-
-- [ ] SQL syntax correct
-- [ ] No data loss in consolidation
-- [ ] Rollback statements included
-- [ ] Comments explain changes
-- [ ] Documentation updated
+| ID        | Pri | Task                                         | Status     |
+| --------- | --- | -------------------------------------------- | ---------- |
+| BKND-010  | P0  | OpenAPI 3.1 auto-generation (all 43 routes)  | ✅ DONE    |
+| BKND-010a | P0  | Standardize Telebirr webhook                 | ✅ DONE    |
+| BKND-010b | P0  | Standardize Chapa webhook                    | ✅ DONE    |
+| BKND-010c | P0  | Standardize Payment Sessions                 | ✅ DONE    |
+| BKND-011  | P0  | Standardize remaining routes + OpenAPI paths | ✅ DONE    |
+| BKND-012  | P0  | x-request-id + x-api-version headers         | ✅ DONE    |
+| BKND-013  | P1  | API versioning headers                       | ✅ DONE    |
+| BKND-014  | P1  | Deduplicate REST/GraphQL logic               | 🔴 Pending |
+| BKND-015  | P1  | Contract tests (Pact)                        | 🔴 Pending |
+| BKND-016  | P2  | API changelog generation                     | 🔴 Pending |
 
 ---
 
-## 🟠 High Priority Tasks
+## Epic 3: Database Migration Governance
 
-#### Task 2.1: Implement Background Job Edge Functions
+**Status:** 150 migrations. CI checks active. Naming + FK cascade enforced.
 
-**Estimated Effort:** 5 days  
-**Assigned To:** [Backend Engineer]  
-**Status:** Not Started  
-**Dependencies:** Task 1.2
-
-**Description:**  
-Create Edge Functions for payment retries, notification processing, and delivery webhook handling with QStash integration.
-
-**Technical Requirements:**
-
-```typescript
-// supabase/functions/payment-retry/index.ts
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-serve(async req => {
-    const supabase = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    // Get payments needing retry
-    const { data: payments } = await supabase
-        .from('payments')
-        .select('*')
-        .eq('status', 'pending')
-        .lte('retry_count', 3);
-
-    // Process each payment
-    for (const payment of payments || []) {
-        await processPaymentRetry(payment);
-    }
-
-    return new Response('OK');
-});
-```
-
-**Files to Modify:**
-
-- `supabase/functions/payment-retry/index.ts` - New file
-- `supabase/functions/notification-processor/index.ts` - New file
-- `supabase/functions/delivery-webhook/index.ts` - New file
-
-**Acceptance Criteria:**
-
-- [ ] Payment retry function implemented
-- [ ] Notification processor implemented
-- [ ] Delivery webhook function implemented
-- [ ] QStash integration working
-- [ ] Retry logic with exponential backoff
-- [ ] Unit tests for each function
-
-**Test Cases:**
-
-1. Process pending payment
-2. Notification queue empty
-3. Delivery webhook received
-4. Retry after failure
-5. Max retries exceeded
+| ID       | Pri | Task                              | Status     |
+| -------- | --- | --------------------------------- | ---------- |
+| BKND-017 | P0  | Migration squash (150→1)          | 🔴 Pending |
+| BKND-018 | P0  | Delete dead database.types.ts     | ✅ DONE    |
+| BKND-019 | P0  | DB types in CI                    | ✅ DONE    |
+| BKND-020 | P1  | Naming convention check           | ✅ DONE    |
+| BKND-021 | P1  | FK cascade pre-commit             | ✅ DONE    |
+| BKND-022 | P1  | TimescaleDB hypertable validation | 🔴 Pending |
+| BKND-023 | P2  | Migration rollback testing        | 🔴 Pending |
 
 ---
 
-#### Task 2.3: Implement Scheduled Task Processing
+## Epic 4: Infrastructure as Code & Observability
 
-**Estimated Effort:** 4 days  
-**Assigned To:** [Backend Engineer]  
-**Status:** Not Started  
-**Dependencies:** Task 2.1
+**Status:** k6 done. Pool health real. Terraform not provisioned.
 
-**Description:**  
-Create Edge Functions for scheduled tasks like daily reports, ERCA submissions, and data cleanup.
-
-**Technical Requirements:**
-
-```typescript
-// supabase/functions/daily-reports/index.ts
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-
-serve(async req => {
-    const url = new URL(req.url);
-    const task = url.searchParams.get('task');
-
-    switch (task) {
-        case 'revenue_report':
-            await generateRevenueReport();
-            break;
-        case 'erca_submission':
-            await submitErcaReport();
-            break;
-        default:
-            return new Response('Invalid task', { status: 400 });
-    }
-
-    return new Response('Task completed');
-});
-```
-
-**Files to Modify:**
-
-- `supabase/functions/daily-reports/index.ts` - New file
-- `supabase/functions/erca-submission/index.ts` - New file
-- `supabase/functions/data-cleanup/index.ts` - New file
+| ID       | Pri | Task                                 | Status     |
+| -------- | --- | ------------------------------------ | ---------- |
+| BKND-024 | P0  | Terraform remote state (S3+DynamoDB) | 🔴 Pending |
+| BKND-025 | P0  | Terraform import existing resources  | 🔴 Pending |
+| BKND-026 | P1  | Apollo Router telemetry (OTLP)       | 🔴 Pending |
+| BKND-027 | P1  | Real pool health check + RPC         | ✅ DONE    |
+| BKND-028 | P1  | k6 load tests in CI                  | ✅ DONE    |
+| BKND-029 | P1  | Supabase project alerts              | 🔴 Pending |
+| BKND-030 | P2  | Evaluate Edge Functions              | 🔴 Pending |
+| BKND-031 | P2  | Public status page                   | 🔴 Pending |
 
 ---
 
-## 🟡 Medium Priority Tasks
+## Epic 5: Security Hardening
 
-#### Task 3.1: Document API Versioning Strategy
+**Status:** Rate limiting active. security.txt live. Audit retention done. RLS pending.
 
-**Estimated Effort:** 3 days  
-**Assigned To:** [Backend Engineer]  
-**Status:** Not Started  
-**Dependencies:** None
-
-**Description:**  
-Document API versioning strategy, deprecation policy, and create OpenAPI specification.
-
----
-
-#### Task 3.2: Implement RLS Monitoring Dashboard
-
-**Estimated Effort:** 4 days  
-**Assigned To:** [Database Engineer]  
-**Status:** Not Started  
-**Dependencies:** Task 1.3
-
-**Description:**  
-Create monitoring dashboard for RLS policy health and violations.
+| ID       | Pri | Task                              | Status     |
+| -------- | --- | --------------------------------- | ---------- |
+| BKND-032 | P0  | Post-squash RLS audit             | 🔴 Pending |
+| BKND-033 | P0  | Global rate limiting              | ✅ DONE    |
+| BKND-034 | P1  | /.well-known/security.txt         | ✅ DONE    |
+| BKND-035 | P1  | Audit log retention (TimescaleDB) | ✅ DONE    |
+| BKND-036 | P2  | Full Security Advisor scan        | 🔴 Pending |
 
 ---
 
-#### Task 3.3: Implement Migration Testing Pipeline
+## Epic 6: Event System Reliability
 
-**Estimated Effort:** 5 days  
-**Assigned To:** [DevOps Engineer]  
-**Status:** Not Started  
-**Dependencies:** Task 1.3
+**Status:** Fully operational. DLQ + retry + validation + replay.
 
-**Description:**  
-Create automated pipeline for testing migrations before production deployment.
-
----
-
-#### Task 3.4: Implement Dead Letter Queue
-
-**Estimated Effort:** 3 days  
-**Assigned To:** [Backend Engineer]  
-**Status:** Not Started  
-**Dependencies:** Task 2.1
-
-**Description:**  
-Create dead letter queue table and handling for failed background jobs.
+| ID       | Pri | Task                              | Status  |
+| -------- | --- | --------------------------------- | ------- |
+| BKND-037 | P0  | Dead-letter queue (failed_events) | ✅ DONE |
+| BKND-038 | P0  | Exponential backoff retry         | ✅ DONE |
+| BKND-039 | P1  | Zod event schema validation       | ✅ DONE |
+| BKND-040 | P1  | Event replay tool                 | ✅ DONE |
 
 ---
 
-## 📊 Task Dependencies
+## Epic 7: CI/CD & Quality Gates
 
-```
-Task 1.1 (Apollo Router) ──┬── Task 1.2 (Edge Functions) ──┬── Task 2.1 (Background Jobs)
-                           │                               ├── Task 2.3 (Scheduled Tasks)
-                           │                               └── Task 3.4 (Dead Letter Queue)
-                           │
-Task 1.3 (Migrations) ─────┼── Task 3.2 (RLS Monitoring)
-                           │
-                           └── Task 3.3 (Migration Testing)
-```
+**Status:** 7 active checks. Bundle gating + rollback pending.
 
----
-
-## 📅 Implementation Timeline
-
-### Week 1-3: Critical Infrastructure
-
-- Days 1-5: Task 1.1 (Apollo Router)
-- Days 6-12: Task 1.2 (Edge Functions)
-- Days 13-20: Task 1.3 (Migrations)
-
-### Week 4-5: High Priority
-
-- Days 21-25: Task 2.1 (Background Jobs)
-- Days 26-28: Task 2.3 (Scheduled Tasks)
-
-### Week 6: Medium Priority
-
-- Days 29-31: Task 3.1 (API Docs)
-- Days 32-35: Task 3.2 (RLS Monitoring)
-
-### Week 7-8: Medium Priority
-
-- Days 36-39: Task 3.3 (Testing Pipeline)
-- Days 40-42: Task 3.4 (Dead Letter Queue)
-
-### Week 9-10: Polish
-
-- Days 43-45: Documentation updates
-- Days 46-50: Final testing and verification
+| ID       | Pri | Task                           | Status     |
+| -------- | --- | ------------------------------ | ---------- |
+| BKND-041 | P0  | API integration tests (orders) | ✅ DONE    |
+| BKND-042 | P1  | SQL lint in CI                 | ✅ DONE    |
+| BKND-043 | P1  | Bundle analysis gating         | 🔴 Pending |
+| BKND-044 | P2  | Rollback testing in staging    | 🔴 Pending |
 
 ---
 
-## 📈 Success Metrics
+## Remaining Tasks: 19 total
 
-### Infrastructure Metrics
+| Priority | Count | Tasks                                                           |
+| -------- | ----- | --------------------------------------------------------------- |
+| **P0**   | 5     | BKND-001, 002, 017, 024, 025, 032                               |
+| **P1**   | 1     | BKND-015                                                        |
+| **P2**   | 13    | BKND-009, 014, 016, 022, 023, 026, 029, 030, 031, 036, 043, 044 |
 
-- [ ] GraphQL federation operational
-- [ ] Edge Functions deployed and monitored
-- [ ] Background job success rate > 99%
-- [ ] Migration count reduced by 30%
+### P0 Remaining
 
-### Security Metrics
+| ID       | Task                           | Effort | Depends On     |
+| -------- | ------------------------------ | ------ | -------------- |
+| BKND-001 | Deploy Apollo Router           | 3d     | Dockerfile     |
+| BKND-002 | Verify subgraphs behind Router | 2d     | BKND-001       |
+| BKND-017 | Migration squash (150→1)       | 3d     | All migrations |
+| BKND-024 | Terraform remote state         | 2d     | AWS access     |
+| BKND-025 | Terraform import resources     | 3d     | BKND-024       |
+| BKND-032 | Post-squash RLS audit          | 2d     | BKND-017       |
 
-- [ ] RLS policy audit complete
-- [ ] Webhook verification active (already implemented)
-- [ ] Security advisor findings addressed
-- [ ] Audit compliance achieved
+### P1 Remaining
 
-### Performance Metrics
+| ID       | Task                  | Effort |
+| -------- | --------------------- | ------ |
+| BKND-015 | Contract tests (Pact) | 3d     |
 
-- [ ] Edge Function cold start < 50ms
-- [ ] Background job processing SLA met
-- [ ] API response time improvement
-- [ ] Error rate < 0.1%
+### P2 Remaining
 
----
-
-## 🔄 Task Status Tracking
-
-| Task ID | Title             | Assignee | Status      | Progress | Due Date   |
-| ------- | ----------------- | -------- | ----------- | -------- | ---------- |
-| 1.1     | Apollo Router     |          | Not Started | 0%       | 2026-05-12 |
-| 1.2     | Edge Functions    |          | Not Started | 0%       | 2026-05-18 |
-| 1.3     | Migrations        |          | Not Started | 0%       | 2026-05-25 |
-| 2.1     | Background Jobs   |          | Not Started | 0%       | 2026-05-28 |
-| 2.3     | Scheduled Tasks   |          | Not Started | 0%       | 2026-06-01 |
-| 3.1     | API Docs          |          | Not Started | 0%       | 2026-06-03 |
-| 3.2     | RLS Monitoring    |          | Not Started | 0%       | 2026-06-05 |
-| 3.3     | Testing Pipeline  |          | Not Started | 0%       | 2026-06-08 |
-| 3.4     | Dead Letter Queue |          | Not Started | 0%       | 2026-06-10 |
+BKND-009, 014, 016, 022, 023, 026, 029, 030, 031, 036, 043, 044
 
 ---
 
-**Document Owner:** Platform Engineering Team  
-**Last Updated:** 2026-05-02  
-**Next Review:** 2026-05-09
+## Current State: 28/47 done (92% readiness). 19 remaining (5 P0, 1 P1, 13 P2).
