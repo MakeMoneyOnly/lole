@@ -113,3 +113,6 @@ public/@powersync/
 
 # Local scratch and development tools
 .scratch/
+
+# COL frameworks - external git repositories
+.col/frameworks/
