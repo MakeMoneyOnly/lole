@@ -12,11 +12,16 @@ export {
     etbToSantim,
     santimToEtb,
     generateInvoiceNumber,
+    asTaxInclusiveSantim,
+    asNetSantim,
     VAT_RATE,
     VAT_EXTRACTION_RATE,
     SANTIM_PER_ETB,
     MAX_RETRY_ATTEMPTS,
     RETENTION_YEARS,
+    WITHHOLDING_TAX_RATE,
+    type TaxInclusiveSantim,
+    type NetSantim,
     type ERCAInvoicePayload,
     type ERCALineItem,
     type ERCASubmissionResult,
@@ -57,3 +62,15 @@ export {
     type FiscalQueueMode,
     type FiscalJobStatus,
 } from './offline-queue';
+
+// React hook for fiscal replay on network reconnect
+export { useFiscalReplay } from './useFiscalReplay';
+
+// Ethiopian tax identifier validation
+export {
+    validateTIN,
+    validateVATNumber,
+    validateTINDetailed,
+    validateVATNumberDetailed,
+    type TINValidationError,
+} from './validation';

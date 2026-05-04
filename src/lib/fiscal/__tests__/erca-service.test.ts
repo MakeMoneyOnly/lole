@@ -15,6 +15,8 @@ import {
     generateInvoiceNumber,
     ERCAService,
     getERCAService,
+    asTaxInclusiveSantim,
+    asNetSantim,
 } from '../erca-service';
 import type { ERCAOrderData } from '../erca-service';
 
@@ -37,6 +39,7 @@ const createMockSupabaseClient = () => {
     const mockQuery = {
         select: vi.fn(() => mockQuery),
         insert: vi.fn(() => mockQuery),
+        upsert: vi.fn(() => mockQuery),
         update: vi.fn(() => mockQuery),
         delete: vi.fn(() => mockQuery),
         eq: vi.fn(() => mockQuery),
@@ -62,6 +65,7 @@ vi.mock('@supabase/supabase-js', () => ({
         const mockQuery = {
             select: vi.fn(() => mockQuery),
             insert: vi.fn(() => mockQuery),
+            upsert: vi.fn(() => mockQuery),
             update: vi.fn(() => mockQuery),
             delete: vi.fn(() => mockQuery),
             eq: vi.fn(() => mockQuery),
@@ -107,6 +111,18 @@ describe('extractVAT', () => {
 
         expect(result.vatPortionSantim).toBe(1500);
         expect(result.netPriceSantim).toBe(10000);
+    });
+
+    it('should extract correct VAT from 100 ETB item (regression: NOT 1500 santim)', () => {
+        // 100 ETB (10000 santim) tax-inclusive
+        // Correct: VAT = 10000 × 15/115 = 1304 santim (rounded)
+        // INCORRECT would be 1500 santim (15% of 100 ETB added on top)
+        const result = extractVAT(10000);
+
+        expect(result.vatPortionSantim).toBe(1304);
+        expect(result.netPriceSantim).toBe(8696);
+        // Sanity: net + vat must equal original
+        expect(result.netPriceSantim + result.vatPortionSantim).toBe(10000);
     });
 
     it('should handle zero price', () => {
@@ -385,7 +401,7 @@ describe('ERCAService', () => {
     describe('isERCAEnabled', () => {
         it('should return true when restaurant has VAT number', async () => {
             const mockSingle = vi.fn().mockResolvedValue({
-                data: { vat_number: 'ET123456789' },
+                data: { vat_number: 'VAT-ET-0012345678', erca_enabled: true },
                 error: null,
             });
 
@@ -755,8 +771,9 @@ describe('ERCAService', () => {
                 restaurant_id: 'rest-123',
                 restaurant: {
                     id: 'rest-123',
-                    tin_number: 'ET123456789',
-                    vat_number: 'ET123456789', // Required for VAT submission
+                    tin_number: '0012345678',
+                    vat_number: 'VAT-ET-0012345678', // Required for VAT submission
+                    erca_enabled: true,
                     name: 'Test Restaurant',
                 },
                 guest: null,
@@ -780,7 +797,7 @@ describe('ERCAService', () => {
                 .mockResolvedValueOnce({ data: mockOrderData, error: null })
                 .mockResolvedValueOnce({ data: null, error: null }); // For existing submission check
 
-            const mockInsert = vi.fn().mockResolvedValue({
+            const mockUpsert = vi.fn().mockResolvedValue({
                 data: { id: 'submission-1' },
                 error: null,
             });
@@ -789,7 +806,7 @@ describe('ERCAService', () => {
             vi.mocked(supabaseClient.from).mockReturnValue({
                 select: vi.fn().mockReturnThis(),
                 eq: vi.fn().mockReturnThis(),
-                insert: mockInsert,
+                upsert: mockUpsert,
                 single: mockSingle,
             } as unknown as ReturnType<typeof supabaseClient.from>);
 
@@ -817,8 +834,9 @@ describe('ERCAService', () => {
                 restaurant_id: 'rest-123',
                 restaurant: {
                     id: 'rest-123',
-                    tin_number: 'ET123456789',
-                    vat_number: 'ET123456789', // Required for VAT submission
+                    tin_number: '0012345678',
+                    vat_number: 'VAT-ET-0012345678', // Required for VAT submission
+                    erca_enabled: true,
                     name: 'Test Restaurant',
                 },
                 guest: { tin_number: 'ET987654321' },
@@ -862,21 +880,16 @@ describe('ERCAService', () => {
             expect(mockFetch).toHaveBeenCalled();
         });
 
-        it('should handle ERCA API error response', async () => {
-            mockFetch.mockResolvedValueOnce({
-                ok: false,
-                status: 400,
-                text: async () => 'Bad Request - Invalid TIN',
-            });
-
+        it('should reject invalid TIN format before API call', async () => {
             const mockOrderData = {
                 id: 'order-123',
                 order_number: 'ORD-001',
                 restaurant_id: 'rest-123',
                 restaurant: {
                     id: 'rest-123',
-                    tin_number: 'INVALID',
-                    vat_number: 'ET123456789', // Required for VAT submission
+                    tin_number: 'BADTIN',
+                    vat_number: 'VAT-ET-0012345678',
+                    erca_enabled: true,
                     name: 'Test Restaurant',
                 },
                 guest: null,
@@ -898,24 +911,16 @@ describe('ERCAService', () => {
             const mockSingle = vi
                 .fn()
                 .mockResolvedValueOnce({ data: mockOrderData, error: null })
-                .mockResolvedValueOnce({ data: null, error: null }); // For existing submission check
-
-            const mockInsert = vi.fn().mockResolvedValue({
-                data: { id: 'submission-1' },
-                error: null,
-            });
+                .mockResolvedValueOnce({ data: null, error: null });
 
             const supabaseClient = service['supabase'];
             vi.mocked(supabaseClient.from).mockReturnValue({
                 select: vi.fn().mockReturnThis(),
                 eq: vi.fn().mockReturnThis(),
-                insert: mockInsert,
                 single: mockSingle,
             } as unknown as ReturnType<typeof supabaseClient.from>);
 
-            await expect(service.submitInvoice('order-123')).rejects.toThrow();
-            // Verify failed submission was recorded
-            expect(mockInsert).toHaveBeenCalled();
+            await expect(service.submitInvoice('order-123')).rejects.toThrow('Invalid TIN');
         });
 
         it('should handle network error during API call', async () => {
@@ -927,8 +932,9 @@ describe('ERCAService', () => {
                 restaurant_id: 'rest-123',
                 restaurant: {
                     id: 'rest-123',
-                    tin_number: 'ET123456789',
-                    vat_number: 'ET123456789', // Required for VAT submission
+                    tin_number: '0012345678',
+                    vat_number: 'VAT-ET-0012345678', // Required for VAT submission
+                    erca_enabled: true,
                     name: 'Test Restaurant',
                 },
                 guest: null,
@@ -971,30 +977,42 @@ describe('ERCAService', () => {
 
     describe('retrySubmission', () => {
         it('should retry a failed submission successfully', async () => {
-            const mockSubmission = {
-                id: 'sub-123',
-                order_id: 'order-123',
-                restaurant_id: 'rest-123',
-                invoice_number: 'INV-001',
-                status: 'failed',
-                error_message: 'Previous error',
-            };
+            const stubService = new ERCAService({
+                apiUrl: '',
+                apiKey: '',
+                sandboxMode: true,
+            });
 
-            const mockSingle = vi
+            const stubSingle = vi
                 .fn()
+                // First call: fetch submission to retry
                 .mockResolvedValueOnce({
-                    data: mockSubmission,
+                    data: {
+                        id: 'sub-123',
+                        order_id: 'order-123',
+                        retry_count: 0,
+                    },
                     error: null,
                 })
+                // Second call: fetch order data in submitInvoice
                 .mockResolvedValueOnce({
                     data: {
                         id: 'order-123',
                         order_number: 'ORD-001',
                         restaurant_id: 'rest-123',
-                        restaurant: { tin_number: 'ET123456789', name: 'Test' },
+                        restaurant: {
+                            tin_number: '0012345678',
+                            vat_number: 'VAT-ET-0012345678',
+                            name: 'Test',
+                        },
                         guest: null,
                         order_items: [],
                     },
+                    error: null,
+                })
+                // Third call: check for existing submission in submitInvoice
+                .mockResolvedValueOnce({
+                    data: null,
                     error: null,
                 });
 
@@ -1003,29 +1021,13 @@ describe('ERCAService', () => {
                 error: null,
             });
 
-            const supabaseClient = service['supabase'];
-            vi.mocked(supabaseClient.from).mockReturnValue({
-                select: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockReturnThis(),
-                update: vi.fn().mockReturnThis(),
-                insert: mockInsert,
-                single: mockSingle,
-            } as unknown as ReturnType<typeof supabaseClient.from>);
-
-            // Use stub service to avoid actual API call
-            const stubService = new ERCAService({
-                apiUrl: '',
-                apiKey: '',
-                sandboxMode: true,
-            });
-
             const stubClient = stubService['supabase'];
             vi.mocked(stubClient.from).mockReturnValue({
                 select: vi.fn().mockReturnThis(),
                 eq: vi.fn().mockReturnThis(),
                 update: vi.fn().mockReturnThis(),
                 insert: mockInsert,
-                single: mockSingle,
+                single: stubSingle,
             } as unknown as ReturnType<typeof stubClient.from>);
 
             const result = await stubService.retrySubmission('sub-123');

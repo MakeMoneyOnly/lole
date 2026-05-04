@@ -1,0 +1,116 @@
+name: RLS Audit
+
+on:
+    pull_request:
+        paths:
+            - 'supabase/migrations/**'
+    push:
+        branches: [main, develop]
+        paths:
+            - 'supabase/migrations/**'
+
+jobs:
+    rls-coverage:
+        name: RLS Coverage Audit
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions:
+            contents: read
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Check RLS coverage in migration files
+              run: |
+                  echo "=== RLS Coverage Audit ==="
+                  echo "Checking all migration files for tables without RLS..."
+
+                  MISSING_RLS=()
+
+                  # Parse all migration files for CREATE TABLE and check for
+                  # corresponding ALTER TABLE ... ENABLE ROW LEVEL SECURITY
+                  for file in supabase/migrations/*.sql; do
+                    if [ ! -f "$file" ]; then continue; fi
+
+                    # Read the entire file content
+                    content=$(cat "$file")
+
+                    # Find all CREATE TABLE statements
+                    create_tables=$(echo "$content" | grep -oiP 'CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(\w+\.)?(\w+)' | sed 's/.*TABLE\s*\(IF NOT EXISTS\s*\)\?\([a-zA-Z_.]*\)\?\([a-zA-Z_][a-zA-Z0-9_]*\).*/\3/i' | sort -u)
+
+                    for table in $create_tables; do
+                      # Skip PostgreSQL internal/system tables
+                      case "$table" in
+                        pg_*|sql_*|information_schema|_*)
+                          continue
+                          ;;
+                      esac
+
+                      # Convert to lowercase for comparison
+                      table_lower=$(echo "$table" | tr '[:upper:]' '[:lower:]')
+
+                      # Check if ENABLE ROW LEVEL SECURITY exists for this table
+                      if ! echo "$content" | grep -qiP "ALTER\s+TABLE\s+(?:ONLY\s+)?(?:\w+\.)?${table_lower}\s+ENABLE\s+ROW\s+LEVEL\s+SECURITY"; then
+                        # Also check for the table-specific RLS enable pattern
+                        if ! echo "$content" | grep -qiP "ENABLE\s+ROW\s+LEVEL\s+SECURITY.*${table_lower}" && \
+                           ! echo "$content" | grep -qiP "${table_lower}.*ENABLE\s+ROW\s+LEVEL\s+SECURITY"; then
+                          MISSING_RLS+=("$file: $table")
+                        fi
+                      fi
+                    done
+                  done
+
+                  if [ ${#MISSING_RLS[@]} -gt 0 ]; then
+                    echo ""
+                    echo "========================================"
+                    echo "TABLES WITHOUT RLS:"
+                    for entry in "${MISSING_RLS[@]}"; do
+                      echo "  - $entry"
+                    done
+                    echo "========================================"
+                    echo "::error::${#MISSING_RLS[@]} table(s) found without ROW LEVEL SECURITY"
+                    echo "Each table must have: ALTER TABLE <table> ENABLE ROW LEVEL SECURITY"
+                    exit 1
+                  fi
+
+                  echo "All migration tables have RLS enabled."
+                  echo "RLS audit passed."
+
+    view-security:
+        name: View Security Invoker Audit
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions:
+            contents: read
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Check views use security_invoker
+              run: |
+                  echo "=== View Security Invoker Audit ==="
+
+                  VIOLATIONS=()
+
+                  for file in supabase/migrations/*.sql; do
+                    if [ ! -f "$file" ]; then continue; fi
+
+                    content=$(cat "$file")
+
+                    # Find CREATE VIEW statements that don't have security_invoker
+                    views_without_security=$(echo "$content" | grep -oiP 'CREATE\s+(?:OR\s+REPLACE\s+)?VIEW\s+\w+(\s*\([^)]*\))?\s*(?:WITH\s*\([^)]*\))?\s*AS' | grep -vi 'security_invoker')
+
+                    if [ -n "$views_without_security" ]; then
+                      VIOLATIONS+=("$file: view without security_invoker")
+                    fi
+                  done
+
+                  if [ ${#VIOLATIONS[@]} -gt 0 ]; then
+                    echo "========================================"
+                    echo "WARNING: Views without security_invoker found:"
+                    for entry in "${VIOLATIONS[@]}"; do
+                      echo "  - $entry"
+                    done
+                    echo "========================================"
+                    echo "::warning::${#VIOLATIONS[@]} view(s) without security_invoker"
+                  fi
+
+                  echo "View security audit complete."
