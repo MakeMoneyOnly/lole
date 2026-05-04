@@ -1,4 +1,77 @@
 import { randomUUID } from 'crypto';
+import { z } from 'zod';
+
+// =========================================================
+// Zod Event Schemas (BKND-039)
+// =========================================================
+
+const uuidPattern = z
+    .string()
+    .regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+
+const PaymentLifecycleEventPayloadSchema = z.object({
+    restaurant_id: uuidPattern,
+    order_id: uuidPattern.nullable(),
+    payment_id: uuidPattern.nullable(),
+    payment_session_id: uuidPattern.nullable().optional(),
+    provider: z.literal('chapa'),
+    provider_transaction_id: z.string().min(1),
+    idempotency_key: z.string().min(1),
+    status: z.enum(['completed', 'failed']),
+    amount: z.number().nullable(),
+    currency: z.string().nullable(),
+    metadata: z.object({}).passthrough(),
+    raw_payload: z.object({}).passthrough(),
+});
+
+const NotificationQueuedPayloadSchema = z.object({
+    notification_id: uuidPattern,
+    restaurant_id: uuidPattern,
+    guest_phone: z.string().min(1),
+    notification_type: z.string().min(1),
+    channel: z.enum(['sms', 'push', 'email']),
+    priority: z.number().int(),
+    message_en: z.string().optional(),
+    message_am: z.string().optional(),
+    idempotency_key: z.string().min(1),
+});
+
+const GenericPayloadSchema = z
+    .object({
+        restaurant_id: z.string().optional(),
+        order_id: z.string().optional(),
+    })
+    .passthrough();
+
+/**
+ * BKND-039: Validates an event payload against its expected schema.
+ * Returns true if valid, false otherwise.
+ */
+export function validateEventSchema(event: loleEvent): boolean {
+    try {
+        switch (event.name) {
+            case 'payment.completed':
+            case 'payment.failed':
+                PaymentLifecycleEventPayloadSchema.parse(event.payload);
+                return true;
+            case 'notification.queued':
+                NotificationQueuedPayloadSchema.parse(event.payload);
+                return true;
+            case 'notification.sent':
+            case 'notification.failed':
+            case 'notification.retry_scheduled':
+                // Reuse queued schema fields (subset valid)
+                GenericPayloadSchema.parse(event.payload);
+                return true;
+            default:
+                // Generic validation for undocumented event types
+                GenericPayloadSchema.parse(event.payload);
+                return true;
+        }
+    } catch {
+        return false;
+    }
+}
 
 // =========================================================
 // Notification Event Types
