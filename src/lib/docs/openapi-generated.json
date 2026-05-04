@@ -1,0 +1,2975 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "lole Restaurant OS API",
+        "version": "1.0.0",
+        "description": "Enterprise-grade restaurant operating system API for Ethiopia (\"Toast for Addis Ababa\").\n\n## Authentication\n- **Bearer Token**: JWT from Supabase Auth (`Authorization: Bearer <token>`)\n- **Device Token**: Terminal/kiosk devices (`X-Device-Token`)\n- **Guest Context**: HMAC-signed QR codes for guest ordering\n\n## Currency\nAll monetary values in santim (1 ETB = 100 santim).\n\n## Idempotency\nMutating endpoints accept `X-Idempotency-Key` header.\n"
+    },
+    "servers": [
+        {
+            "url": "/api",
+            "description": "lole API"
+        }
+    ],
+    "paths": {
+        "/health": {
+            "get": {
+                "summary": "Health check",
+                "operationId": "healthCheck",
+                "tags": ["Health"],
+                "responses": {
+                    "200": {
+                        "description": "API is healthy",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "timestamp": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/orders": {
+            "get": {
+                "summary": "List orders",
+                "operationId": "listOrders",
+                "tags": ["Orders"],
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Filter by status"
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Search by table number, order number, or customer name"
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 50,
+                            "maximum": 200
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 0
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Orders list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "orders": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/Order"
+                                                    }
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "object",
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string"
+                                                },
+                                                "message": {
+                                                    "type": "string"
+                                                },
+                                                "requestId": {
+                                                    "type": "string",
+                                                    "format": "uuid"
+                                                },
+                                                "details": {}
+                                            },
+                                            "required": ["code", "message", "requestId"]
+                                        }
+                                    },
+                                    "required": ["error"]
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "summary": "Create order (guest-facing)",
+                "operationId": "createOrder",
+                "tags": ["Orders"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateOrderRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Order created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Order"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "object",
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string"
+                                                },
+                                                "message": {
+                                                    "type": "string"
+                                                },
+                                                "requestId": {
+                                                    "type": "string",
+                                                    "format": "uuid"
+                                                },
+                                                "details": {}
+                                            },
+                                            "required": ["code", "message", "requestId"]
+                                        }
+                                    },
+                                    "required": ["error"]
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Rate limited",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "object",
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string"
+                                                },
+                                                "message": {
+                                                    "type": "string"
+                                                },
+                                                "requestId": {
+                                                    "type": "string",
+                                                    "format": "uuid"
+                                                },
+                                                "details": {}
+                                            },
+                                            "required": ["code", "message", "requestId"]
+                                        }
+                                    },
+                                    "required": ["error"]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{orderId}/status": {
+            "patch": {
+                "summary": "Update order status",
+                "operationId": "updateOrderStatus",
+                "tags": ["Orders"],
+                "parameters": [
+                    {
+                        "name": "orderId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "UUID v4 identifier"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateOrderStatus"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Status updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Order"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid status transition",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "object",
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string"
+                                                },
+                                                "message": {
+                                                    "type": "string"
+                                                },
+                                                "requestId": {
+                                                    "type": "string",
+                                                    "format": "uuid"
+                                                },
+                                                "details": {}
+                                            },
+                                            "required": ["code", "message", "requestId"]
+                                        }
+                                    },
+                                    "required": ["error"]
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/orders/{orderId}/split": {
+            "post": {
+                "summary": "Split order",
+                "operationId": "splitOrder",
+                "tags": ["Orders"],
+                "parameters": [
+                    {
+                        "name": "orderId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "UUID v4 identifier"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SplitOrderRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Order split",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "source": {
+                                            "$ref": "#/components/schemas/Order"
+                                        },
+                                        "target": {
+                                            "$ref": "#/components/schemas/Order"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/payments/initiate": {
+            "post": {
+                "summary": "Initiate payment",
+                "operationId": "initiatePayment",
+                "tags": ["Payments"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InitiatePaymentRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Payment initiated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "paymentId": {
+                                                    "type": "string",
+                                                    "format": "uuid",
+                                                    "description": "UUID v4 identifier"
+                                                },
+                                                "checkoutUrl": {
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                },
+                                                "status": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "object",
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string"
+                                                },
+                                                "message": {
+                                                    "type": "string"
+                                                },
+                                                "requestId": {
+                                                    "type": "string",
+                                                    "format": "uuid"
+                                                },
+                                                "details": {}
+                                            },
+                                            "required": ["code", "message", "requestId"]
+                                        }
+                                    },
+                                    "required": ["error"]
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/payments/sessions": {
+            "post": {
+                "summary": "Create payment session (guest QR)",
+                "operationId": "createPaymentSession",
+                "tags": ["Payments"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "guestContext": {
+                                        "type": "object"
+                                    },
+                                    "items": {
+                                        "type": "array"
+                                    },
+                                    "totalPrice": {
+                                        "type": "integer"
+                                    },
+                                    "orderType": {
+                                        "type": "string"
+                                    },
+                                    "paymentChoice": {
+                                        "type": "string",
+                                        "enum": ["pay_now", "pay_later"]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Session created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaymentSession"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/menu": {
+            "get": {
+                "summary": "List menu items",
+                "operationId": "listMenuItems",
+                "tags": ["Menu"],
+                "parameters": [
+                    {
+                        "name": "restaurantId",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "UUID v4 identifier"
+                        }
+                    },
+                    {
+                        "name": "categoryId",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "UUID v4 identifier"
+                        }
+                    },
+                    {
+                        "name": "availableOnly",
+                        "in": "query",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Menu items",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/MenuItem"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Create menu item",
+                "operationId": "createMenuItem",
+                "tags": ["Menu"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateMenuItemRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Item created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MenuItem"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/staff": {
+            "post": {
+                "summary": "Create staff member",
+                "operationId": "createStaff",
+                "tags": ["Staff"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateStaffRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Staff created"
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "object",
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string"
+                                                },
+                                                "message": {
+                                                    "type": "string"
+                                                },
+                                                "requestId": {
+                                                    "type": "string",
+                                                    "format": "uuid"
+                                                },
+                                                "details": {}
+                                            },
+                                            "required": ["code", "message", "requestId"]
+                                        }
+                                    },
+                                    "required": ["error"]
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/guests": {
+            "get": {
+                "summary": "List guests",
+                "operationId": "listGuests",
+                "tags": ["Guests"],
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 50
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Guest list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/table-sessions": {
+            "post": {
+                "summary": "Open table session",
+                "operationId": "openTableSession",
+                "tags": ["Tables"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateTableSessionRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Session opened"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/webhooks/chapa": {
+            "post": {
+                "summary": "Chapa payment webhook",
+                "operationId": "chapaWebhook",
+                "tags": ["Webhooks"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Webhook processed"
+                    },
+                    "401": {
+                        "description": "Invalid signature",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "object",
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string"
+                                                },
+                                                "message": {
+                                                    "type": "string"
+                                                },
+                                                "requestId": {
+                                                    "type": "string",
+                                                    "format": "uuid"
+                                                },
+                                                "details": {}
+                                            },
+                                            "required": ["code", "message", "requestId"]
+                                        }
+                                    },
+                                    "required": ["error"]
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "webhookSignature": []
+                    }
+                ]
+            }
+        },
+        "/webhooks/telebirr": {
+            "post": {
+                "summary": "Telebirr payment webhook",
+                "operationId": "telebirrWebhook",
+                "tags": ["Webhooks"],
+                "responses": {
+                    "200": {
+                        "description": "Webhook processed"
+                    },
+                    "401": {
+                        "description": "Invalid signature",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "object",
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string"
+                                                },
+                                                "message": {
+                                                    "type": "string"
+                                                },
+                                                "requestId": {
+                                                    "type": "string",
+                                                    "format": "uuid"
+                                                },
+                                                "details": {}
+                                            },
+                                            "required": ["code", "message", "requestId"]
+                                        }
+                                    },
+                                    "required": ["error"]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/webhooks/delivery": {
+            "post": {
+                "summary": "Delivery partner webhook",
+                "operationId": "deliveryWebhook",
+                "tags": ["Webhooks"],
+                "responses": {
+                    "200": {
+                        "description": "Webhook processed"
+                    }
+                }
+            }
+        },
+        "/webhooks/guest-order-status": {
+            "post": {
+                "summary": "Guest order status webhook",
+                "operationId": "guestOrderStatusWebhook",
+                "tags": ["Webhooks"],
+                "responses": {
+                    "200": {
+                        "description": "Status updated"
+                    }
+                }
+            }
+        },
+        "/kds/telemetry": {
+            "get": {
+                "summary": "KDS telemetry",
+                "operationId": "kdsTelemetry",
+                "tags": ["KDS"],
+                "responses": {
+                    "200": {
+                        "description": "Telemetry data"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "summary": "KDS heartbeat",
+                "operationId": "kdsHeartbeat",
+                "tags": ["KDS"],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Heartbeat recorded"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/kds/queue": {
+            "get": {
+                "summary": "KDS order queue",
+                "operationId": "kdsQueue",
+                "tags": ["KDS"],
+                "responses": {
+                    "200": {
+                        "description": "Queue items"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/kds/items/{kdsItemId}/action": {
+            "post": {
+                "summary": "KDS item action",
+                "operationId": "kdsItemAction",
+                "tags": ["KDS"],
+                "parameters": [
+                    {
+                        "name": "kdsItemId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "UUID v4 identifier"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/KdsAction"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Action applied"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tables": {
+            "get": {
+                "summary": "List tables",
+                "operationId": "listTables",
+                "tags": ["Tables"],
+                "responses": {
+                    "200": {
+                        "description": "Table list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "summary": "Create table",
+                "operationId": "createTable",
+                "tags": ["Tables"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "restaurantId": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "description": "UUID v4 identifier"
+                                    },
+                                    "tableNumber": {
+                                        "type": "string"
+                                    },
+                                    "capacity": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": ["restaurantId", "tableNumber"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Table created"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tables/{tableId}": {
+            "patch": {
+                "summary": "Update table",
+                "operationId": "updateTable",
+                "tags": ["Tables"],
+                "parameters": [
+                    {
+                        "name": "tableId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "UUID v4 identifier"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Table updated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/table-sessions/{sessionId}/transfer": {
+            "post": {
+                "summary": "Transfer table session",
+                "operationId": "transferTableSession",
+                "tags": ["Tables"],
+                "parameters": [
+                    {
+                        "name": "sessionId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "UUID v4 identifier"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "targetTableId": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "description": "UUID v4 identifier"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Session transferred"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/table-sessions/{sessionId}/close": {
+            "post": {
+                "summary": "Close table session",
+                "operationId": "closeTableSession",
+                "tags": ["Tables"],
+                "parameters": [
+                    {
+                        "name": "sessionId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "UUID v4 identifier"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Session closed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/staff/verify-pin": {
+            "post": {
+                "summary": "Verify staff PIN",
+                "operationId": "verifyStaffPin",
+                "tags": ["Staff"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/VerifyPin"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "PIN verified"
+                    },
+                    "401": {
+                        "description": "Invalid PIN"
+                    }
+                }
+            }
+        },
+        "/staff/time-entries/clock": {
+            "post": {
+                "summary": "Clock in/out",
+                "operationId": "clockAction",
+                "tags": ["Staff"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "action": {
+                                        "type": "string",
+                                        "enum": [
+                                            "clock_in",
+                                            "clock_out",
+                                            "break_start",
+                                            "break_end"
+                                        ]
+                                    }
+                                },
+                                "required": ["action"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Clock event recorded"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/staff/schedule": {
+            "get": {
+                "summary": "View schedule",
+                "operationId": "viewSchedule",
+                "tags": ["Staff"],
+                "responses": {
+                    "200": {
+                        "description": "Schedule"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "summary": "Create shift",
+                "operationId": "createShift",
+                "tags": ["Staff"],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Shift created"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/staff/invite": {
+            "post": {
+                "summary": "Invite staff member",
+                "operationId": "inviteStaff",
+                "tags": ["Staff"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateStaffRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Invitation sent"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/staff/add-pin": {
+            "post": {
+                "summary": "Add staff PIN",
+                "operationId": "addStaffPin",
+                "tags": ["Staff"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/VerifyPin"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "PIN set"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/service-requests": {
+            "get": {
+                "summary": "List service requests",
+                "operationId": "listServiceRequests",
+                "tags": ["Service"],
+                "responses": {
+                    "200": {
+                        "description": "Request list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "summary": "Create service request",
+                "operationId": "createServiceRequest",
+                "tags": ["Service"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ServiceRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Request created"
+                    }
+                }
+            }
+        },
+        "/service-requests/{requestId}": {
+            "patch": {
+                "summary": "Update service request",
+                "operationId": "updateServiceRequest",
+                "tags": ["Service"],
+                "parameters": [
+                    {
+                        "name": "requestId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "UUID v4 identifier"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Request updated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/loyalty/programs": {
+            "get": {
+                "summary": "List loyalty programs",
+                "operationId": "listLoyaltyPrograms",
+                "tags": ["Loyalty"],
+                "responses": {
+                    "200": {
+                        "description": "Program list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "summary": "Create loyalty program",
+                "operationId": "createLoyaltyProgram",
+                "tags": ["Loyalty"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoyaltyProgram"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Program created"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/loyalty/programs/{programId}": {
+            "patch": {
+                "summary": "Update loyalty program",
+                "operationId": "updateLoyaltyProgram",
+                "tags": ["Loyalty"],
+                "parameters": [
+                    {
+                        "name": "programId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "UUID v4 identifier"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Program updated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/loyalty/accounts/{accountId}/adjust": {
+            "post": {
+                "summary": "Adjust loyalty points",
+                "operationId": "adjustLoyaltyPoints",
+                "tags": ["Loyalty"],
+                "parameters": [
+                    {
+                        "name": "accountId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "UUID v4 identifier"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "amount": {
+                                        "type": "integer"
+                                    },
+                                    "reason": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["amount"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Points adjusted"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/discounts": {
+            "get": {
+                "summary": "List discounts",
+                "operationId": "listDiscounts",
+                "tags": ["Discounts"],
+                "responses": {
+                    "200": {
+                        "description": "Discount list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "summary": "Create discount",
+                "operationId": "createDiscount",
+                "tags": ["Discounts"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateDiscount"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Discount created"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/happy-hour": {
+            "get": {
+                "summary": "List happy hour pricing",
+                "operationId": "listHappyHour",
+                "tags": ["Menu"],
+                "responses": {
+                    "200": {
+                        "description": "Happy hour list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "summary": "Set happy hour pricing",
+                "operationId": "setHappyHour",
+                "tags": ["Menu"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/HappyHourPricing"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Happy hour set"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tip-pools": {
+            "get": {
+                "summary": "List tip pools",
+                "operationId": "listTipPools",
+                "tags": ["Staff"],
+                "responses": {
+                    "200": {
+                        "description": "Tip pool list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "summary": "Create tip pool",
+                "operationId": "createTipPool",
+                "tags": ["Staff"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TipPool"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Tip pool created"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tip-pools/allocate": {
+            "post": {
+                "summary": "Allocate tips",
+                "operationId": "allocateTips",
+                "tags": ["Staff"],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tips allocated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/device/orders": {
+            "post": {
+                "summary": "Place device order",
+                "operationId": "placeDeviceOrder",
+                "tags": ["Devices"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateOrderRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Order placed"
+                    }
+                },
+                "security": [
+                    {
+                        "deviceToken": []
+                    }
+                ]
+            }
+        },
+        "/device/tables/close": {
+            "post": {
+                "summary": "Close table (device)",
+                "operationId": "deviceCloseTable",
+                "tags": ["Devices"],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "tableId": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "description": "UUID v4 identifier"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Table closed"
+                    }
+                },
+                "security": [
+                    {
+                        "deviceToken": []
+                    }
+                ]
+            }
+        },
+        "/device/tables/bill-request": {
+            "post": {
+                "summary": "Bill request (device)",
+                "operationId": "deviceBillRequest",
+                "tags": ["Devices"],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "tableId": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "description": "UUID v4 identifier"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Bill requested"
+                    }
+                },
+                "security": [
+                    {
+                        "deviceToken": []
+                    }
+                ]
+            }
+        },
+        "/settings/payments": {
+            "get": {
+                "summary": "Get payment settings",
+                "operationId": "getPaymentSettings",
+                "tags": ["Settings"],
+                "responses": {
+                    "200": {
+                        "description": "Payment settings"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "summary": "Update payment settings",
+                "operationId": "updatePaymentSettings",
+                "tags": ["Settings"],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Settings updated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/support/tickets": {
+            "get": {
+                "summary": "List support tickets",
+                "operationId": "listSupportTickets",
+                "tags": ["Support"],
+                "responses": {
+                    "200": {
+                        "description": "Ticket list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "summary": "Create support ticket",
+                "operationId": "createSupportTicket",
+                "tags": ["Support"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SupportTicket"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Ticket created"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/sync": {
+            "get": {
+                "summary": "Pull sync data",
+                "operationId": "syncPull",
+                "tags": ["Sync"],
+                "responses": {
+                    "200": {
+                        "description": "Sync data"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "summary": "Push sync data",
+                "operationId": "syncPush",
+                "tags": ["Sync"],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SyncRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Sync complete"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/delivery/aggregator/orders": {
+            "get": {
+                "summary": "List external orders",
+                "operationId": "listExternalOrders",
+                "tags": ["Delivery"],
+                "responses": {
+                    "200": {
+                        "description": "Order list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "summary": "Accept external order",
+                "operationId": "acceptExternalOrder",
+                "tags": ["Delivery"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ExternalOrder"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Order accepted"
+                    }
+                }
+            }
+        },
+        "/channels/delivery/orders": {
+            "get": {
+                "summary": "Delivery channel orders",
+                "operationId": "deliveryChannelOrders",
+                "tags": ["Delivery"],
+                "responses": {
+                    "200": {
+                        "description": "Channel orders"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/channels/delivery/connect": {
+            "post": {
+                "summary": "Connect delivery partner",
+                "operationId": "connectDeliveryPartner",
+                "tags": ["Delivery"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DeliveryConnect"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Partner connected"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/notifications/push/subscribe": {
+            "post": {
+                "summary": "Subscribe to push notifications",
+                "operationId": "subscribePush",
+                "tags": ["Notifications"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PushSubscription"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Subscribed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "summary": "Unsubscribe from push notifications",
+                "operationId": "unsubscribePush",
+                "tags": ["Notifications"],
+                "responses": {
+                    "200": {
+                        "description": "Unsubscribed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "OrderItem": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "menuItemId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Item name in English"
+                    },
+                    "nameAm": {
+                        "type": "string",
+                        "description": "Item name in Amharic"
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100
+                    },
+                    "unitPrice": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Amount in santim (1 ETB = 100 santim)"
+                    },
+                    "totalPrice": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Amount in santim (1 ETB = 100 santim)"
+                    },
+                    "modifiers": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "modifierId": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "description": "UUID v4 identifier"
+                                },
+                                "optionId": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "description": "UUID v4 identifier"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "priceAdjustment": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    },
+                    "notes": {
+                        "type": "string",
+                        "maxLength": 500
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": ["pending", "preparing", "ready", "served"]
+                    },
+                    "kdsStation": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "menuItemId",
+                    "name",
+                    "quantity",
+                    "unitPrice",
+                    "totalPrice",
+                    "status"
+                ]
+            },
+            "Order": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "restaurantId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "tableId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "orderNumber": {
+                        "type": "string",
+                        "description": "Human-readable order number (e.g. 20260504-0001)"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "confirmed",
+                            "preparing",
+                            "ready",
+                            "served",
+                            "cancelled"
+                        ]
+                    },
+                    "orderType": {
+                        "type": "string",
+                        "enum": ["dine_in", "takeaway", "delivery"]
+                    },
+                    "totalPrice": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Amount in santim (1 ETB = 100 santim)"
+                    },
+                    "discountAmount": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Amount in santim (1 ETB = 100 santim)"
+                    },
+                    "notes": {
+                        "type": "string",
+                        "maxLength": 1000
+                    },
+                    "customerName": {
+                        "type": "string"
+                    },
+                    "customerPhone": {
+                        "type": "string",
+                        "pattern": "^(\\+251|0)?[79]\\d{8}$",
+                        "description": "Ethiopian phone number (normalized to +251 format)"
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OrderItem"
+                        }
+                    },
+                    "idempotencyKey": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "id",
+                    "restaurantId",
+                    "orderNumber",
+                    "status",
+                    "orderType",
+                    "totalPrice",
+                    "createdAt"
+                ]
+            },
+            "CreateOrderRequest": {
+                "type": "object",
+                "properties": {
+                    "restaurantId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "tableId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "orderType": {
+                        "type": "string",
+                        "enum": ["dine_in", "takeaway", "delivery"]
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CreateOrderItem"
+                        },
+                        "minLength": 1
+                    },
+                    "notes": {
+                        "type": "string",
+                        "maxLength": 1000
+                    },
+                    "customerName": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "customerPhone": {
+                        "type": "string",
+                        "pattern": "^(\\+251|0)?[79]\\d{8}$",
+                        "description": "Ethiopian phone number (normalized to +251 format)"
+                    },
+                    "idempotencyKey": {
+                        "type": "string",
+                        "format": "uuid",
+                        "maxLength": 100
+                    }
+                },
+                "required": ["restaurantId", "orderType", "items"]
+            },
+            "CreateOrderItem": {
+                "type": "object",
+                "properties": {
+                    "menuItemId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100
+                    },
+                    "notes": {
+                        "type": "string",
+                        "maxLength": 500
+                    },
+                    "modifiers": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "priceOverride": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Amount in santim (1 ETB = 100 santim)"
+                    }
+                },
+                "required": ["menuItemId", "quantity"]
+            },
+            "UpdateOrderStatus": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "confirmed",
+                            "preparing",
+                            "ready",
+                            "completed",
+                            "cancelled"
+                        ]
+                    },
+                    "reason": {
+                        "type": "string",
+                        "maxLength": 500,
+                        "description": "Required for cancellation"
+                    }
+                },
+                "required": ["status"]
+            },
+            "SplitOrderRequest": {
+                "type": "object",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "minLength": 1,
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "orderItemId": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "description": "UUID v4 identifier"
+                                },
+                                "quantity": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                }
+                            },
+                            "required": ["orderItemId", "quantity"]
+                        }
+                    },
+                    "targetOrderId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    }
+                },
+                "required": ["items"]
+            },
+            "InitiatePaymentRequest": {
+                "type": "object",
+                "properties": {
+                    "orderId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "amount": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Amount in santim (1 ETB = 100 santim)"
+                    },
+                    "currency": {
+                        "type": "string",
+                        "enum": ["ETB", "USD"],
+                        "default": "ETB"
+                    },
+                    "provider": {
+                        "type": "string",
+                        "enum": ["chapa", "telebirr", "cash"]
+                    },
+                    "returnUrl": {
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "webhookUrl": {
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": true
+                    },
+                    "idempotencyKey": {
+                        "type": "string",
+                        "maxLength": 100
+                    }
+                },
+                "required": ["orderId", "amount", "provider"]
+            },
+            "PaymentSession": {
+                "type": "object",
+                "properties": {
+                    "sessionId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "mode": {
+                        "type": "string",
+                        "enum": ["deferred", "hosted_checkout"]
+                    },
+                    "paymentChoice": {
+                        "type": "string",
+                        "enum": ["pay_now", "pay_later"]
+                    },
+                    "provider": {
+                        "type": "string"
+                    },
+                    "checkoutUrl": {
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "paymentId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "transactionReference": {
+                        "type": "string"
+                    }
+                },
+                "required": ["sessionId", "mode", "paymentChoice"]
+            },
+            "MenuItem": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "restaurantId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "categoryId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 200
+                    },
+                    "nameAm": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "description": "Amharic name"
+                    },
+                    "description": {
+                        "type": "string",
+                        "maxLength": 1000
+                    },
+                    "descriptionAm": {
+                        "type": "string",
+                        "maxLength": 1000
+                    },
+                    "price": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Amount in santim (1 ETB = 100 santim)"
+                    },
+                    "costPrice": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Amount in santim (1 ETB = 100 santim)"
+                    },
+                    "imageUrl": {
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "isAvailable": {
+                        "type": "boolean",
+                        "default": true
+                    },
+                    "preparationTimeMinutes": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 180
+                    },
+                    "dietaryTags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "allergens": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "sortOrder": {
+                        "type": "integer",
+                        "minimum": 0
+                    }
+                },
+                "required": ["id", "restaurantId", "name", "price"]
+            },
+            "CreateMenuItemRequest": {
+                "type": "object",
+                "properties": {
+                    "restaurantId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "categoryId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                    },
+                    "nameAm": {
+                        "type": "string",
+                        "maxLength": 200
+                    },
+                    "description": {
+                        "type": "string",
+                        "maxLength": 1000
+                    },
+                    "descriptionAm": {
+                        "type": "string",
+                        "maxLength": 1000
+                    },
+                    "price": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Amount in santim (1 ETB = 100 santim)"
+                    },
+                    "costPrice": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Amount in santim (1 ETB = 100 santim)"
+                    },
+                    "imageUrl": {
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "isAvailable": {
+                        "type": "boolean",
+                        "default": true
+                    },
+                    "preparationTimeMinutes": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 180
+                    },
+                    "dietaryTags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "allergens": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "sortOrder": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "default": 0
+                    }
+                },
+                "required": ["restaurantId", "categoryId", "name", "price"]
+            },
+            "Category": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "restaurantId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "nameAm": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "description": {
+                        "type": "string",
+                        "maxLength": 500
+                    },
+                    "sortOrder": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MenuItem"
+                        }
+                    }
+                },
+                "required": ["id", "restaurantId", "name"]
+            },
+            "CreateStaffRequest": {
+                "type": "object",
+                "properties": {
+                    "restaurantId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                    },
+                    "role": {
+                        "type": "string",
+                        "enum": ["owner", "manager", "staff", "cashier", "kitchen"]
+                    },
+                    "pin": {
+                        "type": "string",
+                        "pattern": "^\\d{4}$",
+                        "maxLength": 4,
+                        "minLength": 4,
+                        "description": "4-digit PIN"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "pattern": "^(\\+251|0)?[79]\\d{8}$",
+                        "description": "Ethiopian phone number (normalized to +251 format)"
+                    }
+                },
+                "required": ["restaurantId", "email", "name", "role"]
+            },
+            "CreateTableSessionRequest": {
+                "type": "object",
+                "properties": {
+                    "restaurantId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "tableId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "guestName": {
+                        "type": "string",
+                        "maxLength": 100
+                    }
+                },
+                "required": ["restaurantId", "tableId"]
+            },
+            "LoyaltyProgram": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "restaurantId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "pointsPerBirr": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "rewardThreshold": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    }
+                },
+                "required": ["id", "restaurantId", "name"]
+            },
+            "KdsAction": {
+                "type": "object",
+                "properties": {
+                    "action": {
+                        "type": "string",
+                        "enum": ["start", "complete", "cancel", "recall"]
+                    },
+                    "stationId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "notes": {
+                        "type": "string",
+                        "maxLength": 500
+                    }
+                },
+                "required": ["action"]
+            },
+            "KdsStation": {
+                "type": "object",
+                "properties": {
+                    "restaurantId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                    },
+                    "printerId": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "categories": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "UUID v4 identifier"
+                        }
+                    },
+                    "isActive": {
+                        "type": "boolean",
+                        "default": true
+                    }
+                },
+                "required": ["restaurantId", "name"]
+            },
+            "DeliveryZone": {
+                "type": "object",
+                "properties": {
+                    "restaurantId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "deliveryFee": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Amount in santim (1 ETB = 100 santim)"
+                    },
+                    "estimatedDeliveryMinutes": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 180
+                    },
+                    "isActive": {
+                        "type": "boolean",
+                        "default": true
+                    }
+                },
+                "required": ["restaurantId", "name", "deliveryFee"]
+            },
+            "ExternalOrder": {
+                "type": "object",
+                "properties": {
+                    "externalId": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "partner": {
+                        "type": "string",
+                        "enum": ["beu", "zmall", "deliver_addis", "esoora"]
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CreateOrderItem"
+                        }
+                    },
+                    "totalAmount": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Amount in santim (1 ETB = 100 santim)"
+                    }
+                },
+                "required": ["externalId", "partner", "items", "totalAmount"]
+            },
+            "DeliveryConnect": {
+                "type": "object",
+                "properties": {
+                    "restaurantId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "partner": {
+                        "type": "string",
+                        "enum": ["beu", "zmall", "deliver_addis", "esoora"]
+                    }
+                },
+                "required": ["restaurantId", "partner"]
+            },
+            "CreateDiscount": {
+                "type": "object",
+                "properties": {
+                    "restaurantId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "code": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": ["percentage", "fixed", "buy_x_get_y"]
+                    },
+                    "value": {
+                        "type": "number",
+                        "minimum": 0
+                    },
+                    "validFrom": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "validUntil": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": ["restaurantId", "code", "type", "value"]
+            },
+            "ApplyDiscount": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "maxLength": 50
+                    },
+                    "orderId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    }
+                },
+                "required": ["code", "orderId"]
+            },
+            "TipPool": {
+                "type": "object",
+                "properties": {
+                    "restaurantId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "periodStart": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "periodEnd": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": ["restaurantId", "name"]
+            },
+            "ServiceRequest": {
+                "type": "object",
+                "properties": {
+                    "restaurantId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "tableId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "requestType": {
+                        "type": "string",
+                        "enum": ["water", "waiter", "bill", "cleanup", "other"]
+                    },
+                    "notes": {
+                        "type": "string",
+                        "maxLength": 500
+                    }
+                },
+                "required": ["restaurantId", "tableId", "requestType"]
+            },
+            "SupportTicket": {
+                "type": "object",
+                "properties": {
+                    "restaurantId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "subject": {
+                        "type": "string",
+                        "maxLength": 200
+                    },
+                    "description": {
+                        "type": "string",
+                        "maxLength": 2000
+                    },
+                    "priority": {
+                        "type": "string",
+                        "enum": ["low", "medium", "high", "urgent"]
+                    }
+                },
+                "required": ["restaurantId", "subject", "description"]
+            },
+            "PushSubscription": {
+                "type": "object",
+                "properties": {
+                    "endpoint": {
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "keys": {
+                        "type": "object",
+                        "properties": {
+                            "p256dh": {
+                                "type": "string"
+                            },
+                            "auth": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["p256dh", "auth"]
+                    }
+                },
+                "required": ["endpoint", "keys"]
+            },
+            "VerifyPin": {
+                "type": "object",
+                "properties": {
+                    "pin": {
+                        "type": "string",
+                        "pattern": "^\\d{4}$",
+                        "minLength": 4,
+                        "maxLength": 4
+                    },
+                    "restaurantId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    }
+                },
+                "required": ["pin", "restaurantId"]
+            },
+            "HappyHourPricing": {
+                "type": "object",
+                "properties": {
+                    "restaurantId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "menuItemId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID v4 identifier"
+                    },
+                    "discountPercent": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100
+                    },
+                    "startTime": {
+                        "type": "string"
+                    },
+                    "endTime": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "restaurantId",
+                    "menuItemId",
+                    "discountPercent",
+                    "startTime",
+                    "endTime"
+                ]
+            },
+            "SyncRequest": {
+                "type": "object",
+                "properties": {
+                    "deviceId": {
+                        "type": "string"
+                    },
+                    "lastSyncAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": ["deviceId"]
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+                "description": "Supabase Auth JWT token"
+            },
+            "webhookSignature": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "x-chapa-signature",
+                "description": "HMAC-SHA256 webhook signature"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Health",
+            "description": "Health check endpoints"
+        },
+        {
+            "name": "Orders",
+            "description": "Order management — create, list, update status, split"
+        },
+        {
+            "name": "Payments",
+            "description": "Payment processing — Chapa, Telebirr, Cash"
+        },
+        {
+            "name": "Menu",
+            "description": "Menu items, categories, and modifiers"
+        },
+        {
+            "name": "Staff",
+            "description": "Staff management — invite, roles, PINs, shifts"
+        },
+        {
+            "name": "Guests",
+            "description": "Guest profiles, loyalty, and order history"
+        },
+        {
+            "name": "Tables",
+            "description": "Table sessions — open, transfer, close"
+        },
+        {
+            "name": "Webhooks",
+            "description": "External payment and delivery webhooks"
+        },
+        {
+            "name": "KDS",
+            "description": "Kitchen Display System — order queue, telemetry, item actions"
+        },
+        {
+            "name": "Delivery",
+            "description": "Delivery aggregator — BeU, Zmall, Deliver Addis, Esoora"
+        },
+        {
+            "name": "Service",
+            "description": "Table service requests — water, waiter, bill, cleanup"
+        },
+        {
+            "name": "Loyalty",
+            "description": "Loyalty programs and points"
+        },
+        {
+            "name": "Discounts",
+            "description": "Discount codes — percentage, fixed, buy X get Y"
+        },
+        {
+            "name": "Devices",
+            "description": "Terminal/device operations"
+        },
+        {
+            "name": "Settings",
+            "description": "Merchant settings — payments, notifications, channels"
+        },
+        {
+            "name": "Support",
+            "description": "Support tickets"
+        },
+        {
+            "name": "Sync",
+            "description": "Offline sync — pull/push"
+        },
+        {
+            "name": "Notifications",
+            "description": "Push notification subscriptions"
+        }
+    ]
+}
