@@ -233,6 +233,13 @@ const nextConfig: NextConfig = {
                         ].join(', '),
                     },
                     {
+                        key: 'Strict-Transport-Security',
+                        value:
+                            process.env.NODE_ENV === 'production'
+                                ? 'max-age=63072000; includeSubDomains; preload'
+                                : 'max-age=0',
+                    },
+                    {
                         key: 'X-DNS-Prefetch-Control',
                         value: 'on',
                     },
@@ -250,7 +257,7 @@ const nextConfig: NextConfig = {
                     },
                     {
                         key: 'Referrer-Policy',
-                        value: 'origin-when-cross-origin',
+                        value: 'strict-origin-when-cross-origin',
                     },
                     // Note: CSP is handled in middleware.ts for consistency
                     // and to avoid duplicate header issues

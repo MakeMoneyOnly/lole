@@ -90,6 +90,13 @@ Use the minimal set of skills that covers the task. Prefer stack-specific skills
 - `/.agents/skills/superpowers/finishing-a-development-branch/SKILL.md`
     - Use for merging and cleaning up after work is complete.
 
+### External Intelligence (MCP Servers)
+
+- **Context7 (`context7` MCP)**
+    - _Must_ be used before writing code or plans involving 3rd-party libraries (e.g., Next.js, Rust, Tailwind). Always fetch the latest live documentation to prevent hallucinations or deprecated API usage.
+- **Exa Search (`exa` MCP)**
+    - Use during `brainstorming`, `to-prd`, and deep architectural investigations. Fetches clean, markdown-ready web content to anchor system designs in state-of-the-art industry research.
+
 ## Definition of Done (Enterprise Grade)
 
 A task is not done until all applicable items pass:
@@ -100,15 +107,15 @@ A task is not done until all applicable items pass:
 - **Tests**: Appropriate unit/integration/e2e coverage updated.
 - **Docs**: Relevant docs updated for behavior changes.
 
-## Cognitive Orchestration Layer (COL)
+## Cognitive Orchestration Layer (COL) & Technical Memory
 
-The `.col/` directory contains the proactive orchestrator system:
+The `.col/` directory contains the proactive orchestrator system and our LLM Wiki.
 
-- **Entry point**: `npx tsx .col/index.ts [command]`
-    - `cycle` - Run full sense-plan-act-reflect cycle
-    - `sense` - Run sense phase only
-    - `health` - Check orchestrator health
+- **The Executive Layer**: Uses `brainstorming`, `to-prd`, `triage`, and `dispatching-parallel-agents` to govern tasks.
+- **The 23 Departments**: Every Lead Agent must adhere to their specialized stack skills listed above.
+- **The Memory Engine**:
+    - `/.col/memory/wiki/` (Semantic Memory): Codebase boundaries. Read before touching files.
+    - `/.col/memory/episodes/` (Episodic Memory): Read before debugging. Logs past fixes.
+- **Self-Evolution**: After an episode is resolved, use `write-a-skill` to automatically extract the workflow into `.agents/skills/`.
 
-- **Validation**: `pnpm exec tsx .col/validation/validator.ts`
-
-- **Memory hooks**: `bash .col/hooks/update-memory.sh`
+_(Note: The COL is IDE-agnostic. The AI Agent reading this file acts as the primary Orchestrator engine.)_

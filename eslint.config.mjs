@@ -157,6 +157,14 @@ const eslintConfig = defineConfig([
                     ],
                 },
             ],
+            'no-restricted-syntax': [
+                'error',
+                {
+                    selector: 'MemberExpression[object.name="process"][property.name="env"] > MemberExpression[property.name="SUPABASE_SERVICE_ROLE_KEY"], MemberExpression[object.name="process"][property.name="env"] > MemberExpression[property.name="SUPABASE_SECRET_KEY"]',
+                    message:
+                        'SUPABASE_SERVICE_ROLE_KEY and SUPABASE_SECRET_KEY must only be used in server-side API routes and lib files. Use createServiceRoleClient() from @/lib/supabase/service-role instead.',
+                },
+            ],
         },
     },
 ]);
