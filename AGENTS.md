@@ -97,6 +97,19 @@ Use the minimal set of skills that covers the task. Prefer stack-specific skills
 - **Exa Search (`exa` MCP)**
     - Use during `brainstorming`, `to-prd`, and deep architectural investigations. Fetches clean, markdown-ready web content to anchor system designs in state-of-the-art industry research.
 
+### Hermes Capabilities (from NousResearch/hermes-agent, MIT)
+
+- `/.col/skills/hermes-persistent-memory/SKILL.md`
+    - **MANDATORY at every heartbeat.** Persist session decisions to WAL SQLite + markdown. Search past sessions before doing any work. Prevents re-solving solved problems.
+- `/.col/skills/hermes-context-compressor/SKILL.md`
+    - Use when any agent session exceeds 80% token budget. Compresses middle turns into a `[CONTEXT SUMMARY]` block, preserving head and tail. Protects CEO/CTO and compliance sessions.
+- `/.col/skills/hermes-toolset-distribution/SKILL.md`
+    - Use when configuring any agent or during security audits. Enforces least-privilege tool access per role. Violation triggers CSO escalation.
+- `/.col/skills/hermes-insights-loop/SKILL.md`
+    - Use for weekly CEO Routine (Monday 08:00 EAT). Scans all agent sessions from last 7 days, surfaces completion rates, block rates, cost regressions. Triggers `write-a-skill` on recurring patterns.
+- `/.col/skills/hermes-acp-messaging/SKILL.md`
+    - **MANDATORY for all inter-agent communication.** All task delegations, status reports, blocker notifications, and board approval requests MUST use the ACP envelope format. Written to `.col/memory/inbox/{agent}/`.
+
 ## Definition of Done (Enterprise Grade)
 
 A task is not done until all applicable items pass:
@@ -116,6 +129,9 @@ The `.col/` directory contains the proactive orchestrator system and our LLM Wik
 - **The Memory Engine**:
     - `/.col/memory/wiki/` (Semantic Memory): Codebase boundaries. Read before touching files.
     - `/.col/memory/episodes/` (Episodic Memory): Read before debugging. Logs past fixes.
-- **Self-Evolution**: After an episode is resolved, use `write-a-skill` to automatically extract the workflow into `.agents/skills/`.
+    - `/.col/memory/sessions/` (Persistent Memory): Cross-session SQLite state store (Hermes). Search before any task.
+    - `/.col/memory/inbox/{agent}/` (ACP Inbox): Inter-agent message queue. Read at heartbeat start, write at heartbeat end.
+    - `/.col/memory/acp-registry.md` (Message Registry): Active inter-agent message thread tracker.
+- **Self-Evolution**: After an episode is resolved, use `write-a-skill` to automatically extract the workflow into `.agents/skills/`. The `hermes-insights-loop` identifies candidates weekly.
 
 _(Note: The COL is IDE-agnostic. The AI Agent reading this file acts as the primary Orchestrator engine.)_
