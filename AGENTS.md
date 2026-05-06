@@ -110,6 +110,11 @@ Use the minimal set of skills that covers the task. Prefer stack-specific skills
 - `/.col/skills/hermes-acp-messaging/SKILL.md`
     - **MANDATORY for all inter-agent communication.** All task delegations, status reports, blocker notifications, and board approval requests MUST use the ACP envelope format. Written to `.col/memory/inbox/{agent}/`.
 
+### Engineering Orchestration (Codex Control Plane)
+
+- `/.col/skills/symphony-orchestrator/SKILL.md`
+    - **Control Plane for Work Management.** Transforms project work into isolated, autonomous implementation runs. Enforces "Proof of Work" (PoW) artifacts (CI, walkthroughs) before handoff. Tailored from OpenAI Symphony.
+
 ## Definition of Done (Enterprise Grade)
 
 A task is not done until all applicable items pass:
@@ -129,9 +134,10 @@ The `.col/` directory contains the proactive orchestrator system and our LLM Wik
 - **The Memory Engine**:
     - `/.col/memory/wiki/` (Semantic Memory): Codebase boundaries. Read before touching files.
     - `/.col/memory/episodes/` (Episodic Memory): Read before debugging. Logs past fixes.
-    - `/.col/memory/sessions/` (Persistent Memory): Cross-session SQLite state store (Hermes). Search before any task.
-    - `/.col/memory/inbox/{agent}/` (ACP Inbox): Inter-agent message queue. Read at heartbeat start, write at heartbeat end.
-    - `/.col/memory/acp-registry.md` (Message Registry): Active inter-agent message thread tracker.
-- **Self-Evolution**: After an episode is resolved, use `write-a-skill` to automatically extract the workflow into `.agents/skills/`. The `hermes-insights-loop` identifies candidates weekly.
+    - `/.col/memory/sessions/` (Persistent Memory): Cross-session SQLite state store (Hermes).
+    - `/.col/memory/wiki/research/` (SEKE): Autonomous ingestion of multi-modal research.
+- **Document Standard (AAC)**:
+    - Every `.md` file in `.col/` MUST include standardized YAML frontmatter (`id`, `type`, `owner`, `parent`, `links`) for machine-navigable organizational topology.
+- **Self-Evolution**: After an episode is resolved, use `write-a-skill` to automatically extract the workflow into `.agents/skills/`. The `hermes-insights-loop` and **SEKE** engine drive autonomous knowledge expansion.
 
 _(Note: The COL is IDE-agnostic. The AI Agent reading this file acts as the primary Orchestrator engine.)_

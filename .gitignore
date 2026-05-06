@@ -114,5 +114,5 @@ public/@powersync/
 # Local scratch and development tools
 .scratch/
 
-# COL frameworks - external git repositories
-.col/frameworks/
+# COL framework - external git repositories, per-user memory, and AI orchestration state
+.col/
