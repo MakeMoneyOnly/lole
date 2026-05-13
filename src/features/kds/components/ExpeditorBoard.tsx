@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, HandPlatter, RefreshCw, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useRole } from '@/features/auth/hooks/useRole';
-import type { UnifiedKDSOrder } from '@/app/api/kds/queue/route';
+import type { UnifiedKDSOrder } from '@/app/api/v1/merchant/operations/kds/queue/route';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { submitOrderCourseFireUpdate } from '@/lib/orders/command-adapter';

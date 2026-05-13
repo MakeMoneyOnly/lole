@@ -89,14 +89,10 @@ export const deviceStatusSchema = z.enum(DEVICE_STATUSES);
 // Staff Role
 // ============================================================================
 
-export const STAFF_ROLES = [
-    'owner',
-    'admin',
-    'manager',
-    'cashier',
-    'waiter',
-    'chef',
-    'bartender',
-] as const;
+/**
+ * Canonical staff roles - single source of truth.
+ * Used across database, API, and frontend.
+ */
+export const STAFF_ROLES = ['owner', 'admin', 'manager', 'kitchen', 'waiter', 'bar'] as const;
 export type StaffRole = (typeof STAFF_ROLES)[number];
 export const staffRoleSchema = z.enum(STAFF_ROLES);

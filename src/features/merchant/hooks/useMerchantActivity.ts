@@ -1,24 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { transformActivityData } from '../utils/transformActivity';
+import { ActivityItem, ActivityType } from '../types';
 
-export type ActivityType = 'order' | 'kitchen' | 'staff' | 'request';
-
-export interface ActivityItem {
-    id: string;
-    type: ActivityType;
-    user: string;
-    action: string;
-    target: string;
-    time: string;
-    timestamp: Date;
-    avatar?: string;
-    message?: string;
-    hasMessage?: boolean;
-    hasFile?: boolean;
-    fileName?: string;
-    fileSize?: string;
-}
+export type { ActivityType, ActivityItem };
 
 export function useMerchantActivity() {
     const [activities, setActivities] = useState<ActivityItem[]>([]);
@@ -81,53 +67,8 @@ export function useMerchantActivity() {
                     sessionStorage.setItem('lole_restaurant_handle', handle);
                 }
 
-                // Transform orders to activities
-                const orderActivities: ActivityItem[] = (data.orders || []).map(
-                    (order: Record<string, unknown>) => ({
-                        id: `order-${order.id}`,
-                        type: 'order' as ActivityType,
-                        user: `Order ${(order.order_number as string)?.startsWith('ORD-') ? (order.order_number as string).split('-').slice(1).join('-') : `#${order.order_number}`}`,
-                        action: 'placed for',
-                        target: `Table ${order.table_number}`,
-                        time: new Date(order.created_at as string).toLocaleTimeString([], {
-                            hour: 'numeric',
-                            minute: '2-digit',
-                        }),
-                        timestamp: new Date(order.created_at as string),
-                        hasMessage: !!order.notes,
-                        message: order.notes ? `Note: '${order.notes}'` : undefined,
-                        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=Order${order.id}`,
-                    })
-                );
-
-                // Transform requests to activities
-                const requestActivities: ActivityItem[] = (data.requests || []).map(
-                    (req: Record<string, unknown>) => ({
-                        id: `req-${req.id}`,
-                        type: 'request' as ActivityType,
-                        user: `Table ${req.table_number}`,
-                        action: 'requested',
-                        target:
-                            req.request_type === 'waiter'
-                                ? 'Waiter Assistance'
-                                : req.request_type === 'bill'
-                                  ? 'Bill'
-                                  : (req.request_type as string),
-                        time: new Date(req.created_at as string).toLocaleTimeString([], {
-                            hour: 'numeric',
-                            minute: '2-digit',
-                        }),
-                        timestamp: new Date(req.created_at as string),
-                        hasMessage: false,
-                        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=Req${req.id}`,
-                    })
-                );
-
-                // Combine and sort
-                const combined = [...orderActivities, ...requestActivities].sort(
-                    (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
-                );
-
+                // Transform and combine activities
+                const combined = transformActivityData(data);
                 setActivities(combined);
             } catch (error) {
                 console.error('Error fetching merchant activity:', error);
@@ -167,51 +108,7 @@ export function useMerchantActivity() {
             if (!response.ok) return;
             const data = await response.json();
 
-            // Re-process the data (same logic as above)
-            const orderActivities: ActivityItem[] = (data.orders || []).map(
-                (order: Record<string, unknown>) => ({
-                    id: `order-${order.id}`,
-                    type: 'order' as ActivityType,
-                    user: `Order ${(order.order_number as string)?.startsWith('ORD-') ? (order.order_number as string).split('-').slice(1).join('-') : `#${order.order_number}`}`,
-                    action: 'placed for',
-                    target: `Table ${order.table_number}`,
-                    time: new Date(order.created_at as string).toLocaleTimeString([], {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                    }),
-                    timestamp: new Date(order.created_at as string),
-                    hasMessage: !!order.notes,
-                    message: order.notes ? `Note: '${order.notes}'` : undefined,
-                    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=Order${order.id}`,
-                })
-            );
-
-            const requestActivities: ActivityItem[] = (data.requests || []).map(
-                (req: Record<string, unknown>) => ({
-                    id: `req-${req.id}`,
-                    type: 'request' as ActivityType,
-                    user: `Table ${req.table_number}`,
-                    action: 'requested',
-                    target:
-                        req.request_type === 'waiter'
-                            ? 'Waiter Assistance'
-                            : req.request_type === 'bill'
-                              ? 'Bill'
-                              : req.request_type,
-                    time: new Date(req.created_at as string).toLocaleTimeString([], {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                    }),
-                    timestamp: new Date(req.created_at as string),
-                    hasMessage: false,
-                    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=Req${req.id}`,
-                })
-            );
-
-            const combined = [...orderActivities, ...requestActivities].sort(
-                (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
-            );
-
+            const combined = transformActivityData(data);
             setActivities(combined);
         } catch (error) {
             console.error('Error refreshing activity:', error);

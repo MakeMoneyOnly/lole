@@ -283,7 +283,7 @@ describe('GraphQL Authorization', () => {
 
         it('should throw FORBIDDEN when user role is not in allowed roles', () => {
             const context: AuthorizedContext = {
-                user: { id: 'user-1', restaurantId: 'rest-1', role: 'staff' },
+                user: { id: 'user-1', restaurantId: 'rest-1', role: 'waiter' },
                 token: 'token',
                 guestSession: null,
                 dataLoaders: mockDataLoaders,
@@ -348,7 +348,7 @@ describe('GraphQL Authorization', () => {
 
         it('should include requiredRoles in error extensions', () => {
             const context: AuthorizedContext = {
-                user: { id: 'user-1', restaurantId: 'rest-1', role: 'viewer' },
+                user: { id: 'user-1', restaurantId: 'rest-1', role: 'waiter' },
                 token: 'token',
                 guestSession: null,
                 dataLoaders: mockDataLoaders,

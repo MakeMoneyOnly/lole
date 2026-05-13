@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
     AlertCircle,
     CheckCircle,
@@ -14,7 +15,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { ManagedDeviceBanner } from '@/components/device/shell/ManagedDeviceBanner';
-import { useManagedDeviceSession } from '@/hooks/useManagedDeviceSession';
+import { useManagedDeviceSession } from '@/features/merchant/hooks/useManagedDeviceSession';
 import type { SupportedPaymentMethod } from '@/lib/devices/config';
 import { getDeviceTypeLabel } from '@/lib/devices/config';
 import { formatCurrencyCompact } from '@/lib/utils/monetary';
@@ -133,6 +134,7 @@ export default function TerminalPage() {
     });
     const deviceToken = managedDevice.deviceToken;
     const deviceInfo = managedDevice.session;
+    const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [overview, setOverview] = useState<TerminalOverview | null>(null);
     const [selectedTableNumber, setSelectedTableNumber] = useState<string | null>(null);

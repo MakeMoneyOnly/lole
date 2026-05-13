@@ -1,14 +1,14 @@
 'use client';
 
 import { useRole } from '@/features/auth/hooks/useRole';
-import { UserRole } from '@/types/models';
+import type { StaffRole } from '@/types/status';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 
 interface RoleGuardProps {
     children: React.ReactNode;
-    allowedRoles: UserRole[];
+    allowedRoles: StaffRole[];
     restaurantId?: string; // We need context, usually from URL or global state
     fallback?: React.ReactNode;
 }

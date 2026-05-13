@@ -1,32 +1,13 @@
 // Staff Domain - Repository Layer
 // Database access layer - Supabase queries only, no business logic
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '@/types/database';
 import {
     STAFF_LIST_COLUMNS,
     STAFF_DETAIL_COLUMNS,
     columnsToString,
 } from '@/lib/constants/query-columns';
+import { getRepositoryClient } from '@/lib/db/repository-base';
 import { verifyStoredStaffPin } from './pin';
-
-// Lazy initialization of Supabase client - only creates when actually needed
-let supabase: SupabaseClient<Database> | null = null;
-
-function getSupabaseClient(): SupabaseClient<Database> {
-    if (!supabase) {
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const supabaseKey = process.env.SUPABASE_SECRET_KEY;
-
-        if (!supabaseUrl || !supabaseKey) {
-            throw new Error(
-                `Supabase configuration missing. NEXT_PUBLIC_SUPABASE_URL: ${!!supabaseUrl}, SUPABASE_SECRET_KEY: ${!!supabaseKey}`
-            );
-        }
-
-        supabase = createClient<Database>(supabaseUrl, supabaseKey);
-    }
-    return supabase;
-}
 
 export type StaffRow = Database['public']['Tables']['restaurant_staff']['Row'];
 
@@ -42,7 +23,7 @@ export class StaffRepository {
      * Get a single staff member by ID
      */
     async getStaffMember(id: string): Promise<StaffRow | null> {
-        const { data, error } = await getSupabaseClient()
+        const { data, error } = await getRepositoryClient()
             .from('restaurant_staff')
             .select(columnsToString(STAFF_DETAIL_COLUMNS))
             .eq('id', id)
@@ -60,7 +41,7 @@ export class StaffRepository {
      * Get a staff member by user ID (Supabase auth ID)
      */
     async getStaffByUserId(userId: string): Promise<StaffRow | null> {
-        const { data, error } = await getSupabaseClient()
+        const { data, error } = await getRepositoryClient()
             .from('restaurant_staff')
             .select(columnsToString(STAFF_DETAIL_COLUMNS))
             .eq('user_id', userId)
@@ -81,7 +62,7 @@ export class StaffRepository {
         const limit = Math.min(options.limit ?? 50, 200);
         const offset = options.offset ?? 0;
 
-        let query = getSupabaseClient()
+        let query = getRepositoryClient()
             .from('restaurant_staff')
             .select(columnsToString(STAFF_LIST_COLUMNS))
             .eq('restaurant_id', restaurantId)
@@ -119,7 +100,7 @@ export class StaffRepository {
         phone?: string;
         is_active?: boolean;
     }): Promise<StaffRow> {
-        const { data: staff, error } = await getSupabaseClient()
+        const { data: staff, error } = await getRepositoryClient()
             .from('restaurant_staff')
             .insert({
                 restaurant_id: data.restaurant_id,
@@ -156,7 +137,7 @@ export class StaffRepository {
             is_active?: boolean;
         }
     ): Promise<StaffRow> {
-        const { data: staff, error } = await getSupabaseClient()
+        const { data: staff, error } = await getRepositoryClient()
             .from('restaurant_staff')
             .update({
                 ...data,
@@ -178,7 +159,7 @@ export class StaffRepository {
      * Soft delete a staff member (set is_active = false)
      */
     async deactivateStaffMember(id: string): Promise<StaffRow> {
-        const { data: staff, error } = await getSupabaseClient()
+        const { data: staff, error } = await getRepositoryClient()
             .from('restaurant_staff')
             .update({
                 is_active: false,
@@ -201,7 +182,7 @@ export class StaffRepository {
      * Returns the staff member if PIN is valid, null otherwise
      */
     async verifyPin(staffId: string, pinCode: string): Promise<StaffRow | null> {
-        const { data, error } = await getSupabaseClient()
+        const { data, error } = await getRepositoryClient()
             .from('restaurant_staff')
             .select(columnsToString(STAFF_DETAIL_COLUMNS))
             .eq('id', staffId)
@@ -229,7 +210,7 @@ export class StaffRepository {
     async getStaffByIds(ids: string[]): Promise<StaffRow[]> {
         if (ids.length === 0) return [];
 
-        const { data, error } = await getSupabaseClient()
+        const { data, error } = await getRepositoryClient()
             .from('restaurant_staff')
             .select(columnsToString(STAFF_LIST_COLUMNS))
             .in('id', ids);

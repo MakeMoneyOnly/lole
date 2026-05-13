@@ -67,5 +67,5 @@ export interface OrderItem {
     station?: string;
 }
 
-// Staff roles
-export type UserRole = 'owner' | 'admin' | 'manager' | 'kitchen' | 'waiter' | 'bar' | 'runner';
+// Re-export StaffRole from canonical source
+export type { StaffRole } from './status';

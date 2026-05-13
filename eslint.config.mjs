@@ -67,7 +67,7 @@ const eslintConfig = defineConfig([
             'no-console': 'off',
         },
     },
-    {
+{
         files: [
             'src/app/**/*.{ts,tsx}',
             'src/components/**/*.{ts,tsx}',
@@ -78,6 +78,7 @@ const eslintConfig = defineConfig([
         ],
         ignores: ['src/lib/db/**/*.{ts,tsx}'],
         rules: {
+            // Architecture boundary: features cannot import domains (use services via hooks)
             'no-restricted-imports': [
                 'error',
                 {
@@ -159,6 +160,12 @@ const eslintConfig = defineConfig([
             ],
             'no-restricted-syntax': [
                 'error',
+                {
+                    // Prevent custom DB type definitions (use generated types)
+                    selector: 'TSTypeDeclaration[id.name=/.*Row$/]',
+                    message:
+                        'Custom database row types are forbidden. Use Database["public"]["Tables"][tableName]["Row"] from @/types/database.',
+                },
                 {
                     selector: 'MemberExpression[object.name="process"][property.name="env"] > MemberExpression[property.name="SUPABASE_SERVICE_ROLE_KEY"], MemberExpression[object.name="process"][property.name="env"] > MemberExpression[property.name="SUPABASE_SECRET_KEY"]',
                     message:

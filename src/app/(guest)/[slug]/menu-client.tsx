@@ -1,36 +1,15 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState, Suspense } from 'react';
-import dynamic from 'next/dynamic';
-import _Image from 'next/image';
-
 import { createClient } from '@/lib/supabase';
 import { useParams, useSearchParams } from 'next/navigation';
-import { Phone, User, Utensils } from 'lucide-react';
-import { MartrezaHeader } from '@/features/menu/components/MartrezaHeader';
-import { MartrezaSearch } from '@/features/menu/components/MartrezaSearch';
-import { MartrezaCategoryChips } from '@/features/menu/components/MartrezaCategoryChips';
-import { MartrezaProductCard } from '@/features/menu/components/MartrezaProductCard';
-import { MartrezaBottomNav } from '@/features/menu/components/MartrezaBottomNav';
-import { MenuSkeleton } from '@/features/menu/components/MenuSkeleton';
-import { FloatingCart } from '@/features/menu/components/FloatingCart';
-import { ServiceRequestButton } from '@/features/menu/components/ServiceRequestButton';
 import { CartProvider, useCart } from '@/context/CartContext';
 import { FOOD_ITEMS } from '@/lib/constants';
-import type { DishItem } from '@/features/menu/components/DishDetailDrawer';
 import { isAbortError } from '@/hooks/useSafeFetch';
-import { cn, isRemoteOrDataImageSrc } from '@/lib/utils';
+import { isRemoteOrDataImageSrc } from '@/lib/utils';
 
-const DishDetailDrawer = dynamic(
-    () => import('@/features/menu/components/DishDetailDrawer').then(mod => mod.DishDetailDrawer),
-    { ssr: false }
-);
-const CartDrawer = dynamic(
-    () => import('@/features/menu/components/CartDrawer').then(mod => mod.CartDrawer),
-    { ssr: false }
-);
+// ─── Types ───────────────────────────────────────────────────────────────────
 
-type MenuItem = DishItem;
 const FALLBACK_IMAGE_URL = 'https://via.placeholder.com/150';
 const ALLOWED_REMOTE_IMAGE_HOSTS = new Set([
     'via.placeholder.com',
@@ -73,7 +52,23 @@ interface RawMenuItem {
     category_id: string;
 }
 
-interface GuestContextPayload {
+export interface MenuItem {
+    id: string;
+    name: string;
+    title: string;
+    imageUrl: string;
+    preparationTime: number;
+    shopName: string;
+    price: number;
+    rating?: number;
+    categories: { name: string; section: 'food' | 'drinks' };
+    description?: string;
+    description_am?: string;
+    popularity?: number;
+    likesCount?: number;
+}
+
+export interface GuestContextPayload {
     restaurant_id: string;
     table_id: string;
     table_number: string;
@@ -90,16 +85,13 @@ interface CampaignAttributionPayload {
     campaign_id?: string;
 }
 
+// ─── Data Hook ───────────────────────────────────────────────────────────────
+
 /**
- * Client component that handles the interactive menu functionality.
- * This component manages:
- * - Guest context validation (QR scanning / online ordering)
- * - Menu item fetching and filtering
- * - Cart management
- * - Authentication flows
- * - Payment return handling
+ * All data-fetching and session state for the guest menu.
+ * Expose this hook to any new UI component tree via context or prop-drilling.
  */
-export function MenuClientContent() {
+export function useGuestMenuData() {
     const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
     const [cartOpen, setCartOpen] = useState(false);
     const [paymentReturnSuccess, setPaymentReturnSuccess] = useState(false);
@@ -115,16 +107,7 @@ export function MenuClientContent() {
     const [authState, setAuthState] = useState<'guest' | 'authenticated'>('guest');
     const [showPreMenuSplash, setShowPreMenuSplash] = useState(true);
     const [_sessionSyncing, setSessionSyncing] = useState(false);
-    const [authView, setAuthView] = useState<'none' | 'login' | 'signup'>('none');
-    const [authLoading, setAuthLoading] = useState(false);
-    const [authError, setAuthError] = useState<string | null>(null);
-    const [authMessage, setAuthMessage] = useState<string | null>(null);
-    const [loginPhone, setLoginPhone] = useState('');
-    const [signupPhone, setSignupPhone] = useState('');
-    const [signupName, setSignupName] = useState('');
-    const [otpCode, setOtpCode] = useState('');
-    const [otpTargetPhone, setOtpTargetPhone] = useState('');
-    const [otpFlow, setOtpFlow] = useState<'none' | 'login' | 'signup'>('none');
+
     const params = useParams<{ slug: string }>();
     const searchParams = useSearchParams();
 
@@ -133,21 +116,18 @@ export function MenuClientContent() {
     const signature = getQueryParam('sig');
     const expiresAt = getQueryParam('exp');
     const campaignDeliveryId = getQueryParam('cdid') ?? getQueryParam('campaign_delivery_id');
-    const campaignId = getQueryParam('cid') ?? getQueryParam('campaign_id');
     const forceMenuEntry = getQueryParam('entry') === 'menu';
     const slug = params.slug;
 
-    // Online ordering mode: no QR params present; this is the merchant's storefront link
     const isOnlineOrderMode = !tableNumber && !signature && !expiresAt;
 
-    // Detect return from Chapa payment (real or mock)
     const paymentStatus = getQueryParam('payment');
     const paymentOrderId = getQueryParam('order_id');
 
     const supabase = useMemo(() => createClient(), []);
     const { addToCart, count } = useCart();
 
-    // Capture payment return state once, then clean the URL so refreshes stay clean.
+    // ── Payment return ────────────────────────────────────────────────────────
     useEffect(() => {
         if (paymentStatus === 'success') {
             setPaymentReturnSuccess(true);
@@ -166,11 +146,11 @@ export function MenuClientContent() {
 
     const isMountedRef = useRef(true);
 
+    // ── Context validation ────────────────────────────────────────────────────
     useEffect(() => {
         isMountedRef.current = true;
 
         async function validateContext() {
-            // ── Online Ordering Mode ──────────────────────────────────────────────
             if (isOnlineOrderMode) {
                 setContextLoading(true);
                 setContextError(null);
@@ -221,7 +201,6 @@ export function MenuClientContent() {
                 return;
             }
 
-            // ── Dine-in QR Mode ───────────────────────────────────────────────────
             if (!slug || !tableNumber || !signature || !expiresAt) {
                 setGuestContext(null);
                 setContextError('Invalid QR link. Please scan the table QR again.');
@@ -254,13 +233,10 @@ export function MenuClientContent() {
             } catch (error) {
                 if (!isMountedRef.current) return;
                 if (isAbortError(error)) return;
-                console.error('Failed to validate guest context:', error);
                 setGuestContext(null);
                 setContextError('Unable to validate table context. Please try again.');
             } finally {
-                if (isMountedRef.current) {
-                    setContextLoading(false);
-                }
+                if (isMountedRef.current) setContextLoading(false);
             }
         }
 
@@ -271,6 +247,7 @@ export function MenuClientContent() {
         };
     }, [expiresAt, isOnlineOrderMode, signature, slug, supabase, tableNumber]);
 
+    // ── Guest session upsert ──────────────────────────────────────────────────
     useEffect(() => {
         async function upsertGuestSession() {
             if (!guestContext || guestContext.is_online_order) return;
@@ -304,9 +281,7 @@ export function MenuClientContent() {
                     | 'authenticated'
                     | undefined;
 
-                if (resolvedSessionId) {
-                    setGuestSessionId(resolvedSessionId);
-                }
+                if (resolvedSessionId) setGuestSessionId(resolvedSessionId);
                 if (resolvedAuthState) {
                     setAuthState(resolvedAuthState);
                     if (resolvedAuthState === 'authenticated' || forceMenuEntry) {
@@ -327,6 +302,7 @@ export function MenuClientContent() {
         void upsertGuestSession();
     }, [campaignDeliveryId, forceMenuEntry, guestContext, guestSessionId]);
 
+    // ── Menu fetch ────────────────────────────────────────────────────────────
     useEffect(() => {
         async function fetchMenu() {
             if (!guestContext?.restaurant_id || showPreMenuSplash) {
@@ -347,14 +323,13 @@ export function MenuClientContent() {
                     return;
                 }
 
-                const typedCategories = (categories as RawCategory[])?.map(cat => ({
-                    ...cat,
-                    section: cat.section || 'food'
-                })) ?? [];
-                const categoryIds = typedCategories.map(category => category.id);
-                const categoryById = new Map(
-                    typedCategories.map(category => [category.id, category])
-                );
+                const typedCategories =
+                    (categories as RawCategory[])?.map(cat => ({
+                        ...cat,
+                        section: cat.section || 'food',
+                    })) ?? [];
+                const categoryIds = typedCategories.map(c => c.id);
+                const categoryById = new Map(typedCategories.map(c => [c.id, c]));
 
                 if (categoryIds.length === 0) {
                     setRealItems([]);
@@ -377,41 +352,9 @@ export function MenuClientContent() {
                 const getSmartImageUrl = (path: string | null) => {
                     if (!path) return FALLBACK_IMAGE_URL;
                     if (path.startsWith('fab')) return path;
-                    if (isAllowedRemoteImageUrl(path)) {
-                        return path;
-                    }
+                    if (isAllowedRemoteImageUrl(path)) return path;
                     const { data } = supabase.storage.from('menu-images').getPublicUrl(path);
                     return data.publicUrl;
-                };
-
-                const CATEGORY_MAP: Record<string, string> = {
-                    burgers: 'Burger',
-                    burger: 'Burger',
-                    pizza: 'Pizza',
-                    traditional: 'Traditional',
-                    vegan: 'Vegan',
-                    desert: 'Desert',
-                    dessert: 'Desert',
-                    'main dishes': 'Traditional',
-                    pasta: 'Pizza',
-                    'gourmet pizza': 'Pizza',
-                    'premium grill': 'Traditional',
-                    sides: 'Burger',
-                    breakfast: 'Traditional',
-                    bakery: 'Desert',
-                    'hot drinks': 'Hot Drinks',
-                    'soft drinks': 'Soft Drinks',
-                    beer: 'Beer',
-                    beers: 'Beer',
-                    alcohol: 'Beer',
-                    juice: 'Juice',
-                    'fresh juices': 'Juice',
-                    wine: 'Wine',
-                    cocktails: 'Wine',
-                    'craft cocktails': 'Wine',
-                    spirits: 'Wine',
-                    tea: 'Hot Drinks',
-                    coffee: 'Hot Drinks',
                 };
 
                 const formattedItems = ((items as RawMenuItem[]) || [])
@@ -461,27 +404,16 @@ export function MenuClientContent() {
         void fetchMenu();
     }, [guestContext?.restaurant_id, showPreMenuSplash, supabase]);
 
-    // MED-017: Handle authentication state changes (token refresh, sign out)
-    // Session refresh handling for authenticated guest features
+    // ── Auth state change ────────────────────────────────────────────────────
     useEffect(() => {
         const {
             data: { subscription },
-        } = supabase.auth.onAuthStateChange((event: string, session: unknown) => {
-            if (event === 'TOKEN_REFRESHED') {
-                // Handle token refresh - session is renewed
-                const _sessionData = session as { access_token?: string } | null;
-                // Session successfully refreshed - no action needed, user stays logged in
-                if (process.env.NODE_ENV === 'development') {
-                    console.warn('[Guest Auth] Token refreshed successfully');
-                }
-            }
+        } = supabase.auth.onAuthStateChange((event: string) => {
             if (event === 'SIGNED_OUT') {
-                // Handle sign out - clear local state
                 setAuthState('guest');
                 setGuestSessionId(null);
             }
             if (event === 'SIGNED_IN') {
-                // Handle sign in - update auth state
                 setAuthState('authenticated');
             }
         });
@@ -492,7 +424,6 @@ export function MenuClientContent() {
     const filteredItems = realItems.filter(item => {
         const matchesSection = item.categories?.section === activeTab;
         if (!matchesSection) return false;
-
         if (activeCategoryId === 'all') return true;
         return item.categories?.name?.toLowerCase() === activeCategoryId.toLowerCase();
     });
@@ -507,467 +438,106 @@ export function MenuClientContent() {
         });
     };
 
-    const buildAuthHref = (path: '/guest/login' | '/guest/signup') => {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set('entry', 'menu');
-        if (guestSessionId) {
-            params.set('gsid', guestSessionId);
-        }
-        const nextUrl = `/${slug}?${params.toString()}`;
-        return `${path}?next=${encodeURIComponent(nextUrl)}`;
+    return {
+        // State
+        selectedItem,
+        setSelectedItem,
+        cartOpen,
+        setCartOpen,
+        paymentReturnSuccess,
+        paymentReturnOrderId,
+        loading,
+        contextLoading,
+        contextError,
+        activeTab,
+        setActiveTab,
+        activeCategoryId,
+        setActiveCategoryId,
+        realItems,
+        filteredItems,
+        guestContext,
+        guestSessionId,
+        authState,
+        showPreMenuSplash,
+        setShowPreMenuSplash,
+        isOnlineOrderMode,
+        cartCount: count,
+        slug,
+        // Actions
+        handleAddToCart,
     };
-
-    const getAuthErrorMessage = (error: unknown): string => {
-        if (error instanceof Error) return error.message;
-        if (typeof error === 'object' && error && 'message' in error) {
-            const message = (error as { message?: unknown }).message;
-            if (typeof message === 'string' && message.length > 0) return message;
-        }
-        return 'Authentication failed. Please try again.';
-    };
-
-    const normalizeEthiopianPhone = (value: string): string | null => {
-        const digits = value.replace(/\D/g, '');
-        if (digits.startsWith('251') && digits.length === 12) {
-            return `+${digits}`;
-        }
-        if (digits.startsWith('09') && digits.length === 10) {
-            return `+251${digits.slice(1)}`;
-        }
-        if (digits.startsWith('9') && digits.length === 9) {
-            return `+251${digits}`;
-        }
-        return null;
-    };
-
-    const handleSendOtp = async (flow: 'login' | 'signup') => {
-        setAuthLoading(true);
-        setAuthError(null);
-        setAuthMessage(null);
-
-        const phone = flow === 'login' ? loginPhone : signupPhone;
-        const normalizedPhone = normalizeEthiopianPhone(phone);
-
-        if (!normalizedPhone) {
-            setAuthError('Please enter a valid Ethiopian phone number.');
-            setAuthLoading(false);
-            return;
-        }
-
-        if (!guestContext?.restaurant_id) {
-            setAuthError('Missing restaurant context. Please reload.');
-            setAuthLoading(false);
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/v1/guest-portal/verify-contact', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    phone: normalizedPhone,
-                    restaurantId: guestContext.restaurant_id,
-                    sessionId: guestSessionId ?? undefined,
-                    channel: 'sms',
-                    name: flow === 'signup' ? signupName : undefined,
-                }),
-            });
-
-            const payload = await response.json();
-
-            if (!response.ok) {
-                setAuthError(payload.error ?? getAuthErrorMessage(payload));
-                setAuthLoading(false);
-                return;
-            }
-
-            setOtpTargetPhone(normalizedPhone);
-            setOtpFlow(flow);
-            setAuthMessage('Verification code sent! Check your phone.');
-        } catch (error) {
-            setAuthError(getAuthErrorMessage(error));
-        } finally {
-            setAuthLoading(false);
-        }
-    };
-
-    const handleVerifyOtp = async () => {
-        setAuthLoading(true);
-        setAuthError(null);
-
-        if (!otpCode || otpCode.length < 6) {
-            setAuthError('Please enter the 6-digit verification code.');
-            setAuthLoading(false);
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/v1/guest-portal/verify-contact', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    phone: otpTargetPhone,
-                    restaurantId: guestContext?.restaurant_id,
-                    sessionId: guestSessionId ?? undefined,
-                    code: otpCode,
-                }),
-            });
-
-            const payload = await response.json();
-
-            if (!response.ok) {
-                setAuthError(payload.error ?? getAuthErrorMessage(payload));
-                setAuthLoading(false);
-                return;
-            }
-
-            // Successful verification
-            setAuthState('authenticated'); // or 'verified' if we had a state for that
-            setShowPreMenuSplash(false);
-            setAuthView('none');
-            setOtpFlow('none');
-            
-            // Optionally reload to refresh all context from server
-            // window.location.reload(); 
-        } catch (error) {
-            setAuthError(getAuthErrorMessage(error));
-        } finally {
-            setAuthLoading(false);
-        }
-    };
-
-    // ── Render ───────────────────────────────────────────────────────────────────
-
-    if (loading) {
-        return (
-            <main className="app-container pb-safe bg-white transition-colors duration-300">
-                <MartrezaHeader />
-                <MartrezaSearch />
-                <MartrezaCategoryChips />
-                <MenuSkeleton />
-                <MartrezaBottomNav />
-            </main>
-        );
-    }
-
-    // Online ordering mode: show error if restaurant not found
-    if (isOnlineOrderMode && !guestContext && !contextLoading && contextError) {
-        return (
-            <main className="app-container flex min-h-screen items-center justify-center bg-(--background) px-6 text-center">
-                <div className="max-w-md">
-                    <h1 className="font-manrope text-2xl font-black tracking-tight text-black dark:text-white">
-                        Restaurant Not Found
-                    </h1>
-                    <p className="mt-3 text-sm font-medium text-black/60 dark:text-white/70">
-                        {contextError ?? 'We could not find this restaurant. Please check the URL.'}
-                    </p>
-                </div>
-            </main>
-        );
-    }
-
-    if (!showPreMenuSplash && (contextError || !guestContext)) {
-        return (
-            <main className="app-container flex min-h-screen items-center justify-center bg-(--background) px-6 text-center">
-                <div className="max-w-md">
-                    <h1 className="font-manrope text-2xl font-black tracking-tight text-black dark:text-white">
-                        Invalid Table QR
-                    </h1>
-                    <p className="mt-3 text-sm font-medium text-black/60 dark:text-white/70">
-                        {contextError ??
-                            'This table QR is invalid or expired. Please rescan the table QR code.'}
-                    </p>
-                </div>
-            </main>
-        );
-    }
-
-    if (contextLoading) {
-        return (
-            <div className="flex min-h-screen w-full items-center justify-center bg-(--background)">
-                <MenuSkeleton />
-            </div>
-        );
-    }
-
-    if (contextError) {
-        return (
-            <div className="flex min-h-screen w-full flex-col items-center justify-center bg-(--background) px-4 text-center">
-                <div className="mb-4 rounded-full bg-red-500/20 p-4">
-                    <Phone className="h-8 w-8 text-red-500" />
-                </div>
-                <h1 className="mb-2 text-xl font-semibold text-white">Unable to Load Menu</h1>
-                <p className="text-gray-400">{contextError}</p>
-            </div>
-        );
-    }
-
-    if (!guestContext) {
-        return (
-            <div className="flex min-h-screen w-full flex-col items-center justify-center bg-(--background) px-4 text-center">
-                <div className="mb-4 rounded-full bg-yellow-500/20 p-4">
-                    <Phone className="h-8 w-8 text-yellow-500" />
-                </div>
-                <h1 className="mb-2 text-xl font-semibold text-white">Invalid Link</h1>
-                <p className="text-gray-400">Please scan a valid table QR code to view the menu.</p>
-            </div>
-        );
-    }
-
-    // Show pre-menu splash screen for QR customers
-    if (showPreMenuSplash && guestContext && !guestContext.is_online_order) {
-        return (
-            <div className="relative flex min-h-screen flex-col items-center justify-center bg-[url('/splash-bg-opt.webp')] bg-cover bg-center px-6 text-center">
-                <div className="absolute inset-0 bg-black/60" />
-                <div className="relative z-10">
-                    {authState === 'guest' ? (
-                        <div className="flex w-full max-w-sm flex-col gap-3">
-                            <button
-                                onClick={() => {
-                                    setAuthView('login');
-                                }}
-                                className="bg-brand-yellow flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 font-semibold text-black transition-opacity hover:opacity-90"
-                            >
-                                <User className="h-5 w-5" />
-                                Sign In / Register
-                            </button>
-
-                            {authView === 'login' && (
-                                <div className="mt-4 flex flex-col gap-3 rounded-xl bg-(--card) p-4 text-left">
-                                    <input
-                                        type="tel"
-                                        placeholder="Phone number"
-                                        value={loginPhone}
-                                        onChange={e => setLoginPhone(e.target.value)}
-                                        className="w-full rounded-lg border border-gray-700 bg-(--background) px-3 py-2 text-white placeholder-gray-500"
-                                    />
-                                    <button
-                                        onClick={() => handleSendOtp('login')}
-                                        disabled={authLoading}
-                                        className="bg-brand-yellow w-full rounded-lg py-2 font-semibold text-black disabled:opacity-50"
-                                    >
-                                        {authLoading ? 'Sending...' : 'Send Code'}
-                                    </button>
-                                    {authError && (
-                                        <p className="text-sm text-red-400">{authError}</p>
-                                    )}
-                                    {authMessage && (
-                                        <p className="text-sm text-green-400">{authMessage}</p>
-                                    )}
-                                    <button
-                                        onClick={() => setAuthView('none')}
-                                        className="mt-2 text-center text-sm text-gray-400"
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
-                            )}
-
-                            <button
-                                onClick={() => setShowPreMenuSplash(false)}
-                                className="text-brand-yellow text-sm underline underline-offset-4"
-                            >
-                                Continue as guest
-                            </button>
-                        </div>
-                    ) : (
-                        <button
-                            onClick={() => setShowPreMenuSplash(false)}
-                            className="bg-brand-yellow rounded-lg px-8 py-3 font-semibold text-black transition-opacity hover:opacity-90"
-                        >
-                            View Menu
-                        </button>
-                    )}
-
-                    {authView !== 'none' && authView !== 'login' && (
-                        <div className="mt-6 flex w-full max-w-sm flex-col gap-3 rounded-xl bg-(--card) p-4 text-left">
-                            <input
-                                type="text"
-                                placeholder="Your name"
-                                value={signupName}
-                                onChange={e => setSignupName(e.target.value)}
-                                className="w-full rounded-lg border border-gray-700 bg-(--background) px-3 py-2 text-white placeholder-gray-500"
-                            />
-                            <input
-                                type="tel"
-                                placeholder="Phone number"
-                                value={signupPhone}
-                                onChange={e => setSignupPhone(e.target.value)}
-                                className="w-full rounded-lg border border-gray-700 bg-(--background) px-3 py-2 text-white placeholder-gray-500"
-                            />
-                            <button
-                                onClick={() => handleSendOtp('signup')}
-                                disabled={authLoading}
-                                className="bg-brand-yellow w-full rounded-lg py-2 font-semibold text-black disabled:opacity-50"
-                            >
-                                {authLoading ? 'Sending...' : 'Send Code'}
-                            </button>
-                            {authError && <p className="text-sm text-red-400">{authError}</p>}
-                            {authMessage && <p className="text-sm text-green-400">{authMessage}</p>}
-                            <button
-                                onClick={() => setAuthView('none')}
-                                className="mt-2 text-center text-sm text-gray-400"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    )}
-
-                    {otpFlow !== 'none' && (
-                        <div className="mt-6 flex w-full max-w-sm flex-col gap-3 rounded-xl bg-(--card) p-4 text-left">
-                            <p className="text-sm text-gray-400">
-                                Enter the code sent to {otpTargetPhone}
-                            </p>
-                            <input
-                                type="text"
-                                placeholder="Verification code"
-                                value={otpCode}
-                                onChange={e => setOtpCode(e.target.value)}
-                                className="w-full rounded-lg border border-gray-700 bg-(--background) px-3 py-2 text-white placeholder-gray-500"
-                            />
-                            <button
-                                onClick={handleVerifyOtp}
-                                disabled={authLoading}
-                                className="bg-brand-yellow w-full rounded-lg py-2 font-semibold text-black disabled:opacity-50"
-                            >
-                                {authLoading ? 'Verifying...' : 'Verify'}
-                            </button>
-                            {authError && <p className="text-sm text-red-400">{authError}</p>}
-                            <button
-                                onClick={() => {
-                                    setOtpFlow('none');
-                                    setAuthError(null);
-                                }}
-                                className="mt-2 text-center text-sm text-gray-400"
-                            >
-                                Change phone number
-                            </button>
-                        </div>
-                    )}
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <main className="app-container pb-32 bg-white transition-colors duration-300 overflow-x-hidden">
-            {/* Full-bleed hero — starts at y=0 with viewport-fit:cover, image shows behind status bar in PWA mode */}
-            <div
-                className="relative w-full pb-6"
-                style={{
-                    backgroundImage: `url('https://axuegixbqsvztdraenkz.supabase.co/storage/v1/object/public/food-images/Spicy%20Tonkotsu.webp')`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    minHeight: '280px',
-                }}
-            >
-                {/* Dark overlay for text contrast */}
-                <div className="absolute inset-0 bg-black/40" />
-
-                {/* pt-safe pushes content below the status bar text */}
-                <div className="relative z-10 pt-safe">
-                    <MartrezaSearch />
-                    <MartrezaCategoryChips />
-                </div>
-            </div>
-
-            {/* Special Offers */}
-            <div className="mt-4 px-6">
-                <div className="flex items-end justify-between">
-                    <div>
-                        <h2 className="text-2xl font-medium tracking-tighter text-black">Special Offers</h2>
-                        <p className="text-xs font-light tracking-tight text-black/40">Don&apos;t miss out on our exclusive deals.</p>
-                    </div>
-                    <button className="text-xs font-light text-black/40 hover:text-black">View All</button>
-                </div>
-
-                <div className="no-scrollbar -mx-6 flex gap-4 overflow-x-auto px-6 py-4">
-                    {filteredItems.slice(0, 5).map((item) => (
-                        <MartrezaProductCard
-                            key={`special-${item.id}`}
-                            item={item}
-                            className="w-[200px] shrink-0"
-                            onClick={() => setSelectedItem(item)}
-                            onAdd={() => handleAddToCart(item)}
-                        />
-                    ))}
-                </div>
-            </div>
-
-            {/* More for You */}
-            <div className="mt-8 px-6 pb-24">
-                <h2 className="mb-4 text-2xl font-medium tracking-tighter text-black">More for You</h2>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-8">
-                    {filteredItems.map((item) => (
-                        <MartrezaProductCard
-                            key={item.id}
-                            item={item}
-                            onClick={() => setSelectedItem(item)}
-                            onAdd={() => handleAddToCart(item)}
-                        />
-                    ))}
-                </div>
-            </div>
-
-            <MartrezaBottomNav />
-
-            <Suspense fallback={null}>
-                <DishDetailDrawer
-                    open={!!selectedItem}
-                    onOpenChange={open => !open && setSelectedItem(null)}
-                    item={selectedItem}
-                    onAddToCart={qty => selectedItem && handleAddToCart(selectedItem, qty)}
-                />
-            </Suspense>
-
-            <Suspense fallback={null}>
-                <CartDrawer
-                    open={cartOpen}
-                    onOpenChange={setCartOpen}
-                    guestContext={{
-                        slug: guestContext.slug,
-                        table: guestContext.table_number,
-                        sig: guestContext.sig,
-                        exp: guestContext.exp,
-                        guest_session_id: guestSessionId ?? undefined,
-                        auth_state: authState,
-                        login_url: buildAuthHref('/guest/login'),
-                        is_online_order: guestContext.is_online_order,
-                        ...(campaignDeliveryId
-                            ? {
-                                  campaign_attribution: {
-                                      campaign_delivery_id: campaignDeliveryId,
-                                      ...(campaignId ? { campaign_id: campaignId } : {}),
-                                  } as CampaignAttributionPayload,
-                              }
-                            : {}),
-                    }}
-                    tableNumber={
-                        guestContext.is_online_order ? null : guestContext.table_number
-                    }
-                    paymentReturnSuccess={paymentReturnSuccess}
-                    paymentOrderId={paymentReturnOrderId ?? undefined}
-                />
-            </Suspense>
-        </main>
-    );
 }
 
+// ─── Page Shell ───────────────────────────────────────────────────────────────
+
 /**
- * Default export for the menu page - wraps the client content in Suspense and CartProvider
+ * MenuClientContent — blank canvas.
+ * The old UI has been removed. Build the new design here.
  */
-export default function DynamicMenuPage() {
+export function MenuClientContent() {
+    const data = useGuestMenuData();
+
+    // Loading / error boundary stubs — replace with new design components.
+    if (data.contextLoading) {
+        return (
+            <div className="flex min-h-screen w-full items-center justify-center bg-[var(--background)]">
+                {/* TODO: new loading skeleton */}
+                <p className="text-sm text-white/40">Loading…</p>
+            </div>
+        );
+    }
+
+    if (data.contextError) {
+        return (
+            <div className="flex min-h-screen w-full flex-col items-center justify-center bg-[var(--background)] px-4 text-center">
+                {/* TODO: new error state */}
+                <p className="text-red-400">{data.contextError}</p>
+            </div>
+        );
+    }
+
+    if (!data.guestContext) {
+        return (
+            <div className="flex min-h-screen w-full flex-col items-center justify-center bg-[var(--background)] px-4 text-center">
+                {/* TODO: new invalid-link state */}
+                <p className="text-yellow-400">Invalid or expired link.</p>
+            </div>
+        );
+    }
+
+    // ── Main menu canvas — build here ─────────────────────────────────────────
     return (
-        <Suspense
-            fallback={
-                <div className="flex min-h-screen w-full bg-(--background) text-white">
-                    {/* Fallback space matches main structure to avoid jar */}
-                </div>
-            }
-        >
-            <CartProvider>
-                <MenuClientContent />
-            </CartProvider>
-        </Suspense>
+        <main className="min-h-screen w-full bg-[var(--background)]">
+            {/*
+             * ════════════════════════════════════════════════════
+             *   BLANK CANVAS — NEW GUEST MENU DESIGN GOES HERE
+             * ════════════════════════════════════════════════════
+             *
+             *  Available data:
+             *    data.guestContext        → restaurant name, logo, table info
+             *    data.filteredItems       → menu items for current tab/category
+             *    data.realItems           → all loaded menu items
+             *    data.activeTab           → 'food' | 'drinks'
+             *    data.setActiveTab        → tab switcher
+             *    data.activeCategoryId    → active category filter
+             *    data.setActiveCategoryId → category filter setter
+             *    data.loading             → menu loading state
+             *    data.cartCount           → cart item count
+             *    data.cartOpen            → cart drawer open state
+             *    data.setCartOpen         → open/close cart
+             *    data.handleAddToCart     → add item to cart
+             *    data.selectedItem        → currently selected item
+             *    data.setSelectedItem     → select / deselect item
+             *    data.isOnlineOrderMode   → true for storefront, false for QR
+             *    data.authState           → 'guest' | 'authenticated'
+             *    data.showPreMenuSplash   → pre-menu splash flag
+             *    data.setShowPreMenuSplash
+             */}
+            <div className="flex min-h-screen items-center justify-center">
+                <p className="text-sm text-white/20 select-none">
+                    [ New Guest Menu — Design starts here ]
+                </p>
+            </div>
+        </main>
     );
 }

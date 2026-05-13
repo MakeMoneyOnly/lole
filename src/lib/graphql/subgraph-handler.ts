@@ -7,6 +7,7 @@ import { startServerAndCreateNextHandler } from '@as-integrations/next';
 import type { GraphQLContext } from './context';
 import { createDataLoaders } from './dataloaders';
 import { graphqlConfig } from './config';
+import { STAFF_ROLES } from '@/types/status';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ResolversType = Record<string, any>;
@@ -15,6 +16,13 @@ export interface SubgraphConfig {
     typeDefs: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolvers: Record<string, any>;
+}
+
+/**
+ * Validates that a string is a valid StaffRole
+ */
+function isValidStaffRole(role: string | null): role is (typeof STAFF_ROLES)[number] {
+    return role !== null && STAFF_ROLES.includes(role as (typeof STAFF_ROLES)[number]);
 }
 
 /**
@@ -57,7 +65,7 @@ export function createSubgraphHandler(config: SubgraphConfig) {
                     user: {
                         id: userId,
                         restaurantId,
-                        role: userRole || undefined,
+                        role: isValidStaffRole(userRole) ? userRole : undefined,
                     },
                     dataLoaders,
                 };

@@ -6,10 +6,11 @@ import { parseJsonBody } from '@/lib/api/validation';
 import { writeAuditLog } from '@/lib/api/audit';
 import { resend, EMAIL_FROM } from '@/lib/email/client';
 import { StaffInviteEmail } from '@/lib/email/templates/staff-invite';
+import { STAFF_ROLES } from '@/types/status';
 
 const InviteStaffSchema = z.object({
     email: z.string().email().optional().nullable(),
-    role: z.enum(['owner', 'admin', 'manager', 'kitchen', 'waiter', 'bar']),
+    role: z.enum(STAFF_ROLES),
     label: z.string().trim().min(2).max(120).optional().nullable(),
 });
 

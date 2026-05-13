@@ -1,8 +1,14 @@
-import { FoodItem, Category } from '@/types';
+import { FoodItem } from '@/types';
 import { Fish, Sandwich, Pizza, Coffee, Leaf, Flame } from 'lucide-react';
 import React from 'react';
 
-export const CATEGORIES: Category[] = [
+interface UICategory {
+    id: string;
+    name: string;
+    icon: React.ReactNode;
+}
+
+export const CATEGORIES: UICategory[] = [
     { id: 'all', name: 'All', icon: <Flame size={18} /> },
     { id: 'sushi', name: 'Sushi', icon: <Fish size={18} /> },
     { id: 'burger', name: 'Burger', icon: <Sandwich size={18} /> },

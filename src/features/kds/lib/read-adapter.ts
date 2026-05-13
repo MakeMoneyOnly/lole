@@ -1,4 +1,4 @@
-import type { UnifiedKDSOrder } from '@/app/api/kds/queue/route';
+import type { UnifiedKDSOrder } from '@/app/api/v1/merchant/operations/kds/queue/route';
 import { normalizeKdsPrintPolicy, DEFAULT_KDS_PRINT_POLICY } from './printer';
 import { getPowerSync } from '@/lib/sync';
 

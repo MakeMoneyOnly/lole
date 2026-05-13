@@ -1,19 +1,19 @@
 import { getSupabaseClient } from '@/lib/supabase/client';
 import { useEffect, useMemo, useState } from 'react';
-import { UserRole } from '@/types/models';
+import type { StaffRole } from '@/types/status';
 import { useRouter } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 
 export interface UseRoleResult {
-    role: UserRole | null;
+    role: StaffRole | null;
     loading: boolean;
     user: User | null;
     restaurantId: string | null;
-    requireRole: (allowedRoles: UserRole[], redirectUrl?: string) => void;
+    requireRole: (allowedRoles: StaffRole[], redirectUrl?: string) => void;
 }
 
 export function useRole(restaurantId: string | null): UseRoleResult {
-    const [role, setRole] = useState<UserRole | null>(null);
+    const [role, setRole] = useState<StaffRole | null>(null);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState<User | null>(null);
     const [resolvedRestaurantId, setResolvedRestaurantId] = useState<string | null>(restaurantId);
@@ -78,7 +78,7 @@ export function useRole(restaurantId: string | null): UseRoleResult {
                 ) {
                     const match = Array.isArray(roleFromRpc) ? roleFromRpc[0] : roleFromRpc;
                     if (cancelled) return;
-                    setRole(match.role as UserRole);
+                    setRole(match.role as StaffRole);
                     setResolvedRestaurantId(match.restaurant_id);
                     return;
                 }
@@ -96,7 +96,7 @@ export function useRole(restaurantId: string | null): UseRoleResult {
                     setRole(null);
                 } else if (data && data.is_active !== false) {
                     if (cancelled) return;
-                    setRole(data.role as UserRole);
+                    setRole(data.role as StaffRole);
                     setResolvedRestaurantId(data.restaurant_id);
                 } else {
                     if (cancelled) return;
@@ -127,7 +127,7 @@ export function useRole(restaurantId: string | null): UseRoleResult {
         };
     }, [restaurantId, supabase]);
 
-    const requireRole = (allowedRoles: UserRole[], redirectUrl = '/login') => {
+    const requireRole = (allowedRoles: StaffRole[], redirectUrl = '/login') => {
         if (loading) return; // Don't redirect while loading
         if (!role || !allowedRoles.includes(role)) {
             router.push(redirectUrl);

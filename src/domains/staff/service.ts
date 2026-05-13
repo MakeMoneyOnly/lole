@@ -2,6 +2,7 @@
 // Business logic layer - PIN hashing, role validation, etc.
 import { staffRepository, StaffRow, StaffListOptions } from './repository';
 import { hashStaffPin } from './pin';
+import { STAFF_ROLES, StaffRole } from '@/types/status';
 
 export interface CreateStaffInput {
     restaurantId: string;
@@ -23,24 +24,10 @@ export interface UpdateStaffInput {
 }
 
 /**
- * Valid staff roles
- */
-export const VALID_ROLES = [
-    'owner',
-    'manager',
-    'cashier',
-    'waiter',
-    'kitchen',
-    'expeditor',
-] as const;
-export type StaffRole = (typeof VALID_ROLES)[number];
-export { hashStaffPin } from './pin';
-
-/**
  * Check if a role is valid
  */
 export function isValidRole(role: string): role is StaffRole {
-    return VALID_ROLES.includes(role as StaffRole);
+    return STAFF_ROLES.includes(role as StaffRole);
 }
 
 export class StaffService {
@@ -95,7 +82,7 @@ export class StaffService {
         // Validate role
         if (!isValidRole(input.role)) {
             throw new Error(
-                `Invalid role: ${input.role}. Valid roles are: ${VALID_ROLES.join(', ')}`
+                `Invalid role: ${input.role}. Valid roles are: ${STAFF_ROLES.join(', ')}`
             );
         }
 
@@ -133,7 +120,7 @@ export class StaffService {
         // Validate role if provided
         if (input.role && !isValidRole(input.role)) {
             throw new Error(
-                `Invalid role: ${input.role}. Valid roles are: ${VALID_ROLES.join(', ')}`
+                `Invalid role: ${input.role}. Valid roles are: ${STAFF_ROLES.join(', ')}`
             );
         }
 
@@ -196,6 +183,15 @@ export class StaffService {
     hasPermission(staff: StaffRow, permission: string): boolean {
         const rolePermissions: Record<StaffRole, string[]> = {
             owner: ['all'],
+            admin: [
+                'staff:read',
+                'staff:write',
+                'orders:read',
+                'orders:write',
+                'menu:read',
+                'menu:write',
+                'reports:read',
+            ],
             manager: [
                 'staff:read',
                 'staff:write',
@@ -205,10 +201,9 @@ export class StaffService {
                 'menu:write',
                 'reports:read',
             ],
-            cashier: ['orders:read', 'orders:write', 'payments:process'],
-            waiter: ['orders:read', 'orders:create', 'orders:update'],
             kitchen: ['orders:read', 'orders:update:status'],
-            expeditor: ['orders:read', 'orders:update:status'],
+            waiter: ['orders:read', 'orders:create', 'orders:update'],
+            bar: ['orders:read', 'orders:update:status'],
         };
 
         const permissions = rolePermissions[staff.role as StaffRole] || [];
@@ -217,3 +212,5 @@ export class StaffService {
 }
 
 export const staffService = new StaffService();
+
+export { hashStaffPin } from './pin';

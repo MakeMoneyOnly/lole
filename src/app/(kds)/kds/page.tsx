@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { AlertCircle } from 'lucide-react';
 import { ManagedDeviceBanner } from '@/components/device/shell/ManagedDeviceBanner';
 import { useRole } from '@/features/auth/hooks/useRole';
-import { useManagedDeviceSession } from '@/hooks/useManagedDeviceSession';
+import { useManagedDeviceSession } from '@/features/merchant/hooks/useManagedDeviceSession';
 import { StationBoard } from '@/features/kds/components/StationBoard';
 
 type StationView = 'kitchen' | 'bar' | 'dessert' | 'coffee';
@@ -44,9 +44,9 @@ function KdsPageContent() {
 
     if (managedDevice.loading) {
         return (
-            <div className="min-h-screen bg-[#F7F5F2] flex items-center justify-center p-10 font-inter tracking-[-0.04em]">
-                <div className="bg-white border border-gray-100 rounded-3xl p-12 flex flex-col items-center gap-6">
-                    <div className="w-12 h-12 rounded-full border-2 border-gray-100 border-t-[#DDF853] animate-spin" />
+            <div className="font-inter flex min-h-screen items-center justify-center bg-[#F7F5F2] p-10 tracking-[-0.04em]">
+                <div className="flex flex-col items-center gap-6 rounded-3xl border border-gray-100 bg-white p-12">
+                    <div className="h-12 w-12 animate-spin rounded-full border-2 border-gray-100 border-t-[#DDF853]" />
                     <p className="text-[11px] font-black tracking-[0.2em] text-[#1A1C1E] uppercase">
                         Booting KDS Workspace
                     </p>
@@ -57,20 +57,21 @@ function KdsPageContent() {
 
     if (managedDevice.hasProfileMismatch) {
         return (
-            <div className="min-h-screen bg-[#F7F5F2] font-inter tracking-[-0.04em] p-10 flex flex-col items-center justify-center">
-                <div className="max-w-md w-full bg-white border border-gray-100 rounded-[2rem] p-12 text-center space-y-8">
-                    <div className="mx-auto w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center">
-                        <AlertCircle className="w-8 h-8" />
+            <div className="font-inter flex min-h-screen flex-col items-center justify-center bg-[#F7F5F2] p-10 tracking-[-0.04em]">
+                <div className="w-full max-w-md space-y-8 rounded-[2rem] border border-gray-100 bg-white p-12 text-center">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-red-500">
+                        <AlertCircle className="h-8 w-8" />
                     </div>
                     <div className="space-y-4">
                         <h1 className="text-3xl font-bold text-[#1A1C1E]">Wrong Role.</h1>
-                        <p className="text-gray-500 font-medium leading-relaxed">
-                            This device is paired for a different workspace. Re-provision it as a KDS screen to access the kitchen display.
+                        <p className="leading-relaxed font-medium text-gray-500">
+                            This device is paired for a different workspace. Re-provision it as a
+                            KDS screen to access the kitchen display.
                         </p>
                     </div>
-                    <button 
+                    <button
                         onClick={() => router.push('/device')}
-                        className="w-full bg-[#1A1C1E] text-white py-4 rounded-xl font-bold text-sm"
+                        className="w-full rounded-xl bg-[#1A1C1E] py-4 text-sm font-bold text-white"
                     >
                         Return to Shell
                     </button>
@@ -81,17 +82,18 @@ function KdsPageContent() {
 
     if (managedDevice.isIdentityRevoked || !managedDevice.hasOutageAccess) {
         return (
-            <div className="min-h-screen bg-[#F7F5F2] font-inter tracking-[-0.04em] p-10 flex flex-col items-center justify-center">
-                <div className="max-w-md w-full bg-white border border-gray-100 rounded-[2rem] p-12 text-center space-y-8">
-                    <div className="mx-auto w-16 h-16 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center">
-                        <AlertCircle className="w-8 h-8" />
+            <div className="font-inter flex min-h-screen flex-col items-center justify-center bg-[#F7F5F2] p-10 tracking-[-0.04em]">
+                <div className="w-full max-w-md space-y-8 rounded-[2rem] border border-gray-100 bg-white p-12 text-center">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-500">
+                        <AlertCircle className="h-8 w-8" />
                     </div>
                     <div className="space-y-4">
                         <h1 className="text-3xl font-bold text-[#1A1C1E]">Access Paused.</h1>
-                        <p className="text-gray-500 font-medium leading-relaxed">
+                        <p className="leading-relaxed font-medium text-gray-500">
                             {managedDevice.isIdentityRevoked
                                 ? 'This kitchen screen identity was revoked. Re-pair it from device management.'
-                                : (managedDevice.outageAccess.reason ?? 'This kitchen screen needs fresh online authorization.')}
+                                : (managedDevice.outageAccess.reason ??
+                                  'This kitchen screen needs fresh online authorization.')}
                         </p>
                     </div>
                 </div>
@@ -114,13 +116,15 @@ function KdsPageContent() {
 
 export default function KdsPage() {
     return (
-        <div className="font-inter tracking-[-0.04em] min-h-screen bg-[#F7F5F2]">
+        <div className="font-inter min-h-screen bg-[#F7F5F2] tracking-[-0.04em]">
             <Suspense
                 fallback={
-                    <div className="min-h-screen flex items-center justify-center p-10">
+                    <div className="flex min-h-screen items-center justify-center p-10">
                         <div className="flex flex-col items-center gap-4">
                             <div className="h-10 w-10 animate-spin rounded-full border-2 border-gray-200 border-t-[#DDF853]" />
-                            <p className="text-[11px] font-black uppercase tracking-widest text-gray-400">Loading KDS</p>
+                            <p className="text-[11px] font-black tracking-widest text-gray-400 uppercase">
+                                Loading KDS
+                            </p>
                         </div>
                     </div>
                 }

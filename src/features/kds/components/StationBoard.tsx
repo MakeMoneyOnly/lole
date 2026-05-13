@@ -12,9 +12,9 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useRole } from '@/features/auth/hooks/useRole';
-import type { UnifiedKDSOrder } from '@/app/api/kds/queue/route';
+import type { UnifiedKDSOrder } from '@/app/api/v1/merchant/operations/kds/queue/route';
 import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
+import Link from 'next/link'; // TODO: use for fullscreen navigation
 import { useKDSRealtime } from '@/features/kds/hooks/useKDSRealtime';
 import { readKdsQueue, readKdsSettings } from '@/features/kds/lib/read-adapter';
 import {
@@ -58,10 +58,10 @@ type StationBoardProps = {
 
 const COURSE_SEQUENCE: CourseType[] = ['appetizer', 'main', 'dessert', 'beverage', 'side'];
 
-function courseLabel(course: CourseType | null | undefined): string {
-    if (!course) return 'Appetizer';
-    if (course === 'main') return 'Main';
-    return course.charAt(0).toUpperCase() + course.slice(1);
+function courseLabel(_course: CourseType | null | undefined): string {
+    if (!_course) return 'Appetizer';
+    if (_course === 'main') return 'Main';
+    return _course.charAt(0).toUpperCase() + _course.slice(1);
 }
 
 function nextCourse(course: CourseType | null | undefined): CourseType | null {
@@ -101,8 +101,8 @@ function actionLabel(action: KdsItemAction) {
     return 'Ready';
 }
 
-function getModifierStyle(modifier: string): string {
-    const lower = modifier.toLowerCase();
+function getModifierStyle(_modifier: string): string {
+    const lower = _modifier.toLowerCase();
     const exclusionPattern = /\b(no|without|hold|minus|remove|skip)\b/;
     const additionPattern = /\b(extra|add|with|plus|double)\b/;
 
@@ -283,7 +283,7 @@ function playAlertTone() {
 export function StationBoard({
     station,
     title,
-    accentClassName,
+    accentClassName: _accentClassName,
     restaurantIdOverride,
     headerSlot,
 }: StationBoardProps) {
@@ -311,12 +311,12 @@ export function StationBoard({
     const [error, setError] = useState<string | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [actionKey, setActionKey] = useState<string | null>(null);
-    const [advancingCourseOrderId, setAdvancingCourseOrderId] = useState<string | null>(null);
+    const [_advancingCourseOrderId, setAdvancingCourseOrderId] = useState<string | null>(null);
     const [isOnline, setIsOnline] = useState(true);
     const [queuedActionCount, setQueuedActionCount] = useState(0);
     const [syncingOfflineActions, setSyncingOfflineActions] = useState(false);
     const [printPolicy, setPrintPolicy] = useState<PrintPolicy>(DEFAULT_PRINT_POLICY);
-    const [printingOrderId, setPrintingOrderId] = useState<string | null>(null);
+    const [_printingOrderId, setPrintingOrderId] = useState<string | null>(null);
     const [clock, setClock] = useState(new Date());
     const { isConnected: realtimeConnected } = useKDSRealtime({
         restaurantId: restaurantId ?? '',
@@ -444,7 +444,7 @@ export function StationBoard({
         return orders.map(order => ({
             ...order,
             stationItems: (order.items ?? []).filter(
-                item => (item.station ?? 'kitchen') === station
+                (item: { station?: string }) => (item.station ?? 'kitchen') === station
             ),
         }));
     }, [orders, station]);
@@ -452,14 +452,21 @@ export function StationBoard({
     const actionableItems = useMemo(() => {
         return stationOrders.flatMap(order =>
             order.stationItems
-                .map(item => ({
-                    orderId: order.id,
-                    itemId: item.id,
-                    kdsItemId: item.kds_item_id,
-                    status: item.status ?? 'queued',
-                    name: item.name,
-                }))
-                .filter(item => allowedActions(item.status).length > 0)
+                .map(
+                    (item: {
+                        id: string;
+                        kds_item_id?: string;
+                        status?: string;
+                        name: string;
+                    }) => ({
+                        orderId: order.id,
+                        itemId: item.id,
+                        kdsItemId: item.kds_item_id ?? '',
+                        status: item.status ?? 'queued',
+                        name: item.name,
+                    })
+                )
+                .filter((item: { status: string }) => allowedActions(item.status).length > 0)
         );
     }, [stationOrders]);
 
@@ -589,7 +596,7 @@ export function StationBoard({
         [applyOptimisticItemStatus, fetchQueue, handlePrintTicket, isOnline, printPolicy.mode]
     );
 
-    const handleAdvanceCourse = useCallback(
+    const _handleAdvanceCourse = useCallback(
         async (order: UnifiedKDSOrder) => {
             if (order.fireMode !== 'manual') return;
             const next = nextCourse(order.currentCourse as CourseType | null | undefined);
@@ -971,62 +978,74 @@ export function StationBoard({
                                 </div>
 
                                 <div className="min-h-[300px] flex-1 space-y-6 overflow-y-auto p-8">
-                                    {order.stationItems.map(item => {
-                                        const itemKey = `${order.id}:${item.id}`;
-                                        const isSelected = selectedItemKey === itemKey;
-                                        const isRecalled =
-                                            alertPolicy.recall_visual &&
-                                            (item.status ?? 'queued') === 'recalled';
+                                    {order.stationItems.map(
+                                        (item: {
+                                            id: string;
+                                            status?: string;
+                                            name: string;
+                                            quantity?: number;
+                                            notes?: string;
+                                            modifiers?: string[];
+                                            kds_item_id?: string;
+                                        }) => {
+                                            const itemKey = `${order.id}:${item.id}`;
+                                            const isSelected = selectedItemKey === itemKey;
+                                            const isRecalled =
+                                                alertPolicy.recall_visual &&
+                                                (item.status ?? 'queued') === 'recalled';
 
-                                        return (
-                                            <div
-                                                key={itemKey}
-                                                className={`rounded-3xl border p-6 transition-all ${
-                                                    isSelected
-                                                        ? 'border-[#1A1C1E] bg-[#1A1C1E] text-white'
-                                                        : 'border-gray-50 bg-white'
-                                                } ${isRecalled ? 'animate-pulse border-red-500' : ''}`}
-                                            >
-                                                <div className="mb-4 flex items-start justify-between gap-4">
-                                                    <div className="flex-1">
-                                                        <div className="flex items-center gap-3">
-                                                            <span
-                                                                className={`text-2xl font-black ${isSelected ? 'text-[#DDF853]' : 'text-[#1A1C1E]'}`}
-                                                            >
-                                                                {item.quantity}×
-                                                            </span>
-                                                            <h4 className="text-xl leading-tight font-bold">
-                                                                {item.name}
-                                                            </h4>
+                                            return (
+                                                <div
+                                                    key={itemKey}
+                                                    className={`rounded-3xl border p-6 transition-all ${
+                                                        isSelected
+                                                            ? 'border-[#1A1C1E] bg-[#1A1C1E] text-white'
+                                                            : 'border-gray-50 bg-white'
+                                                    } ${isRecalled ? 'animate-pulse border-red-500' : ''}`}
+                                                >
+                                                    <div className="mb-4 flex items-start justify-between gap-4">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-3">
+                                                                <span
+                                                                    className={`text-2xl font-black ${isSelected ? 'text-[#DDF853]' : 'text-[#1A1C1E]'}`}
+                                                                >
+                                                                    {item.quantity}×
+                                                                </span>
+                                                                <h4 className="text-xl leading-tight font-bold">
+                                                                    {item.name}
+                                                                </h4>
+                                                            </div>
+                                                            {item.notes && (
+                                                                <p
+                                                                    className={`mt-2 text-sm font-medium ${isSelected ? 'text-gray-400' : 'text-gray-500'}`}
+                                                                >
+                                                                    "{item.notes}"
+                                                                </p>
+                                                            )}
                                                         </div>
-                                                        {item.notes && (
-                                                            <p
-                                                                className={`mt-2 text-sm font-medium ${isSelected ? 'text-gray-400' : 'text-gray-500'}`}
-                                                            >
-                                                                "{item.notes}"
-                                                            </p>
+                                                    </div>
+
+                                                    <div className="mb-6 flex flex-wrap gap-2">
+                                                        {item.modifiers?.map(
+                                                            (mod: string, idx: number) => (
+                                                                <span
+                                                                    key={idx}
+                                                                    className={`rounded-lg px-3 py-1 text-[10px] font-black tracking-widest uppercase ${
+                                                                        isSelected
+                                                                            ? 'bg-white/10 text-white'
+                                                                            : 'bg-[#F7F5F2] text-gray-400'
+                                                                    }`}
+                                                                >
+                                                                    {mod}
+                                                                </span>
+                                                            )
                                                         )}
                                                     </div>
-                                                </div>
 
-                                                <div className="mb-6 flex flex-wrap gap-2">
-                                                    {item.modifiers?.map((mod, idx) => (
-                                                        <span
-                                                            key={idx}
-                                                            className={`rounded-lg px-3 py-1 text-[10px] font-black tracking-widest uppercase ${
-                                                                isSelected
-                                                                    ? 'bg-white/10 text-white'
-                                                                    : 'bg-[#F7F5F2] text-gray-400'
-                                                            }`}
-                                                        >
-                                                            {mod}
-                                                        </span>
-                                                    ))}
-                                                </div>
-
-                                                <div className="flex gap-2">
-                                                    {allowedActions(item.status ?? 'queued').map(
-                                                        action => {
+                                                    <div className="flex gap-2">
+                                                        {allowedActions(
+                                                            item.status ?? 'queued'
+                                                        ).map(action => {
                                                             const key = `${order.id}:${item.id}:${action}`;
                                                             const disabled = actionKey === key;
                                                             return (
@@ -1052,18 +1071,18 @@ export function StationBoard({
                                                                         : actionLabel(action)}
                                                                 </button>
                                                             );
-                                                        }
-                                                    )}
-                                                    {allowedActions(item.status ?? 'queued')
-                                                        .length === 0 && (
-                                                        <div className="flex h-12 flex-1 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-sm font-black tracking-widest text-emerald-600 uppercase">
-                                                            Ready
-                                                        </div>
-                                                    )}
+                                                        })}
+                                                        {allowedActions(item.status ?? 'queued')
+                                                            .length === 0 && (
+                                                            <div className="flex h-12 flex-1 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-sm font-black tracking-widest text-emerald-600 uppercase">
+                                                                Ready
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        }
+                                    )}
                                     {order.stationItems.length === 0 && (
                                         <div className="flex h-full flex-col items-center justify-center text-center text-gray-300 opacity-50">
                                             <ChefHat className="mb-4 h-10 w-10" />

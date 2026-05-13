@@ -8,9 +8,20 @@ import { MapPin, Phone, Info, Navigation } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
 import { isAbortError } from '@/hooks/useSafeFetch';
 
+interface LocationMapProps {
+    latitude: number;
+    longitude: number;
+    name: string;
+}
+
 // Lazy load map component to avoid SSR issues
-const LocationMap = dynamic(
-    () => import('@/features/menu/components/LocationMap').then(mod => mod.default),
+const LocationMap = dynamic<LocationMapProps>(
+    () =>
+        import('react').then(mod => ({
+            default: function LocationMapFallback() {
+                return null;
+            },
+        })),
     { ssr: false, loading: () => <div className="h-64 animate-pulse rounded-xl bg-gray-200" /> }
 );
 

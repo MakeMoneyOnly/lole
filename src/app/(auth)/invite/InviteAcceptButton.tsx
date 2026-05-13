@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
-import { acceptInvite } from '@/app/auth/invite/actions';
+import { acceptInvite } from '@/app/(auth)/invite/actions';
 
 export function InviteAcceptButton({ code }: { code: string }) {
     const [loading, setLoading] = useState(false);

@@ -6,6 +6,7 @@ import { writeAuditLog } from '@/lib/api/audit';
 import { isIdempotencyKeyValid, resolveIdempotencyKey } from '@/lib/api/idempotency';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import type { Json } from '@/types/database';
+import { STAFF_ROLES } from '@/types/status';
 
 const ScheduleQuerySchema = z.object({
     start_date: z
@@ -20,7 +21,7 @@ const ScheduleQuerySchema = z.object({
 
 const ShiftCreateSchema = z.object({
     staff_id: z.string().uuid(),
-    role: z.enum(['owner', 'admin', 'manager', 'kitchen', 'waiter', 'bar']).optional(),
+    role: z.enum(STAFF_ROLES).optional(),
     shift_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
     start_time: z.string().regex(/^\d{2}:\d{2}$/),
     end_time: z.string().regex(/^\d{2}:\d{2}$/),

@@ -3,9 +3,10 @@ import { apiError, apiSuccess } from '@/lib/api/response';
 import { getAuthenticatedUser, getAuthorizedRestaurantContext } from '@/lib/api/authz';
 import { parseJsonBody } from '@/lib/api/validation';
 import { writeAuditLog } from '@/lib/api/audit';
+import { STAFF_ROLES } from '@/types/status';
 
 const UpdateStaffRoleSchema = z.object({
-    role: z.enum(['owner', 'admin', 'manager', 'kitchen', 'waiter', 'bar']),
+    role: z.enum(STAFF_ROLES),
 });
 
 export async function PATCH(request: Request, context: { params: Promise<{ staffId: string }> }) {
