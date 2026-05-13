@@ -8,7 +8,9 @@ export default function PosLayout({ children }: { children: React.ReactNode }) {
     // No sidebar, no header. Just full screen PWA-style.
     return (
         <CartProvider>
-            <div className="font-manrope min-h-screen bg-gray-50 text-gray-900">{children}</div>
+            <div className="font-inter tracking-[-0.04em] min-h-screen bg-[#F7F5F2] text-[#1A1C1E]">
+                {children}
+            </div>
         </CartProvider>
     );
 }

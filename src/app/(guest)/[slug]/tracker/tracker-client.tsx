@@ -5,7 +5,7 @@
  *
  * Shows real-time prep status of each item after a guest places an order.
  * Accessed from the success screen or via a deep-link: /<slug>/tracker?order_id=...&table=...&_sig=...&_exp=...
- * Polls /api/guest/track every 8 seconds and subscribes to Supabase Realtime for instant updates.
+ * Polls /api/v1/guest-portal/track every 8 seconds and subscribes to Supabase Realtime for instant updates.
  */
 
 import { useEffect, useMemo, useRef, useState, Suspense } from 'react';
@@ -115,9 +115,9 @@ function TrackerContent() {
     const slug = params.slug;
 
     const orderId = searchParams.get('order_id');
-    const _tableNumber = searchParams.get('table');
-    const _sig = searchParams.get('_sig');
-    const _exp = searchParams.get('_exp');
+    const tableNumber = searchParams.get('table');
+    const signature = searchParams.get('sig') ?? searchParams.get('_sig');
+    const expiresAt = searchParams.get('exp') ?? searchParams.get('_exp');
 
     const [items, setItems] = useState<KdsItem[]>([]);
     const [order, setOrder] = useState<OrderSummary | null>(null);
@@ -132,14 +132,14 @@ function TrackerContent() {
     // Fetch initial data
     useEffect(() => {
         async function fetchOrderData() {
-            if (!orderId) {
-                setError('No order ID provided');
+            if (!orderId || !tableNumber || !signature || !expiresAt) {
+                setError('Incomplete tracking parameters');
                 setLoading(false);
                 return;
             }
 
             try {
-                // Fetch restaurant name
+                // Fetch restaurant name (publicly accessible)
                 const { data: restaurant } = await supabase
                     .from('restaurants')
                     .select('name')
@@ -150,68 +150,41 @@ function TrackerContent() {
                     setRestaurantName(restaurant.name);
                 }
 
-                // Fetch order items with KDS status
-                const { data: orderData, error: orderError } = await supabase
-                    .from('orders')
-                    .select('id, order_number, table_number, status, created_at, total_price')
-                    .eq('id', orderId)
-                    .single();
+                // Fetch live order status via the secure V1 endpoint
+                const url = new URL('/api/v1/guest-portal/track', window.location.origin);
+                url.searchParams.set('slug', slug);
+                url.searchParams.set('order_id', orderId);
+                url.searchParams.set('table', tableNumber);
+                url.searchParams.set('sig', signature);
+                url.searchParams.set('exp', expiresAt);
 
-                if (orderError) throw orderError;
+                const response = await fetch(url.toString());
+                const payload = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(payload.error || 'Failed to load order status');
+                }
+
+                const { order: orderData, items: kdsItems } = payload.data;
                 setOrder(orderData);
-
-                // Fetch order items
-                const { data: orderItems, error: itemsError } = await supabase
-                    .from('order_items')
-                    .select(
-                        'id, name, quantity, notes, modifiers, kds_status, kds_station, started_at, ready_at'
-                    )
-                    .eq('order_id', orderId);
-
-                if (itemsError) throw itemsError;
-
-                setItems(
-                    (orderItems || []).map(
-                        (item: {
-                            id: string;
-                            name: string;
-                            quantity: number;
-                            notes?: string | null;
-                            modifiers?: string[] | null;
-                            kds_status?: string | null;
-                            kds_station?: string | null;
-                            started_at?: string | null;
-                            ready_at?: string | null;
-                        }) => ({
-                            id: item.id,
-                            name: item.name,
-                            quantity: item.quantity,
-                            station: item.kds_station || 'kitchen',
-                            status: (item.kds_status as KdsStatus) || 'queued',
-                            notes: item.notes,
-                            modifiers: item.modifiers,
-                            started_at: item.started_at,
-                            ready_at: item.ready_at,
-                        })
-                    )
-                );
-
+                setItems(kdsItems);
                 setLastRefresh(new Date());
             } catch (err) {
                 console.error('Error fetching order data:', err);
-                setError('Failed to load order status');
+                setError(err instanceof Error ? err.message : 'Failed to load order status');
             } finally {
                 setLoading(false);
             }
         }
 
         fetchOrderData();
-    }, [orderId, slug, supabase]);
+    }, [orderId, tableNumber, signature, expiresAt, slug, supabase]);
 
     // Subscribe to realtime updates
     useEffect(() => {
         if (!orderId) return;
 
+        // Still listen to kds_order_items for instant UI updates if possible
         channelRef.current = supabase
             .channel(`order-tracker:${orderId}`)
             .on(
@@ -219,7 +192,7 @@ function TrackerContent() {
                 {
                     event: 'UPDATE',
                     schema: 'public',
-                    table: 'order_items',
+                    table: 'kds_order_items',
                     filter: `order_id=eq.${orderId}`,
                 },
                 (payload: { new: unknown }) => {
@@ -248,37 +221,34 @@ function TrackerContent() {
         };
     }, [orderId, supabase]);
 
-    // Poll for updates every 8 seconds
+    // Poll for updates every 8 seconds via the secure V1 endpoint
     useEffect(() => {
         const interval = setInterval(async () => {
-            if (!orderId) return;
+            if (!orderId || !tableNumber || !signature || !expiresAt) return;
 
-            const { data: orderItems } = await supabase
-                .from('order_items')
-                .select('id, kds_status, started_at, ready_at')
-                .eq('order_id', orderId);
+            try {
+                const url = new URL('/api/v1/guest-portal/track', window.location.origin);
+                url.searchParams.set('slug', slug);
+                url.searchParams.set('order_id', orderId);
+                url.searchParams.set('table', tableNumber);
+                url.searchParams.set('sig', signature);
+                url.searchParams.set('exp', expiresAt);
 
-            if (orderItems) {
-                setItems(prev =>
-                    prev.map(item => {
-                        const updated = orderItems.find((oi: { id: string }) => oi.id === item.id);
-                        if (updated) {
-                            return {
-                                ...item,
-                                status: (updated.kds_status as KdsStatus) || item.status,
-                                started_at: updated.started_at,
-                                ready_at: updated.ready_at,
-                            };
-                        }
-                        return item;
-                    })
-                );
-                setLastRefresh(new Date());
+                const response = await fetch(url.toString());
+                const payload = await response.json();
+
+                if (response.ok && payload.data) {
+                    setOrder(payload.data.order);
+                    setItems(payload.data.items);
+                    setLastRefresh(new Date());
+                }
+            } catch (error) {
+                console.warn('Poll failed:', error);
             }
         }, 8000);
 
         return () => clearInterval(interval);
-    }, [orderId, supabase]);
+    }, [orderId, tableNumber, signature, expiresAt, slug]);
 
     // Group items by status
     const itemsByStatus = useMemo(() => {

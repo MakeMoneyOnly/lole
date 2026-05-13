@@ -43,24 +43,37 @@ function KdsPageContent() {
     const config = STATION_CONFIG[station];
 
     if (managedDevice.loading) {
-        <div className="flex h-screen items-center justify-center bg-gray-50 text-gray-500">
-            <h1 className="sr-only">Loading Kitchen Display System</h1>
-            Loading KDS...
-        </div>;
+        return (
+            <div className="min-h-screen bg-[#F7F5F2] flex items-center justify-center p-10 font-inter tracking-[-0.04em]">
+                <div className="bg-white border border-gray-100 rounded-3xl p-12 flex flex-col items-center gap-6">
+                    <div className="w-12 h-12 rounded-full border-2 border-gray-100 border-t-[#DDF853] animate-spin" />
+                    <p className="text-[11px] font-black tracking-[0.2em] text-[#1A1C1E] uppercase">
+                        Booting KDS Workspace
+                    </p>
+                </div>
+            </div>
+        );
     }
 
     if (managedDevice.hasProfileMismatch) {
         return (
-            <div className="flex min-h-screen items-center justify-center p-6">
-                <div className="max-w-md rounded-2xl border border-red-400/20 bg-red-500/10 p-8 text-center">
-                    <AlertCircle className="mx-auto h-10 w-10 text-red-300" />
-                    <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
-                        Wrong device role
-                    </h1>
-                    <p className="mt-2 text-[15px] text-gray-600">
-                        This device is paired for a different workspace. Re-provision it as a KDS
-                        screen to access the kitchen display.
-                    </p>
+            <div className="min-h-screen bg-[#F7F5F2] font-inter tracking-[-0.04em] p-10 flex flex-col items-center justify-center">
+                <div className="max-w-md w-full bg-white border border-gray-100 rounded-[2rem] p-12 text-center space-y-8">
+                    <div className="mx-auto w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center">
+                        <AlertCircle className="w-8 h-8" />
+                    </div>
+                    <div className="space-y-4">
+                        <h1 className="text-3xl font-bold text-[#1A1C1E]">Wrong Role.</h1>
+                        <p className="text-gray-500 font-medium leading-relaxed">
+                            This device is paired for a different workspace. Re-provision it as a KDS screen to access the kitchen display.
+                        </p>
+                    </div>
+                    <button 
+                        onClick={() => router.push('/device')}
+                        className="w-full bg-[#1A1C1E] text-white py-4 rounded-xl font-bold text-sm"
+                    >
+                        Return to Shell
+                    </button>
                 </div>
             </div>
         );
@@ -68,18 +81,19 @@ function KdsPageContent() {
 
     if (managedDevice.isIdentityRevoked || !managedDevice.hasOutageAccess) {
         return (
-            <div className="flex min-h-screen items-center justify-center p-6">
-                <div className="max-w-md rounded-2xl border border-amber-400/20 bg-amber-500/10 p-8 text-center">
-                    <AlertCircle className="mx-auto h-10 w-10 text-amber-400" />
-                    <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
-                        KDS access paused
-                    </h1>
-                    <p className="mt-2 text-[15px] text-gray-600">
-                        {managedDevice.isIdentityRevoked
-                            ? 'This kitchen screen identity was revoked. Re-pair it from device management.'
-                            : (managedDevice.outageAccess.reason ??
-                              'This kitchen screen needs fresh online authorization.')}
-                    </p>
+            <div className="min-h-screen bg-[#F7F5F2] font-inter tracking-[-0.04em] p-10 flex flex-col items-center justify-center">
+                <div className="max-w-md w-full bg-white border border-gray-100 rounded-[2rem] p-12 text-center space-y-8">
+                    <div className="mx-auto w-16 h-16 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center">
+                        <AlertCircle className="w-8 h-8" />
+                    </div>
+                    <div className="space-y-4">
+                        <h1 className="text-3xl font-bold text-[#1A1C1E]">Access Paused.</h1>
+                        <p className="text-gray-500 font-medium leading-relaxed">
+                            {managedDevice.isIdentityRevoked
+                                ? 'This kitchen screen identity was revoked. Re-pair it from device management.'
+                                : (managedDevice.outageAccess.reason ?? 'This kitchen screen needs fresh online authorization.')}
+                        </p>
+                    </div>
                 </div>
             </div>
         );
@@ -100,15 +114,19 @@ function KdsPageContent() {
 
 export default function KdsPage() {
     return (
-        <Suspense
-            fallback={
-                <div className="flex h-screen items-center justify-center bg-gray-50 text-gray-500">
-                    <h1 className="sr-only">Loading Kitchen Display System</h1>
-                    Loading KDS...
-                </div>
-            }
-        >
-            <KdsPageContent />
-        </Suspense>
+        <div className="font-inter tracking-[-0.04em] min-h-screen bg-[#F7F5F2]">
+            <Suspense
+                fallback={
+                    <div className="min-h-screen flex items-center justify-center p-10">
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="h-10 w-10 animate-spin rounded-full border-2 border-gray-200 border-t-[#DDF853]" />
+                            <p className="text-[11px] font-black uppercase tracking-widest text-gray-400">Loading KDS</p>
+                        </div>
+                    </div>
+                }
+            >
+                <KdsPageContent />
+            </Suspense>
+        </div>
     );
 }

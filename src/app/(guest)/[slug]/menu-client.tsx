@@ -6,10 +6,12 @@ import _Image from 'next/image';
 
 import { createClient } from '@/lib/supabase';
 import { useParams, useSearchParams } from 'next/navigation';
-import { Phone, User } from 'lucide-react';
-import { GuestHero } from '@/features/menu/components/GuestHero';
-import { CategoryRail } from '@/features/menu/components/CategoryRail';
-import { MenuCard } from '@/features/menu/components/MenuCard';
+import { Phone, User, Utensils } from 'lucide-react';
+import { MartrezaHeader } from '@/features/menu/components/MartrezaHeader';
+import { MartrezaSearch } from '@/features/menu/components/MartrezaSearch';
+import { MartrezaCategoryChips } from '@/features/menu/components/MartrezaCategoryChips';
+import { MartrezaProductCard } from '@/features/menu/components/MartrezaProductCard';
+import { MartrezaBottomNav } from '@/features/menu/components/MartrezaBottomNav';
 import { MenuSkeleton } from '@/features/menu/components/MenuSkeleton';
 import { FloatingCart } from '@/features/menu/components/FloatingCart';
 import { ServiceRequestButton } from '@/features/menu/components/ServiceRequestButton';
@@ -17,6 +19,7 @@ import { CartProvider, useCart } from '@/context/CartContext';
 import { FOOD_ITEMS } from '@/lib/constants';
 import type { DishItem } from '@/features/menu/components/DishDetailDrawer';
 import { isAbortError } from '@/hooks/useSafeFetch';
+import { cn, isRemoteOrDataImageSrc } from '@/lib/utils';
 
 const DishDetailDrawer = dynamic(
     () => import('@/features/menu/components/DishDetailDrawer').then(mod => mod.DishDetailDrawer),
@@ -172,7 +175,7 @@ export function MenuClientContent() {
                 setContextLoading(true);
                 setContextError(null);
                 try {
-                    const url = new URL('/api/guest/restaurant', window.location.origin);
+                    const url = new URL('/api/v1/guest-portal/restaurant', window.location.origin);
                     url.searchParams.set('slug', slug);
 
                     const response = await fetch(url.toString(), { method: 'GET' });
@@ -206,6 +209,7 @@ export function MenuClientContent() {
                         restaurant_logo_url: data.restaurant_logo_url,
                         is_online_order: true,
                     });
+                    setShowPreMenuSplash(false);
                 } catch (error) {
                     if (!isMountedRef.current) return;
                     if (isAbortError(error)) return;
@@ -229,7 +233,7 @@ export function MenuClientContent() {
             setContextError(null);
 
             try {
-                const url = new URL('/api/guest/context', window.location.origin);
+                const url = new URL('/api/v1/guest-portal/context', window.location.origin);
                 url.searchParams.set('slug', slug);
                 url.searchParams.set('table', tableNumber);
                 url.searchParams.set('sig', signature);
@@ -273,7 +277,7 @@ export function MenuClientContent() {
 
             setSessionSyncing(true);
             try {
-                const response = await fetch('/api/guest/session', {
+                const response = await fetch('/api/v1/guest-portal/session', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -343,7 +347,10 @@ export function MenuClientContent() {
                     return;
                 }
 
-                const typedCategories = (categories as RawCategory[]) ?? [];
+                const typedCategories = (categories as RawCategory[])?.map(cat => ({
+                    ...cat,
+                    section: cat.section || 'food'
+                })) ?? [];
                 const categoryIds = typedCategories.map(category => category.id);
                 const categoryById = new Map(
                     typedCategories.map(category => [category.id, category])
@@ -357,9 +364,8 @@ export function MenuClientContent() {
                 const { data: items, error: itemError } = await supabase
                     .from('menu_items')
                     .select(
-                        'id, name, price, image_url, rating, preparation_time, description, description_am, popularity, likes_count, category_id'
+                        'id, name, price, image_url, rating, preparation_time, description, description_am, popularity, likes_count, category_id, is_available'
                     )
-                    .eq('is_available', true)
                     .in('category_id', categoryIds);
 
                 if (itemError) {
@@ -428,7 +434,7 @@ export function MenuClientContent() {
                             title: item.name,
                             imageUrl,
                             preparationTime: item.preparation_time || 15,
-                            shopName: CATEGORY_MAP[category.name?.toLowerCase()] || 'Saba Grill',
+                            shopName: guestContext.restaurant_name || 'Lole Restaurant',
                             price: Number(item.price),
                             rating: item.rating ?? undefined,
                             categories: {
@@ -501,7 +507,7 @@ export function MenuClientContent() {
         });
     };
 
-    const buildAuthHref = (path: '/guest/auth/login' | '/guest/auth/signup') => {
+    const buildAuthHref = (path: '/guest/login' | '/guest/signup') => {
         const params = new URLSearchParams(searchParams.toString());
         params.set('entry', 'menu');
         if (guestSessionId) {
@@ -548,13 +554,21 @@ export function MenuClientContent() {
             return;
         }
 
+        if (!guestContext?.restaurant_id) {
+            setAuthError('Missing restaurant context. Please reload.');
+            setAuthLoading(false);
+            return;
+        }
+
         try {
-            const response = await fetch('/api/auth/otp/send', {
+            const response = await fetch('/api/v1/guest-portal/verify-contact', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     phone: normalizedPhone,
-                    flow,
+                    restaurantId: guestContext.restaurant_id,
+                    sessionId: guestSessionId ?? undefined,
+                    channel: 'sms',
                     name: flow === 'signup' ? signupName : undefined,
                 }),
             });
@@ -581,20 +595,21 @@ export function MenuClientContent() {
         setAuthLoading(true);
         setAuthError(null);
 
-        if (!otpCode || otpCode.length < 4) {
-            setAuthError('Please enter the verification code.');
+        if (!otpCode || otpCode.length < 6) {
+            setAuthError('Please enter the 6-digit verification code.');
             setAuthLoading(false);
             return;
         }
 
         try {
-            const response = await fetch('/api/auth/otp/verify', {
-                method: 'POST',
+            const response = await fetch('/api/v1/guest-portal/verify-contact', {
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     phone: otpTargetPhone,
+                    restaurantId: guestContext?.restaurant_id,
+                    sessionId: guestSessionId ?? undefined,
                     code: otpCode,
-                    flow: otpFlow,
                 }),
             });
 
@@ -606,7 +621,14 @@ export function MenuClientContent() {
                 return;
             }
 
-            window.location.reload();
+            // Successful verification
+            setAuthState('authenticated'); // or 'verified' if we had a state for that
+            setShowPreMenuSplash(false);
+            setAuthView('none');
+            setOtpFlow('none');
+            
+            // Optionally reload to refresh all context from server
+            // window.location.reload(); 
         } catch (error) {
             setAuthError(getAuthErrorMessage(error));
         } finally {
@@ -618,14 +640,12 @@ export function MenuClientContent() {
 
     if (loading) {
         return (
-            <main className="app-container pb-safe bg-(--background) transition-colors duration-300">
-                <GuestHero activeTab={activeTab} onTabChange={setActiveTab} />
-                <CategoryRail
-                    activeTab={activeTab}
-                    activeCategoryId={activeCategoryId}
-                    onCategoryChange={setActiveCategoryId}
-                />
+            <main className="app-container pb-safe bg-white transition-colors duration-300">
+                <MartrezaHeader />
+                <MartrezaSearch />
+                <MartrezaCategoryChips />
                 <MenuSkeleton />
+                <MartrezaBottomNav />
             </main>
         );
     }
@@ -830,112 +850,105 @@ export function MenuClientContent() {
     }
 
     return (
-        <main className="app-container pb-safe bg-(--background) transition-colors duration-300">
-            <div className="relative w-full">
-                <GuestHero activeTab={activeTab} onTabChange={setActiveTab} />
-                <CategoryRail
-                    activeTab={activeTab}
-                    activeCategoryId={activeCategoryId}
-                    onCategoryChange={setActiveCategoryId}
-                />
+        <main className="app-container pb-32 bg-white transition-colors duration-300 overflow-x-hidden">
+            {/* Full-bleed hero — starts at y=0 with viewport-fit:cover, image shows behind status bar in PWA mode */}
+            <div
+                className="relative w-full pb-6"
+                style={{
+                    backgroundImage: `url('https://axuegixbqsvztdraenkz.supabase.co/storage/v1/object/public/food-images/Spicy%20Tonkotsu.webp')`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    minHeight: '280px',
+                }}
+            >
+                {/* Dark overlay for text contrast */}
+                <div className="absolute inset-0 bg-black/40" />
 
-                <div className="px-4 pb-20">
-                    <div className="mb-4 flex items-center justify-between px-2">
-                        <div>
-                            <div className="flex items-center gap-2">
-                                <h2 className="no-select font-manrope text-2xl font-black tracking-tighter text-black dark:text-white">
-                                    Main Menu
-                                </h2>
-                            </div>
-                            {authState === 'authenticated' ? (
-                                <p className="mt-1 text-xs font-bold tracking-wide text-emerald-600 dark:text-emerald-400">
-                                    You are signed in. Eligible orders earn loyalty points.
-                                </p>
-                            ) : null}
-                        </div>
-                    </div>
-
-                    <div className="flex gap-4">
-                        <div className="flex-1">
-                            {filteredItems
-                                .filter((_, i) => i % 2 === 0)
-                                .map(item => (
-                                    <MenuCard
-                                        key={item.id}
-                                        item={item}
-                                        onClick={() => setSelectedItem(item)}
-                                        onAdd={() => handleAddToCart(item)}
-                                    />
-                                ))}
-                        </div>
-                        <div className="flex-1 pt-6">
-                            {filteredItems
-                                .filter((_, i) => i % 2 === 1)
-                                .map(item => (
-                                    <MenuCard
-                                        key={item.id}
-                                        item={item}
-                                        onClick={() => setSelectedItem(item)}
-                                        onAdd={() => handleAddToCart(item)}
-                                    />
-                                ))}
-                        </div>
-                    </div>
+                {/* pt-safe pushes content below the status bar text */}
+                <div className="relative z-10 pt-safe">
+                    <MartrezaSearch />
+                    <MartrezaCategoryChips />
                 </div>
             </div>
 
-            <DishDetailDrawer
-                open={!!selectedItem}
-                onOpenChange={open => !open && setSelectedItem(null)}
-                item={selectedItem}
-                onAddToCart={qty => selectedItem && handleAddToCart(selectedItem, qty)}
-            />
+            {/* Special Offers */}
+            <div className="mt-4 px-6">
+                <div className="flex items-end justify-between">
+                    <div>
+                        <h2 className="text-2xl font-medium tracking-tighter text-black">Special Offers</h2>
+                        <p className="text-xs font-light tracking-tight text-black/40">Don&apos;t miss out on our exclusive deals.</p>
+                    </div>
+                    <button className="text-xs font-light text-black/40 hover:text-black">View All</button>
+                </div>
 
-            {guestContext && (
-                <>
-                    <CartDrawer
-                        open={cartOpen}
-                        onOpenChange={setCartOpen}
-                        guestContext={{
-                            slug: guestContext.slug,
-                            table: guestContext.table_number,
-                            sig: guestContext.sig,
-                            exp: guestContext.exp,
-                            guest_session_id: guestSessionId ?? undefined,
-                            auth_state: authState,
-                            login_url: buildAuthHref('/guest/auth/login'),
-                            is_online_order: guestContext.is_online_order,
-                            ...(campaignDeliveryId
-                                ? {
-                                      campaign_attribution: {
-                                          campaign_delivery_id: campaignDeliveryId,
-                                          ...(campaignId ? { campaign_id: campaignId } : {}),
-                                      } as CampaignAttributionPayload,
-                                  }
-                                : {}),
-                        }}
-                        tableNumber={
-                            guestContext.is_online_order ? null : guestContext.table_number
-                        }
-                        paymentReturnSuccess={paymentReturnSuccess}
-                        paymentOrderId={paymentReturnOrderId ?? undefined}
-                    />
-
-                    <FloatingCart count={count} onClick={() => setCartOpen(true)} />
-                    {/* Only show service request button for dine-in (QR) orders */}
-                    {!guestContext.is_online_order && (
-                        <ServiceRequestButton
-                            guestContext={{
-                                slug: guestContext.slug,
-                                table: guestContext.table_number,
-                                sig: guestContext.sig,
-                                exp: guestContext.exp,
-                            }}
-                            tableNumber={guestContext.table_number}
+                <div className="no-scrollbar -mx-6 flex gap-4 overflow-x-auto px-6 py-4">
+                    {filteredItems.slice(0, 5).map((item) => (
+                        <MartrezaProductCard
+                            key={`special-${item.id}`}
+                            item={item}
+                            className="w-[200px] shrink-0"
+                            onClick={() => setSelectedItem(item)}
+                            onAdd={() => handleAddToCart(item)}
                         />
-                    )}
-                </>
-            )}
+                    ))}
+                </div>
+            </div>
+
+            {/* More for You */}
+            <div className="mt-8 px-6 pb-24">
+                <h2 className="mb-4 text-2xl font-medium tracking-tighter text-black">More for You</h2>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-8">
+                    {filteredItems.map((item) => (
+                        <MartrezaProductCard
+                            key={item.id}
+                            item={item}
+                            onClick={() => setSelectedItem(item)}
+                            onAdd={() => handleAddToCart(item)}
+                        />
+                    ))}
+                </div>
+            </div>
+
+            <MartrezaBottomNav />
+
+            <Suspense fallback={null}>
+                <DishDetailDrawer
+                    open={!!selectedItem}
+                    onOpenChange={open => !open && setSelectedItem(null)}
+                    item={selectedItem}
+                    onAddToCart={qty => selectedItem && handleAddToCart(selectedItem, qty)}
+                />
+            </Suspense>
+
+            <Suspense fallback={null}>
+                <CartDrawer
+                    open={cartOpen}
+                    onOpenChange={setCartOpen}
+                    guestContext={{
+                        slug: guestContext.slug,
+                        table: guestContext.table_number,
+                        sig: guestContext.sig,
+                        exp: guestContext.exp,
+                        guest_session_id: guestSessionId ?? undefined,
+                        auth_state: authState,
+                        login_url: buildAuthHref('/guest/login'),
+                        is_online_order: guestContext.is_online_order,
+                        ...(campaignDeliveryId
+                            ? {
+                                  campaign_attribution: {
+                                      campaign_delivery_id: campaignDeliveryId,
+                                      ...(campaignId ? { campaign_id: campaignId } : {}),
+                                  } as CampaignAttributionPayload,
+                              }
+                            : {}),
+                    }}
+                    tableNumber={
+                        guestContext.is_online_order ? null : guestContext.table_number
+                    }
+                    paymentReturnSuccess={paymentReturnSuccess}
+                    paymentOrderId={paymentReturnOrderId ?? undefined}
+                />
+            </Suspense>
         </main>
     );
 }
