@@ -93,7 +93,7 @@ export const paymentsResolvers = {
                 // Initiate payment
                 const result = await paymentsService.initiatePayment({
                     orderId: validation.data.orderId,
-                    amount: validation.data.amount,
+                    amountSantim: validation.data.amount,
                     idempotencyKey: validation.data.idempotencyKey,
                     paymentMethod: validation.data.method,
                     currency: 'ETB',
@@ -186,7 +186,7 @@ export const paymentsResolvers = {
                 const result = await paymentsService.processCashPayment({
                     restaurantId: args.restaurantId,
                     orderId: args.orderId,
-                    amount: args.amount,
+                    amountSantim: args.amount,
                     currency: args.currency,
                     idempotencyKey: args.idempotencyKey,
                 });

@@ -79,12 +79,15 @@ describe('Rate Limiting', () => {
 
     describe('checkRateLimit', () => {
         it('should return success when under limit', async () => {
-            const request = new NextRequest('http://localhost:3000/api/orders', {
-                method: 'POST',
-                headers: {
-                    'x-forwarded-for': '192.168.1.1',
-                },
-            });
+            const request = new NextRequest(
+                'http://localhost:3000/api/v1/merchant/operations/orders',
+                {
+                    method: 'POST',
+                    headers: {
+                        'x-forwarded-for': '192.168.1.1',
+                    },
+                }
+            );
 
             const config: RateLimitConfig = {
                 limit: 5,
@@ -101,12 +104,15 @@ describe('Rate Limiting', () => {
         });
 
         it('should use x-real-ip header when x-forwarded-for is not present', async () => {
-            const request = new NextRequest('http://localhost:3000/api/orders', {
-                method: 'POST',
-                headers: {
-                    'x-real-ip': '10.0.0.1',
-                },
-            });
+            const request = new NextRequest(
+                'http://localhost:3000/api/v1/merchant/operations/orders',
+                {
+                    method: 'POST',
+                    headers: {
+                        'x-real-ip': '10.0.0.1',
+                    },
+                }
+            );
 
             const config: RateLimitConfig = {
                 limit: 5,
@@ -120,9 +126,10 @@ describe('Rate Limiting', () => {
         });
 
         it('should fallback to 127.0.0.1 when no IP headers are present', async () => {
-            const request = new NextRequest('http://localhost:3000/api/orders', {
-                method: 'POST',
-            });
+            const request = new NextRequest(
+                'http://localhost:3000/api/v1/merchant/operations/orders',
+                {}
+            );
 
             const config: RateLimitConfig = {
                 limit: 5,
@@ -136,12 +143,15 @@ describe('Rate Limiting', () => {
         });
 
         it('should handle multiple requests and track count', async () => {
-            const request = new NextRequest('http://localhost:3000/api/orders', {
-                method: 'POST',
-                headers: {
-                    'x-forwarded-for': '192.168.1.2',
-                },
-            });
+            const request = new NextRequest(
+                'http://localhost:3000/api/v1/merchant/operations/orders',
+                {
+                    method: 'POST',
+                    headers: {
+                        'x-forwarded-for': '192.168.1.2',
+                    },
+                }
+            );
 
             const config: RateLimitConfig = {
                 limit: 3,
@@ -173,12 +183,15 @@ describe('Rate Limiting', () => {
 
     describe('rateLimitMiddleware', () => {
         it('should return null for GET requests (no rate limiting)', async () => {
-            const request = new NextRequest('http://localhost:3000/api/orders', {
-                method: 'GET',
-                headers: {
-                    'x-forwarded-for': '192.168.1.3',
-                },
-            });
+            const request = new NextRequest(
+                'http://localhost:3000/api/v1/merchant/operations/orders',
+                {
+                    method: 'GET',
+                    headers: {
+                        'x-forwarded-for': '192.168.1.3',
+                    },
+                }
+            );
 
             const result = await rateLimitMiddleware(request);
 
@@ -199,12 +212,15 @@ describe('Rate Limiting', () => {
         });
 
         it('should apply rate limiting to POST requests to API endpoints', async () => {
-            const request = new NextRequest('http://localhost:3000/api/orders', {
-                method: 'POST',
-                headers: {
-                    'x-forwarded-for': '192.168.1.5',
-                },
-            });
+            const request = new NextRequest(
+                'http://localhost:3000/api/v1/merchant/operations/orders',
+                {
+                    method: 'POST',
+                    headers: {
+                        'x-forwarded-for': '192.168.1.5',
+                    },
+                }
+            );
 
             const result = await rateLimitMiddleware(request);
 
@@ -214,12 +230,15 @@ describe('Rate Limiting', () => {
 
         it('should return 429 response when rate limit exceeded', async () => {
             const ip = '192.168.1.6';
-            const request = new NextRequest('http://localhost:3000/api/orders', {
-                method: 'POST',
-                headers: {
-                    'x-forwarded-for': ip,
-                },
-            });
+            const request = new NextRequest(
+                'http://localhost:3000/api/v1/merchant/operations/orders',
+                {
+                    method: 'POST',
+                    headers: {
+                        'x-forwarded-for': ip,
+                    },
+                }
+            );
 
             // Make multiple requests to exceed the limit
             // Default mutation limit is 10, so we need 11 requests
@@ -243,12 +262,15 @@ describe('Rate Limiting', () => {
 
         it('should apply stricter rate limiting to auth endpoints', async () => {
             const ip = '192.168.1.7';
-            const request = new NextRequest('http://localhost:3000/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'x-forwarded-for': ip,
-                },
-            });
+            const request = new NextRequest(
+                'http://localhost:3000/api/v1/merchant/core/auth/login',
+                {
+                    method: 'POST',
+                    headers: {
+                        'x-forwarded-for': ip,
+                    },
+                }
+            );
 
             // Auth limit is 5, so 6th request should be rate limited
             for (let i = 0; i < 6; i++) {
@@ -279,7 +301,7 @@ describe('Rate Limiting', () => {
                 keyPrefix: 'test-hoc',
             });
 
-            const request = new NextRequest('http://localhost:3000/api/test', {
+            const request = new NextRequest('http://localhost:3000/api/v1/system/test', {
                 method: 'POST',
                 headers: {
                     'x-forwarded-for': '192.168.1.8',
@@ -307,7 +329,7 @@ describe('Rate Limiting', () => {
 
             const wrappedHandler = withRateLimit(mockHandler, config);
 
-            const request = new NextRequest('http://localhost:3000/api/test', {
+            const request = new NextRequest('http://localhost:3000/api/v1/system/test', {
                 method: 'POST',
                 headers: {
                     'x-forwarded-for': '192.168.1.9',
@@ -332,12 +354,15 @@ describe('Rate Limiting', () => {
             delete process.env.UPSTASH_REDIS_REST_URL;
             delete process.env.UPSTASH_REDIS_REST_TOKEN;
 
-            const request = new NextRequest('http://localhost:3000/api/orders', {
-                method: 'POST',
-                headers: {
-                    'x-forwarded-for': '192.168.1.10',
-                },
-            });
+            const request = new NextRequest(
+                'http://localhost:3000/api/v1/merchant/operations/orders',
+                {
+                    method: 'POST',
+                    headers: {
+                        'x-forwarded-for': '192.168.1.10',
+                    },
+                }
+            );
 
             const config: RateLimitConfig = {
                 limit: 3,
@@ -363,12 +388,15 @@ describe('Rate Limiting', () => {
             process.env.UPSTASH_REDIS_REST_URL = 'https://test.upstash.io';
             process.env.UPSTASH_REDIS_REST_TOKEN = 'test-token';
 
-            const request = new NextRequest('http://localhost:3000/api/orders', {
-                method: 'POST',
-                headers: {
-                    'x-forwarded-for': '192.168.1.11',
-                },
-            });
+            const request = new NextRequest(
+                'http://localhost:3000/api/v1/merchant/operations/orders',
+                {
+                    method: 'POST',
+                    headers: {
+                        'x-forwarded-for': '192.168.1.11',
+                    },
+                }
+            );
 
             const config: RateLimitConfig = {
                 limit: 5,
@@ -385,12 +413,15 @@ describe('Rate Limiting', () => {
 
     describe('Edge cases', () => {
         it('should handle IPv6 addresses', async () => {
-            const request = new NextRequest('http://localhost:3000/api/orders', {
-                method: 'POST',
-                headers: {
-                    'x-forwarded-for': '2001:0db8:85a3:0000:0000:8a2e:0370:7334',
-                },
-            });
+            const request = new NextRequest(
+                'http://localhost:3000/api/v1/merchant/operations/orders',
+                {
+                    method: 'POST',
+                    headers: {
+                        'x-forwarded-for': '2001:0db8:85a3:0000:0000:8a2e:0370:7334',
+                    },
+                }
+            );
 
             const config: RateLimitConfig = {
                 limit: 5,
@@ -404,12 +435,15 @@ describe('Rate Limiting', () => {
         });
 
         it('should handle multiple IPs in x-forwarded-for (use first)', async () => {
-            const request = new NextRequest('http://localhost:3000/api/orders', {
-                method: 'POST',
-                headers: {
-                    'x-forwarded-for': '192.168.1.12, 10.0.0.1, 172.16.0.1',
-                },
-            });
+            const request = new NextRequest(
+                'http://localhost:3000/api/v1/merchant/operations/orders',
+                {
+                    method: 'POST',
+                    headers: {
+                        'x-forwarded-for': '192.168.1.12, 10.0.0.1, 172.16.0.1',
+                    },
+                }
+            );
 
             const config: RateLimitConfig = {
                 limit: 5,
@@ -429,21 +463,27 @@ describe('Rate Limiting', () => {
                 keyPrefix: 'test-paths',
             };
 
-            // Request to /api/orders
-            const request1 = new NextRequest('http://localhost:3000/api/orders', {
-                method: 'POST',
-                headers: {
-                    'x-forwarded-for': '192.168.1.13',
-                },
-            });
+            // Request to /api/v1/merchant/operations/orders
+            const request1 = new NextRequest(
+                'http://localhost:3000/api/v1/merchant/operations/orders',
+                {
+                    method: 'POST',
+                    headers: {
+                        'x-forwarded-for': '192.168.1.13',
+                    },
+                }
+            );
 
             // Request to /api/payments
-            const request2 = new NextRequest('http://localhost:3000/api/payments', {
-                method: 'POST',
-                headers: {
-                    'x-forwarded-for': '192.168.1.13',
-                },
-            });
+            const request2 = new NextRequest(
+                'http://localhost:3000/api/v1/merchant/operations/payments',
+                {
+                    method: 'POST',
+                    headers: {
+                        'x-forwarded-for': '192.168.1.13',
+                    },
+                }
+            );
 
             // Both should succeed as they're different paths
             const result1 = await checkRateLimit(request1, config);
@@ -460,12 +500,15 @@ describe('Rate Limiting', () => {
                 keyPrefix: 'test-concurrent',
             };
 
-            const request = new NextRequest('http://localhost:3000/api/orders', {
-                method: 'POST',
-                headers: {
-                    'x-forwarded-for': '192.168.1.14',
-                },
-            });
+            const request = new NextRequest(
+                'http://localhost:3000/api/v1/merchant/operations/orders',
+                {
+                    method: 'POST',
+                    headers: {
+                        'x-forwarded-for': '192.168.1.14',
+                    },
+                }
+            );
 
             // Make 5 concurrent requests
             const results = await Promise.all([

@@ -862,7 +862,7 @@ describe('OrdersService', () => {
             expect(mockPublishEvent).toHaveBeenCalledWith('order.completed', {
                 orderId: 'order-1',
                 restaurantId: 'rest-1',
-                totalPrice: 150,
+                totalPriceSantim: 150,
             });
         });
 

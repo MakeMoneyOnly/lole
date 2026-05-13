@@ -53,86 +53,64 @@ export const RATE_LIMITS = {
 
 // Endpoint category mappings
 const ENDPOINT_CATEGORIES: { pattern: RegExp; config: RateLimitConfig }[] = [
-    // Auth endpoints
-    { pattern: /^\/api\/auth\//, config: RATE_LIMITS.auth },
-    { pattern: /^\/api\/staff\/verify-pin/, config: RATE_LIMITS.auth },
-    { pattern: /^\/api\/staff\/add-pin/, config: RATE_LIMITS.auth },
-    { pattern: /^\/api\/staff\/invite/, config: RATE_LIMITS.auth },
+    // Auth & Security - highest priority
+    {
+        pattern: /^\/api\/(v1\/)?(auth|staff\/verify-pin|staff\/add-pin|staff\/invite)/,
+        config: RATE_LIMITS.auth,
+    },
+    {
+        pattern: /^\/api\/v1\/(merchant|pos)\/.*\/(pair|provision|verify-pin)/,
+        config: RATE_LIMITS.auth,
+    },
+    { pattern: /^\/api\/v1\/merchant\/core\/auth\//, config: RATE_LIMITS.auth },
 
     // Orders - mutation endpoints
-    { pattern: /^\/api\/orders(\/|$)/, config: RATE_LIMITS.mutations },
+    {
+        pattern: /^\/api\/(v1\/)?(merchant\/operations\/|pos\/device\/)?orders(\/|$)/,
+        config: RATE_LIMITS.mutations,
+    },
 
-    // Payments - mutation endpoints (critical for financial transactions)
-    { pattern: /^\/api\/payments(\/|$)/, config: RATE_LIMITS.mutations },
+    // Payments - mutation endpoints
+    {
+        pattern: /^\/api\/(v1\/)?(merchant\/operations\/)?payments(\/|$)/,
+        config: RATE_LIMITS.mutations,
+    },
 
     // Table sessions - mutation endpoints
-    { pattern: /^\/api\/table-sessions(\/|$)/, config: RATE_LIMITS.mutations },
-
-    // Waitlist - mutation endpoints
-    { pattern: /^\/api\/waitlist(\/|$)/, config: RATE_LIMITS.mutations },
-
-    // Staff management - mutations
-    { pattern: /^\/api\/staff(\/|$)/, config: RATE_LIMITS.mutations },
+    {
+        pattern: /^\/api\/(v1\/)?(merchant\/operations\/|pos\/device\/)?table-sessions(\/|$)/,
+        config: RATE_LIMITS.mutations,
+    },
+    {
+        pattern: /^\/api\/v1\/pos\/device\/tables\/(ensure-open-session|close|bill-request)/,
+        config: RATE_LIMITS.mutations,
+    },
 
     // KDS actions - mutations
-    { pattern: /^\/api\/kds\/items\/.*\/action/, config: RATE_LIMITS.mutations },
+    {
+        pattern: /^\/api\/(v1\/)?(merchant\/operations\/)?kds\/.*\/action/,
+        config: RATE_LIMITS.mutations,
+    },
+    {
+        pattern: /^\/api\/v1\/merchant\/operations\/kds\/(handoff|print)/,
+        config: RATE_LIMITS.mutations,
+    },
 
-    // Service requests - mutations
-    { pattern: /^\/api\/service-requests(\/|$)/, config: RATE_LIMITS.mutations },
+    // Settings & Configuration
+    { pattern: /^\/api\/(v1\/)?(merchant\/core\/)?settings(\/|$)/, config: RATE_LIMITS.mutations },
 
-    // Settings mutations
-    { pattern: /^\/api\/settings(\/|$)/, config: RATE_LIMITS.mutations },
+    // Analytics & Metrics - typically reads
+    {
+        pattern: /^\/api\/(v1\/)?(merchant\/insights\/)?(analytics|metrics|api-metrics)(\/|$)/,
+        config: RATE_LIMITS.reads,
+    },
 
-    // Onboarding - mutations
-    { pattern: /^\/api\/onboarding(\/|$)/, config: RATE_LIMITS.mutations },
+    // Internal & System
+    { pattern: /^\/api\/v1\/system\/(sync|health|jobs)(\/|$)/, config: RATE_LIMITS.mutations },
 
-    // Webhooks - mutations (but need to be accessible)
-    { pattern: /^\/api\/webhooks(\/|$)/, config: RATE_LIMITS.mutations },
-
-    // Finance mutations
-    { pattern: /^\/api\/finance(\/|$)/, config: RATE_LIMITS.mutations },
-
-    // Gift cards - mutations
-    { pattern: /^\/api\/gift-cards(\/|$)/, config: RATE_LIMITS.mutations },
-
-    // Discounts - mutations
-    { pattern: /^\/api\/discounts(\/|$)/, config: RATE_LIMITS.mutations },
-
-    // Tip pools - mutations
-    { pattern: /^\/api\/tip-pools(\/|$)/, config: RATE_LIMITS.mutations },
-
-    // Jobs - mutations
-    { pattern: /^\/api\/jobs(\/|$)/, config: RATE_LIMITS.mutations },
-
-    // Support tickets - mutations
-    { pattern: /^\/api\/support\/tickets(\/|$)/, config: RATE_LIMITS.mutations },
-
-    // Menu mutations
-    { pattern: /^\/api\/menu(\/|$)/, config: RATE_LIMITS.mutations },
-
-    // Loyalty programs - mutations
-    { pattern: /^\/api\/loyalty\/programs(\/|$)/, config: RATE_LIMITS.mutations },
-
-    // Notifications - mutations
-    { pattern: /^\/api\/notifications(\/|$)/, config: RATE_LIMITS.mutations },
-
-    // Restaurants - mutations
-    { pattern: /^\/api\/restaurants(\/|$)/, config: RATE_LIMITS.mutations },
-
-    // Tables - mutations
-    { pattern: /^\/api\/tables(\/|$)/, config: RATE_LIMITS.mutations },
-
-    // Analytics - typically read, but some mutations
-    { pattern: /^\/api\/analytics(\/|$)/, config: RATE_LIMITS.reads },
-
-    // Metrics - read only
-    { pattern: /^\/api\/metrics(\/|$)/, config: RATE_LIMITS.reads },
-
-    // Subgraphs - read only (GraphQL queries)
-    { pattern: /^\/api\/subgraphs(\/|$)/, config: RATE_LIMITS.reads },
-
-    // Docs - read only
-    { pattern: /^\/api\/docs(\/|$)/, config: RATE_LIMITS.reads },
+    // Guest Portal - high traffic but sensitive
+    { pattern: /^\/api\/v1\/guest-portal\/(verify-contact|session)/, config: RATE_LIMITS.auth },
+    { pattern: /^\/api\/v1\/guest-portal\//, config: RATE_LIMITS.mutations },
 ];
 
 // =============================================================================
@@ -444,9 +422,23 @@ function getAbuseWindowSeconds(): number {
 
 function getEndpointAbuseThreshold(endpoint: string): number {
     const base = getAbuseThreshold();
-    if (endpoint.includes('/api/auth/')) return Math.max(2, Math.floor(base / 2));
-    if (endpoint.includes('/api/payments/')) return Math.max(2, Math.floor(base / 2));
-    if (endpoint.includes('/api/orders/')) return base;
+    if (endpoint.includes('/api/v1/merchant/core/auth/') || endpoint.includes('/api/auth/'))
+        return Math.max(2, Math.floor(base / 2));
+    if (
+        endpoint.includes('/api/v1/merchant/operations/payments/') ||
+        endpoint.includes('/api/payments/')
+    )
+        return Math.max(2, Math.floor(base / 2));
+    if (
+        endpoint.includes('/api/v1/merchant/operations/orders/') ||
+        endpoint.includes('/api/orders/')
+    )
+        return base;
+    if (
+        endpoint.includes('/api/v1/guest-portal/verify-contact') ||
+        endpoint.includes('/api/v1/guest-portal/session')
+    )
+        return Math.max(2, Math.floor(base / 2));
     return base;
 }
 

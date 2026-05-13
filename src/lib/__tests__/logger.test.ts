@@ -173,17 +173,17 @@ describe('Logger', () => {
 
     describe('logApiRequest', () => {
         it('logs with info level including method and path', () => {
-            logger.logApiRequest('GET', '/api/orders');
+            logger.logApiRequest('GET', '/api/v1/merchant/operations/orders');
             expect(warnSpy).toHaveBeenCalledTimes(1);
             const call = warnSpy.mock.calls[0];
             expect(call[0]).toContain('INFO');
-            expect(call[1]).toBe('API Request: GET /api/orders');
+            expect(call[1]).toBe('API Request: GET /api/v1/merchant/operations/orders');
         });
     });
 
     describe('logApiResponse', () => {
         it('logs error level when statusCode >= 400', () => {
-            logger.logApiResponse('POST', '/api/orders', 500, 120);
+            logger.logApiResponse('POST', '/api/v1/merchant/operations/orders', 500, 120);
             expect(errorSpy).toHaveBeenCalledTimes(1);
             const call = errorSpy.mock.calls[0];
             expect(call[0]).toContain('ERROR');
@@ -192,7 +192,7 @@ describe('Logger', () => {
         });
 
         it('logs warn level when statusCode >= 300 and < 400', () => {
-            logger.logApiResponse('GET', '/api/redirect', 301, 50);
+            logger.logApiResponse('GET', '/api/v1/system/redirect', 301, 50);
             expect(warnSpy).toHaveBeenCalledTimes(1);
             const call = warnSpy.mock.calls[0];
             expect(call[0]).toContain('WARN');
@@ -200,7 +200,7 @@ describe('Logger', () => {
         });
 
         it('logs info level when statusCode < 300', () => {
-            logger.logApiResponse('GET', '/api/orders', 200, 30);
+            logger.logApiResponse('GET', '/api/v1/merchant/operations/orders', 200, 30);
             expect(warnSpy).toHaveBeenCalledTimes(1);
             const call = warnSpy.mock.calls[0];
             expect(call[0]).toContain('INFO');

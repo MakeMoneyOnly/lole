@@ -4,44 +4,52 @@ export type RouteRateLimitPolicy = {
 };
 
 export const API_RATE_LIMIT_POLICIES: Record<string, RouteRateLimitPolicy> = {
-    '/api/orders': { windowMs: 60_000, maxRequests: 80 },
-    '/api/orders/': { windowMs: 60_000, maxRequests: 100 }, // prefix match for nested order routes
-    '/api/service-requests': { windowMs: 60_000, maxRequests: 60 },
-    '/api/merchant/command-center': { windowMs: 60_000, maxRequests: 120 },
-    '/api/support/tickets': { windowMs: 60_000, maxRequests: 30 },
-    '/api/channels/summary': { windowMs: 60_000, maxRequests: 100 },
-    '/api/channels/online-ordering/settings': { windowMs: 60_000, maxRequests: 60 },
-    '/api/channels/delivery/connect': { windowMs: 60_000, maxRequests: 30 },
-    '/api/channels/delivery/orders': { windowMs: 60_000, maxRequests: 80 },
-    '/api/channels/delivery/orders/': { windowMs: 60_000, maxRequests: 60 }, // nested ack endpoint
-    '/api/kds/queue': { windowMs: 60_000, maxRequests: 180 },
-    '/api/kds/telemetry': { windowMs: 60_000, maxRequests: 180 },
-    '/api/kds/items/': { windowMs: 60_000, maxRequests: 220 }, // nested KDS item action endpoints
-    '/api/kds/orders/': { windowMs: 60_000, maxRequests: 180 }, // nested KDS order handoff endpoints
-    '/api/settings/kds': { windowMs: 60_000, maxRequests: 60 },
-    '/api/device/tables/ensure-open-session': { windowMs: 60_000, maxRequests: 100 },
-    '/api/device/tables/bill-request': { windowMs: 60_000, maxRequests: 80 },
-    '/api/device/tables/close': { windowMs: 60_000, maxRequests: 60 },
-    '/api/staff/schedule': { windowMs: 60_000, maxRequests: 80 },
-    '/api/staff/time-entries/clock': { windowMs: 60_000, maxRequests: 80 },
-    '/api/alerts/rules': { windowMs: 60_000, maxRequests: 60 },
-    '/api/alerts/rules/': { windowMs: 60_000, maxRequests: 60 }, // nested alert rule update endpoint
-    '/api/merchant/dashboard-presets': { windowMs: 60_000, maxRequests: 60 },
-    '/api/loyalty/programs': { windowMs: 60_000, maxRequests: 60 },
-    '/api/loyalty/accounts/': { windowMs: 60_000, maxRequests: 60 }, // nested account adjustment endpoint
-    '/api/gift-cards': { windowMs: 60_000, maxRequests: 60 },
-    '/api/gift-cards/': { windowMs: 60_000, maxRequests: 60 }, // nested redeem endpoint
-    '/api/campaigns': { windowMs: 60_000, maxRequests: 60 },
-    '/api/campaigns/': { windowMs: 60_000, maxRequests: 60 }, // nested launch endpoint
-    '/api/finance/payments': { windowMs: 60_000, maxRequests: 80 },
-    '/api/finance/refunds': { windowMs: 60_000, maxRequests: 60 },
-    '/api/finance/exceptions': { windowMs: 60_000, maxRequests: 80 },
-    '/api/finance/payouts': { windowMs: 60_000, maxRequests: 60 },
-    '/api/finance/reconciliation': { windowMs: 60_000, maxRequests: 80 },
-    '/api/finance/export': { windowMs: 60_000, maxRequests: 20 },
-    '/api/payments/initiate': { windowMs: 60_000, maxRequests: 40 },
-    '/api/payments/verify': { windowMs: 60_000, maxRequests: 60 },
-    '/api/payments/providers/health': { windowMs: 60_000, maxRequests: 40 },
+    // Merchant Operations
+    '/api/v1/merchant/operations/orders': { windowMs: 60_000, maxRequests: 80 },
+    '/api/v1/merchant/operations/orders/': { windowMs: 60_000, maxRequests: 100 },
+    '/api/v1/merchant/operations/service-requests': { windowMs: 60_000, maxRequests: 60 },
+    '/api/v1/merchant/operations/kds/queue': { windowMs: 60_000, maxRequests: 180 },
+    '/api/v1/merchant/operations/kds/telemetry': { windowMs: 60_000, maxRequests: 180 },
+    '/api/v1/merchant/operations/kds/items/': { windowMs: 60_000, maxRequests: 220 },
+    '/api/v1/merchant/operations/kds/orders/': { windowMs: 60_000, maxRequests: 180 },
+    '/api/v1/merchant/operations/payments/initiate': { windowMs: 60_000, maxRequests: 40 },
+    '/api/v1/merchant/operations/payments/verify': { windowMs: 60_000, maxRequests: 60 },
+    '/api/v1/merchant/operations/payments/providers/health': { windowMs: 60_000, maxRequests: 40 },
+
+    // Merchant Core
+    '/api/v1/merchant/core/command-center': { windowMs: 60_000, maxRequests: 120 },
+    '/api/v1/merchant/core/settings/kds': { windowMs: 60_000, maxRequests: 60 },
+    '/api/v1/merchant/core/staff/schedule': { windowMs: 60_000, maxRequests: 80 },
+    '/api/v1/merchant/core/staff/time-entries/clock': { windowMs: 60_000, maxRequests: 80 },
+    '/api/v1/merchant/core/dashboard-presets': { windowMs: 60_000, maxRequests: 60 },
+
+    // Merchant Marketing
+    '/api/v1/merchant/marketing/channels/summary': { windowMs: 60_000, maxRequests: 100 },
+    '/api/v1/merchant/marketing/channels/online-ordering/settings': {
+        windowMs: 60_000,
+        maxRequests: 60,
+    },
+    '/api/v1/merchant/marketing/channels/delivery/connect': { windowMs: 60_000, maxRequests: 30 },
+    '/api/v1/merchant/marketing/channels/delivery/orders': { windowMs: 60_000, maxRequests: 80 },
+    '/api/v1/merchant/marketing/channels/delivery/orders/': { windowMs: 60_000, maxRequests: 60 },
+    '/api/v1/merchant/marketing/loyalty/programs': { windowMs: 60_000, maxRequests: 60 },
+    '/api/v1/merchant/marketing/loyalty/accounts/': { windowMs: 60_000, maxRequests: 60 },
+    '/api/v1/merchant/marketing/gift-cards': { windowMs: 60_000, maxRequests: 60 },
+    '/api/v1/merchant/marketing/gift-cards/': { windowMs: 60_000, maxRequests: 60 },
+    '/api/v1/merchant/marketing/campaigns': { windowMs: 60_000, maxRequests: 60 },
+    '/api/v1/merchant/marketing/campaigns/': { windowMs: 60_000, maxRequests: 60 },
+
+    // Merchant Comms
+    '/api/v1/merchant/comms/support/tickets': { windowMs: 60_000, maxRequests: 30 },
+
+    // POS / Device
+    '/api/v1/pos/device/tables/ensure-open-session': { windowMs: 60_000, maxRequests: 100 },
+    '/api/v1/pos/device/tables/bill-request': { windowMs: 60_000, maxRequests: 80 },
+    '/api/v1/pos/device/tables/close': { windowMs: 60_000, maxRequests: 60 },
+
+    // Internal
+    '/api/v1/internal/alerts/rules': { windowMs: 60_000, maxRequests: 60 },
+    '/api/v1/internal/alerts/rules/': { windowMs: 60_000, maxRequests: 60 },
 };
 
 export const DEFAULT_API_RATE_LIMIT_POLICY: RouteRateLimitPolicy = {

@@ -355,7 +355,7 @@ export function sleep(ms: number): Promise<void> {
  * @example
  * ```ts
  * const data = await retry(
- *   () => fetch('/api/data').then(r => r.json()),
+ *   () => fetch('/api/v1/system/test').then(r => r.json()),
  *   { maxAttempts: 3, baseDelay: 1000 }
  * );
  * ```

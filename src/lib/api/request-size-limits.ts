@@ -26,28 +26,28 @@ export const DEFAULT_SIZE_LIMITS = {
  */
 export const ROUTE_SIZE_LIMITS: Record<string, Partial<typeof DEFAULT_SIZE_LIMITS>> = {
     // Menu items with images can be larger
-    '/api/menu': {
+    '/api/v1/merchant/core/menu': {
         json: 500 * 1024, // 500KB
         formData: 20 * 1024 * 1024, // 20MB
     },
     // Orders should be smaller
-    '/api/orders': {
+    '/api/v1/merchant/operations/orders': {
         json: 50 * 1024, // 50KB
     },
     // Payments should be minimal
-    '/api/payments': {
+    '/api/v1/merchant/operations/payments': {
         json: 10 * 1024, // 10KB
     },
     // Webhooks can vary
-    '/api/webhooks': {
+    '/api/v1/system/webhooks': {
         json: 500 * 1024, // 500KB
     },
-    // Guest orders
-    '/api/guest': {
+    // Guest portal requests
+    '/api/v1/guest-portal': {
         json: 50 * 1024, // 50KB
     },
     // Delivery aggregator orders
-    '/api/delivery': {
+    '/api/v1/merchant/operations/delivery': {
         json: 100 * 1024, // 100KB
     },
 };
