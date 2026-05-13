@@ -47,7 +47,7 @@ export async function resolveGuestContext(
     const { data: restaurant, error: restaurantError } = await supabase
         .from('restaurants')
         .select('id, slug, is_active')
-        .eq('slug', slug)
+        .ilike('slug', slug)
         .maybeSingle();
 
     if (restaurantError) {

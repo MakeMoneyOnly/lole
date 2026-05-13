@@ -47,7 +47,7 @@ export function useMerchantActivity() {
                 setLoading(true);
 
                 console.warn('[Hook] Fetching merchant activity...');
-                const response = await fetch('/api/merchant/activity');
+                const response = await fetch('/api/v1/merchant/core/activity');
 
                 console.warn('[Hook] Response status:', response.status);
 
@@ -163,7 +163,7 @@ export function useMerchantActivity() {
     const refresh = async () => {
         setLoading(true);
         try {
-            const response = await fetch('/api/merchant/activity');
+            const response = await fetch('/api/v1/merchant/core/activity');
             if (!response.ok) return;
             const data = await response.json();
 

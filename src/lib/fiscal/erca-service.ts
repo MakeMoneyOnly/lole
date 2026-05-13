@@ -351,7 +351,7 @@ export class ERCAService {
         // Validate TIN and VAT number before submission
         if (!validateTIN(orderData.restaurant.tin_number)) {
             throw new AppError(
-                'INVALID_TIN',
+                'VALIDATION_ERROR',
                 `Invalid TIN for restaurant ${orderData.restaurant_id}: "${orderData.restaurant.tin_number}"`,
                 400,
                 { restaurantId: orderData.restaurant_id }
@@ -360,7 +360,7 @@ export class ERCAService {
 
         if (!validateVATNumber(orderData.restaurant.vat_number)) {
             throw new AppError(
-                'INVALID_VAT',
+                'VALIDATION_ERROR',
                 `Invalid VAT number for restaurant ${orderData.restaurant_id}: "${orderData.restaurant.vat_number}"`,
                 400,
                 { restaurantId: orderData.restaurant_id }

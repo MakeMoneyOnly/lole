@@ -213,7 +213,7 @@ export async function updateSession(request: NextRequest) {
             supabaseResponse.cookies.delete('geb_device_token_signature');
 
             const url = request.nextUrl.clone();
-            url.pathname = '/auth/login';
+            url.pathname = '/login';
             url.searchParams.set('reason', 'session_expired');
             return NextResponse.redirect(url);
         }
@@ -242,7 +242,7 @@ export async function updateSession(request: NextRequest) {
         isProtectedPath
     ) {
         const url = request.nextUrl.clone();
-        url.pathname = '/auth/login';
+        url.pathname = '/login';
         return NextResponse.redirect(url);
     }
 

@@ -152,20 +152,20 @@ describe('broker-acl', () => {
             expect(result.allowed).toBe(false);
         });
 
-        it('allows anonymous subscribe to system topics', () => {
+        it('denies anonymous subscribe to system topics', () => {
             const result = authorizeSubscribe(
                 'lole/v1/restaurants/rest-1/locations/loc-1/system/mode',
                 null
             );
-            expect(result.allowed).toBe(true);
+            expect(result.allowed).toBe(false);
         });
 
-        it('allows anonymous subscribe to scoped topics', () => {
+        it('denies anonymous subscribe to scoped topics', () => {
             const result = authorizeSubscribe(
                 'lole/v1/restaurants/rest-1/locations/loc-1/orders/commands',
                 null
             );
-            expect(result.allowed).toBe(true);
+            expect(result.allowed).toBe(false);
         });
     });
 });

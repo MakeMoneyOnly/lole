@@ -17,7 +17,7 @@ async function getKeychainPlugin(): Promise<KeychainPlugin | null> {
     try {
         const importer = new Function('moduleName', 'return import(moduleName);') as (
             value: string
-        ) => Promise<{ Keychain?: KeychainPlugin }>;
+        ) => Promise<{ Preferences?: KeychainPlugin }>;
         // Use @capacitor/preferences for encrypted storage on Android (Keystore-backed)
         // On Android, EncryptedSharedPreferences uses Android Keystore under the hood
         const mod = await importer('@capacitor/preferences');

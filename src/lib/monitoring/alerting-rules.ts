@@ -213,39 +213,46 @@ export const INFRA_ALERT_RULES: AlertRule[] = [
  */
 export const SLO_TARGETS: SloTarget[] = [
     {
-        endpoint: '/api/merchant/command-center',
+        endpoint: '/api/v1/merchant/core/command-center',
         method: 'GET',
         latency_p95_ms: 500,
         error_rate_percent: 1,
         availability_percent: 99.5,
     },
     {
-        endpoint: '/api/orders',
+        endpoint: '/api/v1/merchant/operations/orders',
         method: 'GET',
         latency_p95_ms: 400,
         error_rate_percent: 1,
         availability_percent: 99.5,
     },
     {
-        endpoint: '/api/orders/:id/status',
+        endpoint: '/api/v1/merchant/operations/orders/:id/status',
         method: 'PATCH',
         latency_p95_ms: 300,
         error_rate_percent: 0.5,
         availability_percent: 99.9,
     },
     {
-        endpoint: '/api/payments/initiate',
+        endpoint: '/api/v1/merchant/operations/payments/initiate',
         method: 'POST',
         latency_p95_ms: 1000,
         error_rate_percent: 2,
         availability_percent: 99,
     },
     {
-        endpoint: '/api/tables',
+        endpoint: '/api/v1/merchant/core/tables',
         method: 'GET',
         latency_p95_ms: 300,
         error_rate_percent: 1,
         availability_percent: 99.5,
+    },
+    {
+        endpoint: '/api/v1/system/sync',
+        method: 'POST',
+        latency_p95_ms: 800,
+        error_rate_percent: 1,
+        availability_percent: 99.9,
     },
 ];
 

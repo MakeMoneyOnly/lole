@@ -112,7 +112,7 @@ async function sendTokenToBackend(token: string): Promise<void> {
                 ? window.localStorage.getItem('lole_device_session_v2')
                 : null;
 
-        await fetch('/api/devices/push-token', {
+        await fetch('/api/v1/merchant/devices/push-token', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

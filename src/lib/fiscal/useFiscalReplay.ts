@@ -17,7 +17,7 @@ export function useFiscalReplay(enabled: boolean = true) {
             replayInProgress.current = true;
 
             try {
-                const response = await fetch('/api/jobs/fiscal/replay', {
+                const response = await fetch('/api/v1/system/jobs/fiscal/replay', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                 });

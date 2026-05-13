@@ -35,7 +35,7 @@ export function useDeviceHeartbeat({
                     getStoredPrinterSelection(),
                 ]);
 
-                await fetch('/api/devices/heartbeat', {
+                await fetch('/api/v1/merchant/devices/heartbeat', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

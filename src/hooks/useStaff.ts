@@ -68,7 +68,7 @@ export function useStaff(initialData?: StaffMember[]): UseStaffResult {
                 setLoading(true);
             }
             setError(null);
-            const response = await fetch('/api/staff', { method: 'GET' });
+            const response = await fetch('/api/v1/merchant/core/staff', { method: 'GET' });
 
             if (!response.ok) {
                 let errorMessage = 'Failed to fetch staff.';
@@ -105,7 +105,7 @@ export function useStaff(initialData?: StaffMember[]): UseStaffResult {
     }) => {
         try {
             setInviteLoading(true);
-            const response = await fetch('/api/staff/invite', {
+            const response = await fetch('/api/v1/merchant/core/staff/invite', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
@@ -131,7 +131,7 @@ export function useStaff(initialData?: StaffMember[]): UseStaffResult {
 
     const handleRoleUpdate = async (staffId: string, role: StaffRole) => {
         try {
-            const response = await fetch(`/api/staff/${staffId}/role`, {
+            const response = await fetch(`/api/v1/merchant/core/staff/${staffId}/role`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ role }),
@@ -156,7 +156,7 @@ export function useStaff(initialData?: StaffMember[]): UseStaffResult {
         try {
             const nextValue = member.is_active === false;
             setActiveUpdatingId(member.id);
-            const response = await fetch(`/api/staff/${member.id}/active`, {
+            const response = await fetch(`/api/v1/merchant/core/staff/${member.id}/active`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ is_active: nextValue }),
@@ -195,7 +195,7 @@ export function useStaff(initialData?: StaffMember[]): UseStaffResult {
     }) => {
         try {
             setLoading(true);
-            const response = await fetch('/api/staff/add-pin', {
+            const response = await fetch('/api/v1/merchant/core/staff/add-pin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
@@ -220,7 +220,9 @@ export function useStaff(initialData?: StaffMember[]): UseStaffResult {
         // Optimistic remove
         setStaff(prev => prev.filter(s => s.id !== staffId));
         try {
-            const response = await fetch(`/api/staff/${staffId}`, { method: 'DELETE' });
+            const response = await fetch(`/api/v1/merchant/core/staff/${staffId}`, {
+                method: 'DELETE',
+            });
             const result = await response.json();
             if (!response.ok) {
                 throw new Error(result?.error ?? 'Failed to remove staff member.');

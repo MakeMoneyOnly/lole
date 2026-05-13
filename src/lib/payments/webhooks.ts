@@ -355,7 +355,7 @@ export async function publishPaymentWebhookEvent(parsed: ParsedWebhookPayload): 
     const event = createPaymentLifecycleEvent(parsed.status, payload);
     await publishEvent(event);
     const jobMessageId = await enqueueInternalJob({
-        path: '/api/jobs/payments/complete',
+        path: '/api/v1/system/jobs/payments/complete',
         body: event as unknown as Record<string, unknown>,
         deduplicationKey: event.id,
     });

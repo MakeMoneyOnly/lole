@@ -156,7 +156,7 @@ export async function readTerminalOverview(input: {
 > {
     const db = getPowerSync();
     if (!db) {
-        const response = await fetch('/api/device/terminal/overview', {
+        const response = await fetch('/api/v1/pos/device/terminal/overview', {
             headers: input.deviceToken
                 ? {
                       'x-device-token': input.deviceToken,
@@ -287,7 +287,7 @@ export async function readTerminalOrderSplit(
 ): Promise<AdapterResult<TerminalSplitSnapshot>> {
     const db = getPowerSync();
     if (!db) {
-        const response = await fetch(`/api/orders/${orderId}/split`, {
+        const response = await fetch(`/api/v1/merchant/operations/orders/${orderId}/split`, {
             headers: deviceToken
                 ? {
                       'x-device-token': deviceToken,
@@ -331,7 +331,7 @@ export async function createTerminalEvenSplit(input: {
 }): Promise<AdapterResult<TerminalSplitSnapshot>> {
     const db = getPowerSync();
     if (!db) {
-        const response = await fetch(`/api/orders/${input.orderId}/split`, {
+        const response = await fetch(`/api/v1/merchant/operations/orders/${input.orderId}/split`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

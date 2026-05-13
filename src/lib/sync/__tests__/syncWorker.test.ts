@@ -63,6 +63,7 @@ describe('SyncWorker', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        mockFetch.mockReset();
         vi.useFakeTimers();
 
         // Reset mocks
@@ -381,7 +382,7 @@ describe('SyncWorker', () => {
     });
 
     describe('batch sync', () => {
-        it('should send batch sync request to /api/sync', async () => {
+        it('should send batch sync request to /api/v1/system/sync', async () => {
             const mockOperations = [
                 {
                     id: '1',
@@ -422,7 +423,7 @@ describe('SyncWorker', () => {
             await worker.syncOnce();
 
             expect(mockFetch).toHaveBeenCalledWith(
-                '/api/sync',
+                '/api/v1/system/sync',
                 expect.objectContaining({
                     method: 'POST',
                     headers: expect.objectContaining({

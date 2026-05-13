@@ -39,7 +39,7 @@ export function useDevices(initialData?: HardwareDevice[]) {
                 setLoading(true);
             }
             setError(null);
-            const response = await fetch('/api/devices', { method: 'GET' });
+            const response = await fetch('/api/v1/merchant/devices', { method: 'GET' });
 
             if (!response.ok) {
                 let errorMessage = 'Failed to fetch devices.';
@@ -76,7 +76,7 @@ export function useDevices(initialData?: HardwareDevice[]) {
         metadata?: HardwareDeviceMetadata;
     }) => {
         try {
-            const response = await fetch('/api/devices/provision', {
+            const response = await fetch('/api/v1/merchant/devices/provision', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
@@ -100,7 +100,9 @@ export function useDevices(initialData?: HardwareDevice[]) {
         // Optimistic remove
         setDevices(prev => prev.filter(d => d.id !== deviceId));
         try {
-            const response = await fetch(`/api/devices/${deviceId}`, { method: 'DELETE' });
+            const response = await fetch(`/api/v1/merchant/devices/${deviceId}`, {
+                method: 'DELETE',
+            });
             const result = await response.json();
             if (!response.ok) {
                 throw new Error(result?.error ?? 'Failed to delete device.');
@@ -120,7 +122,7 @@ export function useDevices(initialData?: HardwareDevice[]) {
         action: 'rotate_identity' | 'revoke_identity'
     ): Promise<HardwareDevice | null> => {
         try {
-            const response = await fetch(`/api/devices/${deviceId}`, {
+            const response = await fetch(`/api/v1/merchant/devices/${deviceId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action }),

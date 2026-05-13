@@ -105,7 +105,7 @@ class PerformanceMonitorService {
      * ```ts
      * const stopTimer = performanceMonitor.startTimer('api_call');
      * await fetchData();
-     * stopTimer({ endpoint: '/api/orders' });
+     * stopTimer({ endpoint: '/api/v1/merchant/operations/orders' });
      * ```
      */
     startTimer(name: string): (metadata?: Record<string, unknown>) => number {

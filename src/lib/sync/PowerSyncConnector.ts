@@ -134,7 +134,7 @@ export class Connector {
             return;
         }
 
-        const response = await fetch('/api/sync', {
+        const response = await fetch('/api/v1/system/sync', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

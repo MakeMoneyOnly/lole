@@ -1,10 +1,10 @@
 # lole Restaurant OS — Enterprise-Grade Production Readiness Tasks
 
 > **Generated**: 2026-04-16  
-> **Status**: Active — pre-production remediation required  
-> **Total Items**: 87 tasks across 9 sections  
-> **Critical Blockers**: 6  
-> **Source**: Full documentation audit (125 Markdown files) + codebase verification (147 migrations, 11 sync modules, 12 DataLoaders, 4 Server Action files, 5 subgraph routes)
+> **Last Updated**: 2026-05-08 (Department Gap Analysis Complete)  
+> **Status**: In Progress — 63/73 action items pending  
+> **Total Items**: 73 action items across 4 priority sections  
+> **Completed**: 10 items verified, 63 pending
 
 ---
 
@@ -704,3 +704,37 @@ These are important but do not block production launch.
 ---
 
 _This document is the single source of truth for all pre-production tasks. Update task status with `[x]` as items are completed. When all P0 and P1 items are resolved, the platform is ready for general availability._
+
+---
+
+## Department Gap Analysis Completion Status (2026-05-08)
+
+All 23 departments have completed their gap analysis and reports are available in `.col/departments/`:
+
+| Department          | Report Status | Priority Gaps                           |
+| ------------------- | ------------- | --------------------------------------- |
+| core-runtime        | ✅ Complete   | MQTT auth, circuit breaker              |
+| mobile-native       | ✅ Complete   | Android build, plugin tests             |
+| sync-persistence    | ✅ Complete   | PowerSync config, SQLCipher             |
+| frontend-arch       | ✅ Complete   | Component tests                         |
+| backend-infra       | ✅ Complete   | RLS remediation, persisted queries      |
+| cybersecurity       | ✅ Complete   | RLS fixes, SQLCipher, PIN rate limiting |
+| fiscal-compliance   | ✅ Complete   | daily_sales retention                   |
+| data-privacy-audit  | ✅ Complete   | Retention automation                    |
+| pos-ux              | ✅ Complete   | Split-check UI, aria-live               |
+| merchant-dash       | ✅ Complete   | Component tests                         |
+| guest-exp           | ✅ Complete   | Amharic translation                     |
+| systems-design      | ✅ Complete   | Color contrast                          |
+| devops-sre          | ✅ Complete   | WAF, doc updates                        |
+| fleet-mgmt          | ✅ Complete   | OTA updates                             |
+| hardware-ops        | ✅ Complete   | Cash drawer testing                     |
+| data-engineering    | ✅ Complete   | JSONB indexes, RLS indexes              |
+| strategic-analytics | ✅ Complete   | Forecasting validation                  |
+| ai-orchestration    | ✅ Complete   | Agent skills, MCP servers               |
+| growth-engineering  | ✅ Complete   | Conversion tracking                     |
+| product-marketing   | ✅ Complete   | Competitive positioning                 |
+| content-docs        | ✅ Complete   | Obsolete files removal                  |
+| merchant-success    | ✅ Complete   | Satisfaction tracking                   |
+| billing-finance     | ✅ Complete   | Fee model verification                  |
+
+**Executive Summary**: See `.col/memory/reports/executive-summary-q2-2026.md`

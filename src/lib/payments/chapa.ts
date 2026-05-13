@@ -87,7 +87,7 @@ export class ChapaProvider implements PaymentProvider {
                         ? metadata.lastName
                         : 'User',
                 tx_ref: txRef,
-                callback_url: callbackUrl ?? `${this.appUrl}/api/webhooks/chapa`,
+                callback_url: callbackUrl ?? `${this.appUrl}/api/v1/system/webhooks/chapa`,
                 return_url: returnUrl ?? `${this.appUrl}/order/status?ref=${txRef}`,
                 customization: {
                     title: 'lole Order',

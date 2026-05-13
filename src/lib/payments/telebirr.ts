@@ -207,7 +207,7 @@ export class TelebirrProvider implements PaymentProvider {
             subject: (metadata?.subject as string) || 'lole Order',
             body: (metadata?.body as string) || 'Payment for order',
             outTradeNo,
-            notifyUrl: callbackUrl || `${this.appUrl}/api/webhooks/telebirr`,
+            notifyUrl: callbackUrl || `${this.appUrl}/api/v1/system/webhooks/telebirr`,
             returnUrl: returnUrl || `${this.appUrl}/order/status?ref=${outTradeNo}`,
             receiveName: (metadata?.firstName as string) || email?.split('@')[0] || 'Guest',
             timeoutExpress: '30m', // Payment expires in 30 minutes

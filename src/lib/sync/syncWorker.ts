@@ -31,20 +31,20 @@ interface SyncOperationRow {
 
 /**
  * HIGH-013: API endpoint configuration for sync operations
- * Uses the unified /api/sync endpoint for batch operations
+ * Uses the unified /api/v1/system/sync endpoint for batch operations
  */
-const SYNC_API_ENDPOINT = '/api/sync';
+const SYNC_API_ENDPOINT = '/api/v1/system/sync';
 
 /**
  * Individual table endpoints for direct operations (fallback)
  */
 const SYNC_ENDPOINTS: Record<string, string> = {
-    orders: '/api/orders',
-    order_items: '/api/orders/items',
-    kds_order_items: '/api/kds/items',
-    tables: '/api/device/tables',
-    payments: '/api/payments',
-    guests: '/api/guests',
+    orders: '/api/v1/merchant/operations/orders',
+    order_items: '/api/v1/merchant/operations/orders/items',
+    kds_order_items: '/api/v1/merchant/operations/kds/items',
+    tables: '/api/v1/pos/device/tables',
+    payments: '/api/v1/merchant/operations/payments',
+    guests: '/api/v1/merchant/guests',
 } as const;
 
 /**

@@ -54,7 +54,7 @@ const DEFAULT_REFRESH_THRESHOLD = 300; // 5 minutes before expiry
  * ```tsx
  * function AuthenticatedComponent() {
  *   const { sessionInfo, refreshSession, isRefreshing } = useSessionRefresh({
- *     onExpired: () => router.push('/auth/login'),
+ *     onExpired: () => router.push('/login'),
  *     onError: (err) => toast.error('Session refresh failed'),
  *   });
  *
@@ -245,7 +245,7 @@ export function useSessionRefresh(config: SessionRefreshConfig = {}) {
  * ```tsx
  * function ProtectedPage() {
  *   const { isAuthenticated, isLoading, userId } = useSessionState({
- *     redirectTo: '/auth/login',
+ *     redirectTo: '/login',
  *   });
  *
  *   if (isLoading) return <LoadingSpinner />;
