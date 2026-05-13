@@ -38,7 +38,11 @@
         "deps:update": "pnpm update --interactive --latest",
         "deps:clean": "pnpm store prune",
         "ci:migration-check": "npx tsx scripts/ci/check-migration-conflicts.ts",
-        "postinstall": "npx powersync-web copy-assets --output ./public/@powersync"
+        "postinstall": "npx powersync-web copy-assets --output ./public/@powersync",
+        "col:activate": "npx tsx .col/engine/index.ts activate",
+        "col:dashboard": "cd .col/dashboard && npm run dev",
+        "col:health": "npx tsx .col/engine/index.ts health",
+        "col:cycle": "npx tsx .col/engine/index.ts cycle"
     },
     "dependencies": {
         "@apollo/server": "^5.5.0",
