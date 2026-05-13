@@ -102,13 +102,13 @@ export function FaqSection({ openFaq, setOpenFaq }: FaqSectionProps) {
                     </h2>
                     <div className="flex items-center gap-3">
                         <Link
-                            href="/auth/signup"
+                            href="/signup"
                             className="flex items-center justify-center rounded-[16px] bg-[#292723] px-6 py-3 text-[14px] leading-[21px] font-medium text-white transition-colors hover:bg-[#3d3a34]"
                         >
                             Get started
                         </Link>
                         <Link
-                            href="/auth/signup"
+                            href="/signup"
                             className="flex items-center justify-center gap-1.5 rounded-[16px] bg-[#DDF853] px-6 py-3 text-[14px] leading-[21px] font-medium text-black transition-colors hover:brightness-105"
                         >
                             Book a demo

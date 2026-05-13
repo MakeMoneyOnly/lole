@@ -29,14 +29,14 @@ export function HeroSection() {
                     </p>
                     <div className="flex w-full flex-col items-center justify-center gap-4 sm:w-auto sm:flex-row">
                         <Link
-                            href="/auth/signup"
+                            href="/signup"
                             className="flex w-full items-center justify-center gap-1.5 rounded-[16px] bg-[#DDF853] px-6 py-3 text-[14px] leading-[21px] font-medium text-black transition-colors hover:brightness-105 sm:w-auto"
                         >
                             Book a demo
                             <ArrowRight className="h-4 w-4" />
                         </Link>
                         <Link
-                            href="/auth/signup"
+                            href="/signup"
                             className="flex w-full items-center justify-center rounded-[16px] border border-white/40 bg-transparent px-6 py-3 text-[14px] leading-[21px] font-medium text-white transition-colors hover:bg-white/10 sm:w-auto"
                         >
                             Get started

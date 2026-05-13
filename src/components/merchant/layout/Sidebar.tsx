@@ -322,7 +322,7 @@ export function Sidebar() {
                         isCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5'
                     )}
                     onClick={() => {
-                        window.location.href = '/auth/login';
+                        window.location.href = '/login';
                     }}
                 >
                     <User

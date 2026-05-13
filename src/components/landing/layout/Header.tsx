@@ -103,7 +103,7 @@ export function Header({ isScrolled, isFeaturesOpen, setIsFeaturesOpen }: Header
                     {/* Right: Actions */}
                     <div className="hidden items-center gap-4 md:flex">
                         <Link
-                            href="/auth/login"
+                            href="/login"
                             className={`text-[14px] leading-[21px] font-medium transition-colors ${
                                 isFeaturesOpen
                                     ? 'text-gray-800 hover:text-black'
@@ -126,7 +126,7 @@ export function Header({ isScrolled, isFeaturesOpen, setIsFeaturesOpen }: Header
                             Get started
                         </Link>
                         <Link
-                            href="/auth/signup"
+                            href="/signup"
                             className="flex items-center gap-1.5 rounded-[16px] bg-[#DDF853] px-6 py-3 text-[14px] leading-[21px] font-medium text-black transition-colors hover:brightness-105"
                         >
                             Book a demo

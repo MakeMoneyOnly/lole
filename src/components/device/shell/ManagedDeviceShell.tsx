@@ -65,16 +65,12 @@ export function ManagedDeviceShell() {
                     getStoredPrinterSelection(),
                 ]);
 
-                if (cancelled) {
-                    return;
-                }
+                if (cancelled) return;
 
                 setSession(storedSession);
                 setPrinter(storedPrinter);
             } finally {
-                if (!cancelled) {
-                    setIsLoading(false);
-                }
+                if (!cancelled) setIsLoading(false);
             }
         })();
 
@@ -88,9 +84,7 @@ export function ManagedDeviceShell() {
     }, [session]);
 
     useEffect(() => {
-        if (!shellSummary?.launchPath || hasLaunched) {
-            return;
-        }
+        if (!shellSummary?.launchPath || hasLaunched) return;
 
         const timer = window.setTimeout(() => {
             setHasLaunched(true);
@@ -108,15 +102,12 @@ export function ManagedDeviceShell() {
 
     if (isLoading) {
         return (
-            <div className="relative min-h-screen overflow-hidden bg-[var(--color-brand-canvas)] text-[var(--color-brand-ink)]">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(221,248,83,0.28),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(227,65,5,0.18),_transparent_28%),linear-gradient(135deg,_rgba(23,11,5,0.06),_transparent)]" />
-                <div className="relative z-10 flex min-h-screen items-center justify-center px-6">
-                    <div className="rounded-[2rem] bg-white/80 px-8 py-7 shadow-[0_24px_80px_rgba(23,18,11,0.12)] backdrop-blur">
-                        <div className="flex items-center gap-3 text-sm font-black tracking-[0.22em] text-[var(--color-brand-ember)] uppercase">
-                            <Loader2 className="h-5 w-5 animate-spin" />
-                            Preparing device shell
-                        </div>
-                    </div>
+            <div className="font-inter flex min-h-screen items-center justify-center bg-[#F7F5F2] p-10 tracking-[-0.04em]">
+                <div className="flex flex-col items-center gap-6 rounded-3xl border border-gray-100 bg-white p-12">
+                    <div className="h-12 w-12 animate-spin rounded-full border-2 border-gray-100 border-t-[#DDF853]" />
+                    <p className="text-[11px] font-black tracking-[0.2em] text-[#1A1C1E] uppercase">
+                        Booting Managed Shell
+                    </p>
                 </div>
             </div>
         );
@@ -124,39 +115,40 @@ export function ManagedDeviceShell() {
 
     if (!session || !shellSummary) {
         return (
-            <div className="relative min-h-screen overflow-hidden bg-[var(--color-brand-canvas)] text-[var(--color-brand-ink)]">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(221,248,83,0.25),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(227,65,5,0.2),_transparent_30%),linear-gradient(135deg,_rgba(23,11,5,0.06),_transparent)]" />
-                <div className="relative z-10 mx-auto flex min-h-screen max-w-5xl items-center px-6 py-10">
-                    <div className="grid w-full gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-                        <section className="space-y-6">
-                            <p className="text-[11px] font-black tracking-[0.28em] text-[var(--color-brand-ember)] uppercase">
-                                Managed Hardware
-                            </p>
-                            <h1 className="max-w-xl text-5xl font-black tracking-[-0.05em] text-[var(--color-brand-ink-strong)] md:text-6xl">
-                                This device still needs to be paired.
-                            </h1>
-                            <p className="max-w-2xl text-base leading-7 font-medium text-[var(--color-brand-neutral)] md:text-lg">
-                                The shared shell is ready, but there is no stored device identity on
-                                this tablet yet. Finish provisioning from the merchant dashboard and
-                                return here to boot directly into the assigned mode.
-                            </p>
-                        </section>
+            <div className="font-inter flex min-h-screen flex-col items-center justify-center bg-[#F7F5F2] p-10 tracking-[-0.04em]">
+                <div className="grid w-full max-w-4xl gap-8 md:grid-cols-2">
+                    <div className="space-y-8 py-10">
+                        <div className="inline-flex rounded-full bg-[#DDF853] px-4 py-1.5 text-[11px] font-bold tracking-[0.05em] text-[#1A1C1E] uppercase">
+                            Setup Required
+                        </div>
+                        <h1 className="text-6xl leading-[0.95] font-bold text-[#1A1C1E]">
+                            Device Unpaired.
+                        </h1>
+                        <p className="text-xl leading-relaxed font-medium text-gray-500">
+                            This hardware is ready for Lole Enterprise, but hasn't been assigned to
+                            a restaurant yet.
+                        </p>
+                    </div>
 
-                        <section className="rounded-[2rem] bg-white/82 p-7 shadow-[0_28px_100px_rgba(23,18,11,0.12)] backdrop-blur">
-                            <div className="flex h-14 w-14 items-center justify-center rounded-[1.35rem] bg-[var(--color-brand-accent)] text-[var(--color-brand-ink-strong)] shadow-[0_18px_40px_rgba(221,248,83,0.28)]">
-                                <ShieldCheck className="h-7 w-7" />
-                            </div>
-                            <p className="mt-5 text-[11px] font-black tracking-[0.24em] text-[var(--color-brand-neutral)] uppercase">
-                                Next Step
+                    <div className="space-y-8 rounded-3xl border border-gray-100 bg-white p-10">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7F5F2] text-[#1A1C1E]">
+                            <ShieldCheck className="h-8 w-8" />
+                        </div>
+                        <div className="space-y-4">
+                            <h2 className="text-2xl font-bold text-[#1A1C1E]">
+                                Enter Pairing Code
+                            </h2>
+                            <p className="leading-relaxed text-gray-500">
+                                Open your Merchant Dashboard, navigate to{' '}
+                                <strong>Settings &gt; Devices</strong>, and generate a new pairing
+                                token.
                             </p>
-                            <p className="mt-2 text-xl font-black tracking-[-0.03em] text-[var(--color-brand-ink-strong)]">
-                                Open the restaurant-specific setup link and enter the pairing code.
-                            </p>
-                            <p className="mt-3 text-sm leading-6 font-medium text-[var(--color-brand-neutral)]">
-                                Once paired, this shell will remember the printer, role, and launch
-                                path on every reboot.
-                            </p>
-                        </section>
+                        </div>
+                        <div className="pt-4">
+                            <button className="w-full rounded-xl bg-[#1A1C1E] py-4 text-sm font-bold text-white transition-opacity hover:opacity-90">
+                                View Documentation
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -164,132 +156,109 @@ export function ManagedDeviceShell() {
     }
 
     return (
-        <div className="relative min-h-screen overflow-hidden bg-[var(--color-brand-canvas)] text-[var(--color-brand-ink)]">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(221,248,83,0.28),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(227,65,5,0.16),_transparent_28%),linear-gradient(135deg,_rgba(23,11,5,0.06),_transparent)]" />
-            <div className="absolute inset-x-0 top-0 h-px bg-black/10" />
-
-            <div className="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col justify-center gap-8 px-6 py-10 lg:px-10">
-                <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-                    <div className="space-y-6">
-                        <div className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-[11px] font-black tracking-[0.24em] text-[var(--color-brand-ember)] uppercase shadow-[0_12px_30px_rgba(23,18,11,0.08)] backdrop-blur">
-                            <ShieldCheck className="h-4 w-4" />
-                            Shared Device Shell
+        <div className="font-inter flex min-h-screen flex-col bg-[#F7F5F2] p-10 tracking-[-0.04em]">
+            <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center gap-12">
+                <div className="grid items-start gap-16 lg:grid-cols-[1.2fr_0.8fr]">
+                    <div className="space-y-10">
+                        <div className="flex items-center gap-3">
+                            <div className="h-3 w-3 animate-pulse rounded-full bg-[#DDF853]" />
+                            <span className="text-[11px] font-bold tracking-[0.1em] text-gray-400 uppercase">
+                                System Online / {shellSummary.managedModeLabel}
+                            </span>
                         </div>
 
-                        <div className="space-y-4">
-                            <p className="text-[11px] font-black tracking-[0.28em] text-[var(--color-brand-neutral)] uppercase">
-                                {profileConfig.eyebrow}
-                            </p>
-                            <h1 className="max-w-2xl text-5xl font-black tracking-[-0.05em] text-[var(--color-brand-ink-strong)] md:text-6xl">
-                                Launching {shellSummary.profileLabel} mode for{' '}
-                                {shellSummary.deviceName}.
+                        <div className="space-y-6">
+                            <h1 className="text-7xl leading-[0.9] font-bold text-[#1A1C1E]">
+                                {shellSummary.profileLabel} Mode.
                             </h1>
-                            <p className="max-w-2xl text-base leading-7 font-medium text-[var(--color-brand-neutral)] md:text-lg">
-                                {profileConfig.blurb} The shell is reading the paired device state
-                                and sending this hardware to the correct workspace automatically.
+                            <p className="max-w-xl text-2xl leading-snug font-medium text-gray-500">
+                                {profileConfig.blurb}
                             </p>
                         </div>
 
-                        <div className="grid gap-3 sm:grid-cols-3">
-                            <div className="rounded-[1.65rem] bg-white/84 p-4 shadow-[0_18px_50px_rgba(23,18,11,0.08)] backdrop-blur">
-                                <ProfileIcon className="h-5 w-5 text-[var(--color-brand-ember)]" />
-                                <p className="mt-4 text-sm font-bold text-[var(--color-brand-ink-strong)]">
-                                    {shellSummary.profileLabel}
-                                </p>
-                                <p className="mt-1 text-sm text-[var(--color-brand-neutral)]">
-                                    {shellSummary.typeLabel}
-                                </p>
+                        <div className="grid grid-cols-2 gap-4 pt-4">
+                            <div className="space-y-6 rounded-3xl border border-gray-100 bg-white p-8">
+                                <ProfileIcon className="h-6 w-6 text-[#1A1C1E]" />
+                                <div>
+                                    <p className="text-[11px] font-bold tracking-widest text-gray-400 uppercase">
+                                        Profile
+                                    </p>
+                                    <p className="text-lg font-bold text-[#1A1C1E]">
+                                        {shellSummary.profileLabel}
+                                    </p>
+                                </div>
                             </div>
-                            <div className="rounded-[1.65rem] bg-white/84 p-4 shadow-[0_18px_50px_rgba(23,18,11,0.08)] backdrop-blur">
-                                <Printer className="h-5 w-5 text-[var(--color-brand-ember)]" />
-                                <p className="mt-4 text-sm font-bold text-[var(--color-brand-ink-strong)]">
-                                    {printer?.device_name?.trim() || 'Printer memory ready'}
-                                </p>
-                                <p className="mt-1 text-sm text-[var(--color-brand-neutral)]">
-                                    {printer?.connection_type
-                                        ? `${printer.connection_type.toUpperCase()} auto-connect`
-                                        : 'No printer selected yet'}
-                                </p>
-                            </div>
-                            <div className="rounded-[1.65rem] bg-white/84 p-4 shadow-[0_18px_50px_rgba(23,18,11,0.08)] backdrop-blur">
-                                <MonitorSpeaker className="h-5 w-5 text-[var(--color-brand-ember)]" />
-                                <p className="mt-4 text-sm font-bold text-[var(--color-brand-ink-strong)]">
-                                    {shellSummary.managedModeLabel}
-                                </p>
-                                <p className="mt-1 text-sm text-[var(--color-brand-neutral)]">
-                                    Boot target {shellSummary.launchPath}
-                                </p>
+                            <div className="space-y-6 rounded-3xl border border-gray-100 bg-white p-8">
+                                <Printer className="h-6 w-6 text-[#1A1C1E]" />
+                                <div>
+                                    <p className="text-[11px] font-bold tracking-widest text-gray-400 uppercase">
+                                        Hardware
+                                    </p>
+                                    <p className="truncate text-lg font-bold text-[#1A1C1E]">
+                                        {printer?.device_name?.trim() || 'No Printer'}
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="overflow-hidden rounded-[2.2rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(255,255,255,0.95)),var(--background-image-brand-panel-dark)] p-6 shadow-[0_28px_100px_rgba(23,18,11,0.12)] backdrop-blur">
-                        <div className="rounded-[1.8rem] bg-[var(--color-brand-surface-dark)] p-6 text-white shadow-[0_16px_60px_rgba(23,18,11,0.28)]">
-                            <div className="flex items-center justify-between gap-4">
-                                <div>
-                                    <p className="text-[11px] font-black tracking-[0.24em] text-white/55 uppercase">
-                                        Launch Queue
-                                    </p>
-                                    <p className="mt-2 text-2xl font-black tracking-[-0.03em]">
-                                        Native handoff in progress
-                                    </p>
-                                </div>
-                                <Loader2 className="h-6 w-6 animate-spin text-[var(--color-brand-accent)]" />
+                    <div className="overflow-hidden rounded-3xl border border-gray-100 bg-white">
+                        <div className="space-y-8 p-10">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-sm font-bold tracking-[0.2em] text-gray-400 uppercase">
+                                    Handoff Queue
+                                </h3>
+                                <Loader2 className="h-5 w-5 animate-spin text-[#DDF853]" />
                             </div>
 
-                            <div className="mt-6 space-y-3">
+                            <div className="space-y-3">
                                 {(['cashier', 'waiter', 'kds', 'kiosk'] as const).map(profile => {
                                     const active = session.device_profile === profile;
                                     return (
                                         <div
                                             key={profile}
-                                            className={`flex items-center justify-between rounded-[1.25rem] px-4 py-3 transition-all ${
+                                            className={`flex items-center justify-between rounded-xl border px-6 py-4 ${
                                                 active
-                                                    ? 'bg-white text-[var(--color-brand-ink-strong)]'
-                                                    : 'bg-white/6 text-white/62'
+                                                    ? 'border-[#1A1C1E] bg-[#1A1C1E] text-white'
+                                                    : 'border-transparent bg-[#F7F5F2] text-gray-400'
                                             }`}
                                         >
                                             <span className="text-sm font-bold">
                                                 {getDeviceProfileLabel(profile)}
                                             </span>
-                                            <span className="text-xs font-black tracking-[0.2em] uppercase">
-                                                {active ? 'Assigned' : 'Standby'}
-                                            </span>
+                                            {active && (
+                                                <span className="text-[10px] font-black tracking-widest text-[#DDF853] uppercase">
+                                                    Active
+                                                </span>
+                                            )}
                                         </div>
                                     );
                                 })}
                             </div>
+                        </div>
 
+                        <div className="flex gap-3 bg-[#F7F5F2] p-4">
                             <button
                                 onClick={() => router.replace(shellSummary.launchPath)}
-                                className="mt-6 flex w-full items-center justify-center gap-2 rounded-[1.4rem] bg-[var(--color-brand-accent)] px-5 py-4 text-sm font-black text-[var(--color-brand-ink-strong)] shadow-[0_20px_48px_rgba(221,248,83,0.22)] transition-transform hover:scale-[1.01]"
+                                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#DDF853] py-4 text-sm font-bold text-[#1A1C1E] transition-colors hover:bg-[#cbe346]"
                             >
                                 Launch Now
                                 <ArrowRight className="h-4 w-4" />
                             </button>
-                        </div>
-
-                        <div className="mt-5 flex flex-wrap items-center gap-3">
-                            <Link
-                                href={shellSummary.launchPath}
-                                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-black tracking-[0.2em] text-[var(--color-brand-ink-strong)] uppercase shadow-[0_10px_26px_rgba(23,18,11,0.08)]"
-                            >
-                                Open target route
-                                <ArrowRight className="h-3.5 w-3.5" />
-                            </Link>
                             <button
                                 onClick={async () => {
                                     await clearDeviceSession();
                                     await clearPrinterSelection();
                                     router.refresh();
                                 }}
-                                className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs font-black tracking-[0.2em] text-[var(--color-brand-neutral)] uppercase shadow-[0_10px_26px_rgba(23,18,11,0.06)]"
+                                title="Clear Pairing"
+                                className="flex h-14 w-14 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 transition-colors hover:text-red-500"
                             >
-                                Clear local pairing
+                                <ShieldCheck className="h-5 w-5" />
                             </button>
                         </div>
                     </div>
-                </section>
+                </div>
             </div>
         </div>
     );

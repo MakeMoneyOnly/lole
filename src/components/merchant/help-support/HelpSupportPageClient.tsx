@@ -63,7 +63,9 @@ export function HelpSupportPageClient({
     const loadTickets = useCallback(async () => {
         try {
             setTicketsLoading(true);
-            const response = await fetch('/api/support/tickets?limit=20', { method: 'GET' });
+            const response = await fetch('/api/v1/merchant/comms/support/tickets?limit=20', {
+                method: 'GET',
+            });
             const payload = await response.json();
             if (!response.ok) {
                 throw new Error(payload?.error ?? 'Failed to load support tickets.');
@@ -97,7 +99,7 @@ export function HelpSupportPageClient({
 
         try {
             setTicketSubmitting(true);
-            const response = await fetch('/api/support/tickets', {
+            const response = await fetch('/api/v1/merchant/comms/support/tickets', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

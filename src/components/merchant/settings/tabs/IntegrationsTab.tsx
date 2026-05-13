@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { createBrowserClient } from '@/lib/supabase/browser';
+import { getSupabaseClient } from '@/lib/supabase/client';
 import {
     Zap,
     Link2,
@@ -246,7 +246,7 @@ export function IntegrationsTab() {
     useEffect(() => {
         const fetchErcaStatus = async () => {
             try {
-                const supabase = createBrowserClient();
+                const supabase = getSupabaseClient();
                 const {
                     data: { session },
                 } = await supabase.auth.getSession();
@@ -260,7 +260,9 @@ export function IntegrationsTab() {
 
                 if (!staff?.restaurant_id) return;
 
-                const res = await fetch(`/api/restaurants/${staff.restaurant_id}/erca-status`);
+                const res = await fetch(
+                    `/api/v1/merchant/core/restaurants/${staff.restaurant_id}/erca-status`
+                );
                 if (!res.ok) return;
 
                 const body = await res.json();
