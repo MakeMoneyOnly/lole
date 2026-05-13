@@ -1,5 +1,3 @@
-'use client';
-
 import { Star, Heart, Clock } from 'lucide-react';
 import { DishItem } from './DishDetailDrawer.types';
 
@@ -11,53 +9,50 @@ interface DishStatsRowProps {
 
 export function DishStatsRow({ item, likesCount, formatLikes }: DishStatsRowProps) {
     return (
-        <div className="mb-8 flex items-center justify-between rounded-2xl border border-black/10 bg-black/5 px-6 py-4 dark:border-white/10 dark:bg-white/5">
+        <div className="mt-2 flex items-center justify-between gap-8">
             {/* Rating Group */}
-            <div className="flex flex-col items-center">
-                <div className="flex items-center gap-1.5">
-                    <Star
-                        size={18}
-                        className="fill-brand-yellow text-brand-yellow"
-                        strokeWidth={0}
-                    />
-                    <span className="font-manrope text-xl font-black text-black dark:text-white">
+            <div className="flex items-center gap-2">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F7F5F2] text-[#DDF853]">
+                    <Star size={20} fill="currentColor" strokeWidth={0} />
+                </div>
+                <div>
+                    <p className="text-[10px] font-black tracking-[0.2em] text-gray-400 uppercase">
+                        Rating
+                    </p>
+                    <p className="text-lg font-black tracking-tighter text-[#1A1C1E]">
                         {item.rating?.toFixed(1) || '4.5'}
-                    </span>
+                    </p>
                 </div>
             </div>
-
-            {/* Divider */}
-            <div className="h-8 w-px bg-black/10 dark:bg-white/10" />
 
             {/* Likes Group */}
-            <div className="flex flex-col items-center">
-                <div className="flex items-center gap-1.5">
-                    <Heart size={18} className="fill-brand-accent text-black" strokeWidth={0} />
-                    <span className="font-manrope text-xl font-black text-black dark:text-white">
+            <div className="flex items-center gap-2">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F7F5F2] text-[#1A1C1E]">
+                    <Heart size={20} fill="currentColor" strokeWidth={0} />
+                </div>
+                <div>
+                    <p className="text-[10px] font-black tracking-[0.2em] text-gray-400 uppercase">
+                        Likes
+                    </p>
+                    <p className="text-lg font-black tracking-tighter text-[#1A1C1E]">
                         {formatLikes(likesCount)}
-                    </span>
+                    </p>
                 </div>
             </div>
 
-            {/* Divider */}
-            <div className="h-8 w-px bg-black/10 dark:bg-white/10" />
-
             {/* Prep Time Group */}
-            <div className="flex flex-col items-center">
-                <div className="flex items-center gap-1.5">
-                    <Clock
-                        size={18}
-                        className="text-black/40 dark:text-white/40"
-                        strokeWidth={2.5}
-                    />
-                    <div className="flex items-baseline gap-0.5">
-                        <span className="font-manrope text-xl font-black text-black dark:text-white">
-                            {item.preparationTime || 15}
-                        </span>
-                        <span className="font-manrope text-xs font-bold text-black/40 dark:text-white/40">
-                            min
-                        </span>
-                    </div>
+            <div className="flex items-center gap-2">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F7F5F2] text-[#1A1C1E]">
+                    <Clock size={20} strokeWidth={2.5} />
+                </div>
+                <div>
+                    <p className="text-[10px] font-black tracking-[0.2em] text-gray-400 uppercase">
+                        Time
+                    </p>
+                    <p className="text-lg font-black tracking-tighter text-[#1A1C1E]">
+                        {item.preparationTime || 15}
+                        <span className="ml-0.5 text-xs font-bold text-gray-400">min</span>
+                    </p>
                 </div>
             </div>
         </div>

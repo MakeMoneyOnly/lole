@@ -100,15 +100,15 @@ function PaymentChoiceButton({
             onClick={onClick}
             className={`group flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition-all duration-300 outline-none active:scale-[0.98] ${
                 selected
-                    ? 'border-brand-accent bg-brand-accent/5 dark:bg-brand-accent/10 shadow-[0_8px_16px_-6px_rgba(220,38,38,0.15)]'
-                    : 'border-black/5 bg-transparent hover:border-black/10 hover:bg-black/5 dark:border-white/5 dark:hover:border-white/10 dark:hover:bg-white/5'
+                    ? 'border-[#DDF853] bg-[#DDF853]/5 shadow-[0_8px_16px_-6px_rgba(221,248,83,0.15)]'
+                    : 'border-black/5 bg-transparent hover:border-black/10 hover:bg-black/5'
             }`}
         >
             <div
                 className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-all duration-300 ${
                     selected
-                        ? 'bg-brand-accent shadow-brand-accent/30 scale-105 text-black shadow-lg'
-                        : 'bg-black/5 text-black/50 group-hover:scale-105 group-hover:text-black/70 dark:bg-white/10 dark:text-white/50 dark:group-hover:text-white/70'
+                        ? 'scale-105 bg-[#DDF853] text-[#1A1C1E] shadow-lg shadow-[#DDF853]/30'
+                        : 'bg-black/5 text-black/50 group-hover:scale-105 group-hover:text-black/70'
                 }`}
             >
                 {icon}
@@ -116,21 +116,19 @@ function PaymentChoiceButton({
             <div className="min-w-0 flex-1">
                 <p
                     className={`text-[15px] font-bold tracking-tight transition-colors duration-300 ${
-                        selected ? 'text-black' : 'text-black dark:text-white'
+                        selected ? 'text-[#1A1C1E]' : 'text-[#1A1C1E]'
                     }`}
                 >
                     {label}
                 </p>
-                <p className="mt-0.5 text-xs leading-relaxed font-medium text-black/50 dark:text-white/50">
+                <p className="mt-0.5 text-xs leading-relaxed font-medium text-black/50">
                     {description}
                 </p>
             </div>
             <div className="flex shrink-0 items-center justify-center pl-2">
                 <div
                     className={`flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all duration-300 ${
-                        selected
-                            ? 'border-brand-accent bg-brand-accent'
-                            : 'border-black/20 dark:border-white/20'
+                        selected ? 'border-[#DDF853] bg-[#DDF853]' : 'border-black/20'
                     }`}
                 >
                     <div
@@ -218,7 +216,7 @@ export function CartDrawer({
             }
 
             try {
-                const url = new URL('/api/guest/discounts', window.location.origin);
+                const url = new URL('/api/v1/guest-portal/discounts', window.location.origin);
                 url.searchParams.set('slug', guestContext.slug);
                 const response = await fetch(url.toString());
                 const payload = await response.json();
@@ -286,7 +284,7 @@ export function CartDrawer({
         setOrderError(null);
 
         try {
-            const response = await fetch('/api/payments/sessions', {
+            const response = await fetch('/api/v1/merchant/operations/payments/sessions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -397,8 +395,8 @@ export function CartDrawer({
     return (
         <Drawer.Root open={open} onOpenChange={handleClose}>
             <Drawer.Portal>
-                <Drawer.Overlay className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm" />
-                <Drawer.Content className="bg-background fixed right-0 bottom-0 left-0 z-[9999] flex h-[92vh] flex-col rounded-t-[32px] border-t border-black/5 transition-colors duration-300 outline-none dark:border-white/10">
+                <Drawer.Overlay className="fixed inset-0 z-[9999] bg-[#1A1C1E]/60 backdrop-blur-sm" />
+                <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[9999] flex h-[92vh] flex-col rounded-t-[3rem] border-t border-black/5 bg-white transition-colors duration-300 outline-none">
                     <Drawer.Title className="sr-only">
                         {step === 'success'
                             ? 'Order placed confirmation'
@@ -774,7 +772,7 @@ export function CartDrawer({
                                             !digitalPaymentMethod)
                                     }
                                     onClick={handlePlaceOrder}
-                                    className="bg-brand-accent hover:bg-brand-accent/90 flex h-14 w-full items-center justify-center gap-2 rounded-full text-base font-bold text-black shadow-lg transition-transform active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="flex h-16 w-full items-center justify-center gap-2 rounded-2xl bg-[#DDF853] text-sm font-black tracking-widest text-[#1A1C1E] uppercase shadow-xl shadow-[#DDF853]/10 transition-all hover:scale-[1.02] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     {submitting ? (
                                         'Placing order...'

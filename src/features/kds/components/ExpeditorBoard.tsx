@@ -330,7 +330,7 @@ export function ExpeditorBoard() {
         setSavingArchive(true);
         try {
             const normalized = Math.floor(nextValue);
-            const response = await fetch('/api/settings/kds', {
+            const response = await fetch('/api/v1/merchant/core/settings/kds', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ready_auto_archive_minutes: normalized }),
@@ -355,7 +355,7 @@ export function ExpeditorBoard() {
         }
         setSavingAlerts(true);
         try {
-            const response = await fetch('/api/settings/kds', {
+            const response = await fetch('/api/v1/merchant/core/settings/kds', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ alert_policy: alertPolicy }),
@@ -379,7 +379,7 @@ export function ExpeditorBoard() {
         }
         setSavingPrintPolicy(true);
         try {
-            const response = await fetch('/api/settings/kds', {
+            const response = await fetch('/api/v1/merchant/core/settings/kds', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ print_policy: printPolicy }),

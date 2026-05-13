@@ -1,121 +1,88 @@
 'use client';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { cn } from '@/lib/utils';
-import { FilterShape } from '@/components/ui/FilterShape';
 import { useHaptic } from '@/hooks/useHaptic';
-import { useTheme } from 'next-themes';
-import {
-    Flame,
-    UtensilsCrossed,
-    Pizza,
-    ChefHat,
-    Leaf,
-    Cookie,
-    Coffee,
-    CupSoda,
-    Beer,
-    Wine,
-} from 'lucide-react';
+import { ShoppingBag, Zap, Gift, Ticket, Crown, Flame } from 'lucide-react';
 
-const FOOD_CATEGORIES = [
-    { id: 'all', name: 'All', icon: <Flame size={20} /> },
-    { id: 'burger', name: 'Burger', icon: <UtensilsCrossed size={20} /> },
-    { id: 'pizza', name: 'Pizza', icon: <Pizza size={20} /> },
-    { id: 'traditional', name: 'Traditional', icon: <ChefHat size={20} /> },
-    { id: 'vegan', name: 'Vegan', icon: <Leaf size={20} /> },
-    { id: 'desert', name: 'Desert', icon: <Cookie size={20} /> },
-];
-
-const DRINK_CATEGORIES = [
-    { id: 'all', name: 'All', icon: <Flame size={20} /> },
-    { id: 'hot-drinks', name: 'Hot Drinks', icon: <Coffee size={20} /> },
-    { id: 'soft-drinks', name: 'Soft Drinks', icon: <CupSoda size={20} /> },
-    { id: 'beer', name: 'Beer', icon: <Beer size={20} /> },
-    { id: 'juice', name: 'Juice', icon: <CupSoda size={20} /> },
-    { id: 'wine', name: 'Wine', icon: <Wine size={20} /> },
+const CATEGORIES = [
+    {
+        id: 'greatbuy',
+        name: 'GreatBuy',
+        icon: <ShoppingBag size={24} className="text-white" />,
+        gradient: 'bg-gradient-to-br from-[#FF8BA7] via-[#FF4D6D] to-[#C91D26]',
+    },
+    {
+        id: 'flash',
+        name: 'Flash',
+        icon: <Zap size={24} className="fill-white text-white" />,
+        gradient: 'bg-gradient-to-br from-[#B588FF] via-[#9D5EFF] to-[#7A2BFF]',
+    },
+    {
+        id: 'gift',
+        name: 'Gift',
+        icon: <Gift size={24} className="text-white" />,
+        gradient: 'bg-gradient-to-br from-[#80E8FF] via-[#4DDAFF] to-[#00A3FF]',
+    },
+    {
+        id: 'coupon',
+        name: 'Coupon',
+        icon: <Ticket size={24} className="text-white" />,
+        gradient: 'bg-gradient-to-br from-[#D1B3FF] via-[#B885FF] to-[#9D5EFF]',
+    },
+    {
+        id: 'viparea',
+        name: 'VIPArea',
+        icon: <Crown size={24} className="fill-white text-white" />,
+        gradient: 'bg-gradient-to-br from-[#FFD1A3] via-[#FFA64D] to-[#FF8000]',
+    },
+    {
+        id: 'new',
+        name: 'New',
+        icon: <Flame size={24} className="text-white" />,
+        gradient: 'bg-gradient-to-br from-[#FFD93D] via-[#FFC107] to-[#FF8F00]',
+    },
 ];
 
 interface CategoryRailProps {
-    activeTab: 'food' | 'drinks';
-    activeCategoryId: string;
-    onCategoryChange: (id: string) => void;
+    activeCategoryId?: string;
+    onCategoryChange?: (id: string) => void;
 }
 
-export function CategoryRail({ activeTab, activeCategoryId, onCategoryChange }: CategoryRailProps) {
+export function CategoryRail({
+    activeCategoryId = 'greatbuy',
+    onCategoryChange,
+}: CategoryRailProps) {
     const { trigger } = useHaptic();
-    const { theme, resolvedTheme } = useTheme();
-    const currentTheme = theme === 'system' ? resolvedTheme : theme;
-
-    const handleCategoryClick = (id: string) => {
-        trigger('soft');
-        onCategoryChange(id);
-    };
-
-    const categories = activeTab === 'food' ? FOOD_CATEGORIES : DRINK_CATEGORIES;
-
-    // Reset activeCategoryId to 'all' when tab changes
-    useEffect(() => {
-        onCategoryChange('all');
-    }, [activeTab, onCategoryChange]);
 
     return (
-        <div className="no-scrollbar mt-8 mb-0 w-full snap-x snap-mandatory overflow-x-auto py-4 pl-6">
-            <div className="flex gap-4 pr-6">
-                {categories.map(cat => {
-                    const isActive = activeCategoryId === cat.id;
-                    return (
-                        <button
-                            key={cat.id}
-                            onClick={() => handleCategoryClick(cat.id)}
-                            className="group flex min-w-[70px] touch-manipulation snap-center flex-col items-center gap-2 transition-all duration-300 focus:outline-none active:scale-95"
-                        >
-                            {/* Badge Container */}
-                            <div
-                                className={cn(
-                                    'relative flex h-[70px] w-[70px] items-center justify-center transition-all duration-300',
-                                    isActive ? 'scale-110' : 'scale-100'
-                                )}
-                            >
-                                {/* The Custom Filter Shape */}
-                                <div className="absolute inset-0 h-full w-full">
-                                    <FilterShape
-                                        active={isActive}
-                                        color={
-                                            isActive
-                                                ? '#C91D26'
-                                                : currentTheme === 'dark'
-                                                  ? '#1a1a1a'
-                                                  : '#f3f4f6'
-                                        }
-                                    />
-                                </div>
-
-                                {/* Icon */}
-                                <div
-                                    className={cn(
-                                        'relative z-10 transition-colors duration-300',
-                                        isActive ? 'text-white' : 'text-black/40 dark:text-white/60'
-                                    )}
-                                >
-                                    {cat.icon}
-                                </div>
-                            </div>
-
-                            {/* Label */}
-                            <span
-                                className={cn(
-                                    'text-xs font-bold tracking-wide transition-colors duration-300',
-                                    isActive
-                                        ? 'text-black dark:text-white'
-                                        : 'text-black/30 dark:text-white/40'
-                                )}
-                            >
-                                {cat.name}
-                            </span>
-                        </button>
-                    );
-                })}
-            </div>
+        <div className="no-scrollbar flex w-full gap-5 overflow-x-auto px-6 py-6">
+            {CATEGORIES.map(cat => (
+                <button
+                    key={cat.id}
+                    onClick={() => {
+                        trigger('soft');
+                        onCategoryChange?.(cat.id);
+                    }}
+                    className="flex flex-col items-center gap-2.5 transition-transform active:scale-90"
+                >
+                    <div
+                        className={cn(
+                            'flex h-16 w-16 items-center justify-center rounded-[24px] shadow-[0_8px_20px_rgba(0,0,0,0.08)]',
+                            cat.gradient
+                        )}
+                    >
+                        {cat.icon}
+                    </div>
+                    <span
+                        className={cn(
+                            'text-[10px] font-bold tracking-tight transition-colors',
+                            activeCategoryId === cat.id ? 'text-black' : 'text-black/30'
+                        )}
+                    >
+                        {cat.name}
+                    </span>
+                </button>
+            ))}
         </div>
     );
 }

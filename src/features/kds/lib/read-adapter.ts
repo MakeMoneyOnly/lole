@@ -158,7 +158,7 @@ export async function readKdsSettings(): Promise<AdapterResult<KdsSettingsPayloa
         };
     }
 
-    const response = await fetch('/api/settings/kds');
+    const response = await fetch('/api/v1/merchant/core/settings/kds');
     const payload = (await response.json()) as { data?: KdsSettingsPayload; error?: string };
     if (!response.ok || !payload.data) {
         return {
@@ -187,7 +187,7 @@ export async function readKdsQueue(filters: QueueFilters): Promise<
             limit: String(filters.limit),
             sla_minutes: String(filters.slaMinutes),
         });
-        const response = await fetch(`/api/kds/queue?${query.toString()}`);
+        const response = await fetch(`/api/v1/merchant/operations/kds/queue?${query.toString()}`);
         const payload = (await response.json()) as {
             data?: { orders: UnifiedKDSOrder[]; policies: { ready_auto_archive_minutes: number } };
             error?: string;

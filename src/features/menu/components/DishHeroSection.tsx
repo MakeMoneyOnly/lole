@@ -1,8 +1,7 @@
-'use client';
-
 import { ArrowLeft, Heart } from 'lucide-react';
 import Image from 'next/image';
 import { DishItem } from './DishDetailDrawer.types';
+import { cn } from '@/lib/utils';
 
 interface DishHeroSectionProps {
     item: DishItem;
@@ -20,43 +19,39 @@ export function DishHeroSection({
     onToggleLike,
 }: DishHeroSectionProps) {
     return (
-        <div className="relative h-[40vh] w-full shrink-0 overflow-hidden rounded-t-[32px]">
+        <div className="relative h-[45vh] w-full shrink-0 overflow-hidden rounded-t-[3.5rem] bg-[#1A1C1E]">
             <Image
                 src={item.imageUrl}
                 alt={item.title}
                 fill
-                className="object-cover"
+                className="object-cover transition-transform duration-1000 group-hover:scale-110"
                 priority
                 unoptimized={isRemoteOrDataImage}
             />
-            {/* Gradient Fade to Background at Bottom */}
-            <div className="pointer-events-none absolute right-0 -bottom-1 left-0 h-24 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/90 to-transparent" />
 
-            {/* Back Button */}
-            <button
-                onClick={onBack}
-                className="absolute top-4 left-4 z-20 flex h-11 w-11 touch-manipulation items-center justify-center rounded-full border border-white/20 bg-white/50 text-black shadow-sm backdrop-blur-md transition-all hover:bg-white active:scale-90"
-            >
-                <ArrowLeft size={24} strokeWidth={2.5} />
-            </button>
+            {/* Top Navigation */}
+            <div className="absolute top-10 right-10 left-10 z-30 flex items-center justify-between">
+                <button
+                    onClick={onBack}
+                    className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-[#1A1C1E] text-[#DDF853] shadow-2xl shadow-black/40 transition-all hover:scale-110 active:scale-95"
+                >
+                    <ArrowLeft size={28} strokeWidth={3} />
+                </button>
+                <button
+                    onClick={e => onToggleLike(e)}
+                    className={cn(
+                        'flex h-14 w-14 items-center justify-center rounded-2xl border-2 shadow-2xl shadow-black/40 transition-all hover:scale-110 active:scale-95',
+                        isLiked
+                            ? 'border-[#DDF853] bg-[#DDF853] text-[#1A1C1E]'
+                            : 'border-white/20 bg-[#1A1C1E]/40 text-white backdrop-blur-xl'
+                    )}
+                >
+                    <Heart size={28} fill={isLiked ? 'currentColor' : 'none'} strokeWidth={3} />
+                </button>
+            </div>
 
-            {/* Top Right Heart Button */}
-            <button
-                onClick={e => onToggleLike(e)}
-                className={`absolute top-4 right-4 z-20 flex h-10 w-10 touch-manipulation items-center justify-center rounded-full border border-white/30 shadow-sm transition-all active:scale-90 ${
-                    isLiked
-                        ? 'scale-110 text-black shadow-md'
-                        : 'bg-white/30 text-white backdrop-blur-xl hover:bg-white/50'
-                }`}
-            >
-                <Heart
-                    size={20}
-                    stroke={isLiked ? 'currentColor' : '#C91D26'}
-                    fill={isLiked ? 'currentColor' : 'transparent'}
-                    strokeWidth={isLiked ? 0 : 2.5}
-                    className="transition-transform duration-300"
-                />
-            </button>
+            {/* Bottom Gradient Fade */}
+            <div className="absolute inset-x-0 bottom-0 z-10 h-40 bg-gradient-to-t from-white via-white/80 to-transparent" />
         </div>
     );
 }

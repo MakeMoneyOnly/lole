@@ -33,7 +33,7 @@ export function ServiceRequestButton({ guestContext, tableNumber }: ServiceReque
         setError(null);
 
         try {
-            const response = await fetch('/api/service-requests', {
+            const response = await fetch('/api/v1/merchant/operations/service-requests', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

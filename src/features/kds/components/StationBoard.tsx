@@ -127,24 +127,24 @@ function urgencyStyles(
     if (pct >= 1) {
         // SLA breached — danger
         return {
-            card: 'border-state-danger-bg bg-state-danger-bg/20 animate-[slaPulse_2s_ease-in-out_infinite] ring-2 ring-state-danger/10',
-            header: 'border-state-danger/10 bg-state-danger-bg/40',
-            timer: 'font-black text-state-danger',
+            card: 'border-red-100 bg-red-50/30 ring-1 ring-red-50',
+            header: 'border-red-100 bg-red-50/50',
+            timer: 'font-black text-red-600',
         };
     }
     if (pct >= 0.75) {
         // At risk — warning
         return {
-            card: 'border-state-warning-bg bg-state-warning-bg/20 ring-1 ring-state-warning/10',
-            header: 'border-state-warning/10 bg-state-warning-bg/40',
-            timer: 'font-bold text-state-warning',
+            card: 'border-amber-100 bg-amber-50/30 ring-1 ring-amber-50',
+            header: 'border-amber-100 bg-amber-50/50',
+            timer: 'font-bold text-amber-600',
         };
     }
     // On track — clean
     return {
-        card: 'border-brand-neutral-soft/10 bg-white shadow-soft',
-        header: 'border-brand-neutral-soft/5 bg-brand-canvas-alt/50',
-        timer: 'font-bold text-brand-neutral',
+        card: 'border-gray-100 bg-white',
+        header: 'border-gray-100 bg-[#F7F5F2]',
+        timer: 'font-bold text-gray-500',
     };
 }
 
@@ -487,11 +487,14 @@ export function StationBoard({
             if (printPolicy.mode === 'off') return;
             setPrintingOrderId(orderId);
             try {
-                const response = await fetch(`/api/kds/orders/${orderId}/print`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ reason }),
-                });
+                const response = await fetch(
+                    `/api/v1/merchant/operations/kds/orders/${orderId}/print`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ reason }),
+                    }
+                );
                 const payload = await response.json().catch(() => ({}));
                 if (!response.ok) {
                     setError(payload?.error ?? 'Failed to dispatch printer fallback');
@@ -766,11 +769,14 @@ export function StationBoard({
                 breached_tickets: breachedCount,
             };
             try {
-                await fetch(`/api/kds/telemetry?restaurant_id=${restaurantId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                });
+                await fetch(
+                    `/api/v1/merchant/operations/kds/telemetry?restaurant_id=${restaurantId}`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                    }
+                );
             } catch {
                 // Telemetry failure should not impact KDS workflow.
             }
@@ -803,341 +809,222 @@ export function StationBoard({
     }
 
     return (
-        <div className="font-manrope bg-brand-canvas text-brand-ink flex h-full min-h-0 flex-col">
-            <div className="bg-brand-canvas/90 z-10 flex items-start justify-between px-8 py-8 backdrop-blur-sm">
+        <div className="font-inter flex h-screen flex-col overflow-hidden bg-[#F7F5F2] tracking-[-0.04em] text-[#1A1C1E]">
+            {/* KDS Header */}
+            <div className="flex items-start justify-between border-b border-gray-100 bg-white px-10 py-10">
                 <div>
-                    <h1 className="text-brand-ink-strong text-5xl font-bold tracking-tight">
-                        {title}
-                    </h1>
-                    <div className="text-micro text-brand-neutral mt-3 flex items-center gap-3 font-bold tracking-wider uppercase">
-                        <span className={`rounded-full px-3 py-1 ${accentClassName}`}>
-                            {stationOrders.length} Tickets
-                        </span>
-                        <span>{format(clock, 'EEE, MMM d HH:mm')}</span>
-                        <span
-                            className={`rounded-full px-3 py-1 font-bold ${
-                                realtimeConnected
-                                    ? 'bg-state-success-bg/30 text-state-success'
-                                    : 'bg-state-warning-bg/30 text-state-warning'
-                            }`}
-                        >
-                            {realtimeConnected ? 'Realtime Connected' : 'Realtime Degraded'}
-                        </span>
-                        <span
-                            className={`rounded-full px-3 py-1 font-bold ${
-                                isOnline
-                                    ? 'bg-state-success-bg/30 text-state-success'
-                                    : 'bg-state-danger-bg/30 text-state-danger'
-                            }`}
-                        >
-                            {isOnline ? 'Network Online' : 'Offline Mode'}
-                        </span>
-                        {queuedActionCount > 0 ? (
-                            <span className="bg-state-info-bg/30 text-state-info rounded-full px-3 py-1 font-bold">
-                                Queued Actions: {queuedActionCount}
-                            </span>
-                        ) : null}
-                        <span className="bg-brand-canvas-alt text-brand-neutral rounded-full px-3 py-1 font-bold">
-                            Print: {printPolicy.mode}
-                        </span>
-                        {breachedCount > 0 && (
-                            <span className="bg-state-danger animate-pulse rounded-full px-3 py-1 font-bold text-white">
-                                ⚠ {breachedCount} SLA BREACH{breachedCount > 1 ? 'ES' : ''}
-                            </span>
-                        )}
+                    <div className="mb-2 flex items-center gap-3">
+                        <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#DDF853]" />
+                        <p className="text-[10px] font-black tracking-[0.2em] text-gray-400 uppercase">
+                            Live Operations
+                        </p>
                     </div>
-                    <p className="text-micro text-brand-neutral mt-2 font-bold tracking-wider uppercase">
-                        Bump-bar keys: `1-9` select, `S` start, `H` hold, `R` ready, `Enter` run
-                    </p>
-                    <nav className="text-micro mt-4 flex flex-wrap gap-2 font-bold tracking-wider uppercase">
-                        <Link
-                            href="/kds"
-                            className={`rounded-full px-3 py-1 transition-all ${station === 'kitchen' ? 'bg-brand-ink shadow-medium text-white' : 'text-brand-neutral hover:bg-brand-canvas-alt bg-white'}`}
-                        >
-                            Kitchen
-                        </Link>
-                        <Link
-                            href="/bar"
-                            className={`rounded-full px-3 py-1 transition-all ${station === 'bar' ? 'bg-brand-ink shadow-medium text-white' : 'text-brand-neutral hover:bg-brand-canvas-alt bg-white'}`}
-                        >
-                            Bar
-                        </Link>
-                        <Link
-                            href="/dessert"
-                            className={`rounded-full px-3 py-1 transition-all ${station === 'dessert' ? 'bg-brand-ink shadow-medium text-white' : 'text-brand-neutral hover:bg-brand-canvas-alt bg-white'}`}
-                        >
-                            Dessert
-                        </Link>
-                        <Link
-                            href="/coffee"
-                            className={`rounded-full px-3 py-1 transition-all ${station === 'coffee' ? 'bg-brand-ink shadow-medium text-white' : 'text-brand-neutral hover:bg-brand-canvas-alt bg-white'}`}
-                        >
-                            Coffee
-                        </Link>
-                        <Link
-                            href="/expeditor"
-                            className="text-brand-neutral hover:bg-brand-canvas-alt rounded-full bg-white px-3 py-1 transition-all"
-                        >
-                            Expeditor
-                        </Link>
-                    </nav>
+                    <h1 className="flex items-center gap-4 text-4xl font-bold text-[#1A1C1E]">
+                        {title}
+                        <span className="rounded-xl bg-[#1A1C1E] px-4 py-1 text-lg font-black text-[#DDF853]">
+                            {stationOrders.length}
+                        </span>
+                    </h1>
+
+                    <div className="mt-6 flex items-center gap-6">
+                        <div className="flex items-center gap-2">
+                            <div
+                                className={`h-1.5 w-1.5 rounded-full ${realtimeConnected ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                            />
+                            <span className="text-[11px] font-black tracking-widest text-gray-400 uppercase">
+                                {realtimeConnected ? 'Realtime Connected' : 'Syncing...'}
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div
+                                className={`h-1.5 w-1.5 rounded-full ${isOnline ? 'bg-emerald-500' : 'bg-red-500'}`}
+                            />
+                            <span className="text-[11px] font-black tracking-widest text-gray-400 uppercase">
+                                {isOnline ? 'Network Online' : 'Offline Mode'}
+                            </span>
+                        </div>
+                        <div className="h-4 w-px bg-gray-100" />
+                        <span className="text-[11px] font-black tracking-widest text-gray-400 uppercase">
+                            {format(clock, 'HH:mm:ss')}
+                        </span>
+                    </div>
                 </div>
-                <div className="flex gap-2">
+
+                <div className="flex gap-4">
                     <button
                         onClick={() => setShowPrepSummary(v => !v)}
-                        className={`flex h-11 items-center gap-2 rounded-xl border px-3 text-sm font-semibold transition ${
+                        className={`flex h-16 items-center gap-3 rounded-2xl border px-6 font-bold transition-all ${
                             showPrepSummary
-                                ? 'border-gray-900 bg-gray-900 text-white'
-                                : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-100'
+                                ? 'border-[#1A1C1E] bg-[#1A1C1E] text-white'
+                                : 'border-gray-100 bg-white text-gray-600 hover:border-gray-200'
                         }`}
-                        title="Toggle prep summary"
                     >
-                        <LayoutList className="h-4 w-4" />
+                        <LayoutList className="h-5 w-5" />
                         Prep List
                     </button>
                     <button
                         onClick={() => setViewMode(v => (v === 'grid' ? 'list' : 'grid'))}
-                        className={`flex h-11 items-center gap-2 rounded-xl border px-3 text-sm font-semibold transition ${
-                            viewMode === 'list'
-                                ? 'border-gray-900 bg-gray-900 text-white'
-                                : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-100'
-                        }`}
-                        title={viewMode === 'grid' ? 'Switch to list view' : 'Switch to grid view'}
+                        className="flex h-16 items-center gap-3 rounded-2xl border border-gray-100 bg-white px-6 font-bold text-gray-600 transition-all hover:border-gray-200"
                     >
                         {viewMode === 'grid' ? (
-                            <>
-                                <List className="h-4 w-4" /> List
-                            </>
+                            <List className="h-5 w-5" />
                         ) : (
-                            <>
-                                <Grid3X3 className="h-4 w-4" /> Grid
-                            </>
+                            <Grid3X3 className="h-5 w-5" />
                         )}
+                        {viewMode === 'grid' ? 'List View' : 'Grid View'}
                     </button>
                     <button
                         onClick={() => void fetchQueue(true)}
-                        className="flex h-11 w-11 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-100"
-                        title="Refresh queue"
+                        className="flex h-16 w-16 items-center justify-center rounded-2xl border border-gray-100 bg-white text-gray-600 transition-all hover:border-gray-200"
                     >
-                        <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                    </button>
-                    <button
-                        onClick={() => void syncOfflineActions()}
-                        disabled={!isOnline || queuedActionCount === 0 || syncingOfflineActions}
-                        className="flex h-11 items-center justify-center rounded-xl border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
-                        title="Sync queued offline actions"
-                    >
-                        {syncingOfflineActions ? 'Syncing...' : `Sync ${queuedActionCount}`}
+                        <RefreshCw className={`h-5 w-5 ${isRefreshing ? 'animate-spin' : ''}`} />
                     </button>
                     <button
                         onClick={toggleFullScreen}
-                        className="bg-brand-accent flex h-11 w-11 items-center justify-center rounded-xl text-black hover:brightness-105"
-                        title="Toggle full screen"
+                        className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#DDF853] text-[#1A1C1E] transition-all hover:scale-[1.02] active:scale-[0.98]"
                     >
-                        <Maximize2 className="h-4 w-4" />
+                        <Maximize2 className="h-5 w-5" />
                     </button>
                 </div>
             </div>
 
-            {headerSlot ? <div className="mx-8 mb-4">{headerSlot}</div> : null}
+            {headerSlot && <div className="mt-6 px-10">{headerSlot}</div>}
 
-            {/* ── Prep Summary Sidebar ──────────────────────────────────── */}
-            {showPrepSummary && (
-                <aside className="mx-8 mb-4 rounded-xl border border-gray-200 bg-white shadow-sm">
-                    <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-                        <h2 className="text-sm font-black tracking-widest text-gray-500 uppercase">
-                            Prep Density — {title}
-                        </h2>
-                        <span className="text-xs text-gray-400">
-                            {prepSummary.reduce((s, i) => s + i.qty, 0)} items across{' '}
-                            {stationOrders.length} tickets
-                        </span>
+            <main className="flex flex-1 flex-col gap-8 overflow-hidden p-10">
+                {/* ── Prep Summary ──────────────────────────────────── */}
+                {showPrepSummary && (
+                    <div className="animate-in slide-in-from-top-4 rounded-[2rem] border border-gray-100 bg-white p-10 duration-300">
+                        <div className="mb-8 flex items-center justify-between">
+                            <h2 className="text-xl font-bold">Preparation Density.</h2>
+                            <p className="text-sm font-black tracking-widest text-gray-400 uppercase">
+                                {prepSummary.reduce((s, i) => s + i.qty, 0)} Items Total
+                            </p>
+                        </div>
+                        {prepSummary.length === 0 ? (
+                            <p className="font-medium text-gray-400">All items processed.</p>
+                        ) : (
+                            <div className="flex flex-wrap gap-4">
+                                {prepSummary.map(({ name, qty }) => (
+                                    <div
+                                        key={name}
+                                        className="flex items-center gap-4 rounded-2xl border border-gray-100 bg-[#F7F5F2] px-6 py-4"
+                                    >
+                                        <span className="font-bold">{name}</span>
+                                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#1A1C1E] text-xs font-black text-[#DDF853]">
+                                            {qty}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
-                    {prepSummary.length === 0 ? (
-                        <p className="p-4 text-sm text-gray-400">
-                            All items are complete or no active tickets.
-                        </p>
-                    ) : (
-                        <ul className="divide-y divide-gray-50">
-                            {prepSummary.map(({ name, qty }) => (
-                                <li
-                                    key={name}
-                                    className="flex items-center justify-between px-4 py-2.5"
-                                >
-                                    <span className="text-sm font-semibold text-gray-800">
-                                        {name}
-                                    </span>
-                                    <span className="flex h-7 min-w-[28px] items-center justify-center rounded-full bg-gray-900 px-2 text-xs font-black text-white">
-                                        ×{qty}
-                                    </span>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </aside>
-            )}
+                )}
 
-            {error ? (
-                <div className="mx-8 mb-3 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                    <AlertCircle className="h-4 w-4" />
-                    {error}
-                </div>
-            ) : null}
+                {error && (
+                    <div className="flex items-center gap-3 rounded-2xl border border-red-100 bg-red-50 px-6 py-4 font-bold text-red-600">
+                        <AlertCircle className="h-5 w-5" />
+                        {error}
+                    </div>
+                )}
 
-            {alertPolicy.sla_breach_visual && breachedCount > 0 ? (
-                <div className="mx-8 mb-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
-                    {breachedCount} ticket{breachedCount === 1 ? '' : 's'} exceeded SLA.
-                </div>
-            ) : null}
-
-            <main
-                data-lenis-prevent
-                data-lenis-prevent-wheel
-                className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-8 pb-8"
-            >
+                {/* Tickets Area */}
                 <div
-                    className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4' : 'grid-cols-1'}`}
+                    className={`no-scrollbar grid flex-1 gap-8 overflow-y-auto pr-2 ${
+                        viewMode === 'grid'
+                            ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                            : 'grid-cols-1'
+                    }`}
                 >
                     {stationOrders.map(order => {
                         const urgency = urgencyStyles(order.elapsedMinutes, slaMinutes);
-                        // Combine source color with urgency styles
-                        const sourceBorder = order.sourceColor ? `border-l-4` : '';
-                        const sourceBorderColor = order.sourceColor
-                            ? { borderLeftColor: order.sourceColor }
-                            : {};
                         return (
-                            <section
+                            <div
                                 key={order.id}
-                                className={`shadow-soft w-full min-w-0 overflow-hidden rounded-4xl border transition-all ${urgency.card} ${sourceBorder}`}
-                                style={sourceBorderColor}
+                                className={`flex flex-col overflow-hidden rounded-[2.5rem] border transition-all duration-300 ${urgency.card}`}
                             >
-                                <header className={`border-b px-5 py-4 ${urgency.header}`}>
-                                    <div className="flex items-center justify-between">
-                                        <p className="text-brand-neutral text-micro font-bold tracking-wider uppercase">
-                                            Order #{order.orderNumber}
-                                        </p>
+                                <div className={`border-b p-8 ${urgency.header}`}>
+                                    <div className="mb-4 flex items-center justify-between">
+                                        <span className="text-[10px] font-black tracking-widest text-gray-400 uppercase">
+                                            #{order.orderNumber} · {order.elapsedMinutes}m
+                                        </span>
                                         {order.sourceLabel && (
                                             <span
-                                                className="text-micro rounded-full px-2 py-0.5 font-bold tracking-wide text-white uppercase"
+                                                className="rounded-lg px-3 py-1 text-[10px] font-black tracking-widest text-white uppercase"
                                                 style={{
-                                                    backgroundColor: order.sourceColor || '#6B7280',
+                                                    backgroundColor: order.sourceColor || '#1A1C1E',
                                                 }}
                                             >
                                                 {order.sourceLabel}
                                             </span>
                                         )}
                                     </div>
-                                    <p className="text-brand-ink mt-1 text-3xl font-black tracking-tight">
+                                    <h3 className="mb-1 text-3xl font-bold">
                                         {order.tableNumber
                                             ? `Table ${order.tableNumber}`
                                             : (order.customerName ?? 'Guest')}
-                                    </p>
-                                    <p className={`mt-1 text-xs ${urgency.timer}`}>
-                                        {order.elapsedMinutes}m elapsed ·{' '}
+                                    </h3>
+                                    <p
+                                        className={`text-xs ${urgency.timer} font-black tracking-widest uppercase`}
+                                    >
                                         {statusLabel(order.status)}
-                                        {order.slaStatus === 'breached' && (
-                                            <span className="ml-2">🔴 SLA EXCEEDED</span>
-                                        )}
-                                        {order.slaStatus === 'at_risk' && (
-                                            <span className="ml-2">🟡 AT RISK</span>
-                                        )}
                                     </p>
-                                    {order.fireMode === 'manual' ? (
-                                        <div className="mt-2 flex flex-wrap items-center gap-2">
-                                            <span className="bg-brand-info-bg/30 text-micro text-brand-info rounded-full px-2.5 py-1 font-bold tracking-wider uppercase">
-                                                Active course:{' '}
-                                                {courseLabel(
-                                                    order.currentCourse as CourseType | null
-                                                )}
-                                            </span>
-                                            <button
-                                                type="button"
-                                                onClick={() => void handleAdvanceCourse(order)}
-                                                disabled={
-                                                    advancingCourseOrderId === order.id ||
-                                                    nextCourse(
-                                                        order.currentCourse as CourseType | null
-                                                    ) === null
-                                                }
-                                                className="bg-brand-canvas-alt text-micro text-brand-neutral hover:bg-brand-neutral-soft/10 hover:text-brand-ink rounded-full px-3 py-1 font-bold tracking-wider uppercase transition-all disabled:opacity-50"
-                                            >
-                                                {advancingCourseOrderId === order.id
-                                                    ? 'Advancing...'
-                                                    : 'Advance Course'}
-                                            </button>
-                                        </div>
-                                    ) : null}
-                                    {printPolicy.mode !== 'off' ? (
-                                        <div className="mt-2">
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    void handlePrintTicket(
-                                                        order.id,
-                                                        'manual_kds_print'
-                                                    )
-                                                }
-                                                disabled={printingOrderId === order.id}
-                                                className="bg-brand-canvas-alt text-micro text-brand-neutral hover:bg-brand-neutral-soft/10 hover:text-brand-ink rounded-full px-3 py-1.5 font-bold tracking-wider uppercase transition-all disabled:opacity-50"
-                                            >
-                                                {printingOrderId === order.id
-                                                    ? 'Printing...'
-                                                    : 'Print Chit'}
-                                            </button>
-                                        </div>
-                                    ) : null}
-                                </header>
-                                <div
-                                    data-lenis-prevent
-                                    className="bg-brand-canvas-alt/10 max-h-[68vh] space-y-3 overflow-y-auto p-4"
-                                >
+                                </div>
+
+                                <div className="min-h-[300px] flex-1 space-y-6 overflow-y-auto p-8">
                                     {order.stationItems.map(item => {
                                         const itemKey = `${order.id}:${item.id}`;
                                         const isSelected = selectedItemKey === itemKey;
                                         const isRecalled =
                                             alertPolicy.recall_visual &&
                                             (item.status ?? 'queued') === 'recalled';
+
                                         return (
-                                            <article
+                                            <div
                                                 key={itemKey}
-                                                className={`shadow-soft rounded-2xl border bg-white p-4 transition-all ${
+                                                className={`rounded-3xl border p-6 transition-all ${
                                                     isSelected
-                                                        ? 'border-brand-ink ring-brand-ink/10 ring-2'
-                                                        : 'border-brand-neutral-soft/10'
-                                                } ${isRecalled ? 'border-state-danger-bg bg-state-danger-bg/10 animate-pulse' : ''}`}
+                                                        ? 'border-[#1A1C1E] bg-[#1A1C1E] text-white'
+                                                        : 'border-gray-50 bg-white'
+                                                } ${isRecalled ? 'animate-pulse border-red-500' : ''}`}
                                             >
-                                                <div className="flex items-start justify-between gap-3">
-                                                    <div>
-                                                        <p className="text-brand-ink text-2xl leading-tight font-black tracking-tight">
-                                                            {item.quantity}x {item.name}
-                                                        </p>
-                                                        {item.notes ? (
-                                                            <p className="text-body-sm text-brand-neutral mt-1 font-medium">
-                                                                {item.notes}
+                                                <div className="mb-4 flex items-start justify-between gap-4">
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-3">
+                                                            <span
+                                                                className={`text-2xl font-black ${isSelected ? 'text-[#DDF853]' : 'text-[#1A1C1E]'}`}
+                                                            >
+                                                                {item.quantity}×
+                                                            </span>
+                                                            <h4 className="text-xl leading-tight font-bold">
+                                                                {item.name}
+                                                            </h4>
+                                                        </div>
+                                                        {item.notes && (
+                                                            <p
+                                                                className={`mt-2 text-sm font-medium ${isSelected ? 'text-gray-400' : 'text-gray-500'}`}
+                                                            >
+                                                                "{item.notes}"
                                                             </p>
-                                                        ) : null}
-                                                        {item.modifiers &&
-                                                            item.modifiers.length > 0 && (
-                                                                <div className="mt-2.5 flex flex-wrap gap-1.5">
-                                                                    {item.modifiers.map(
-                                                                        (mod, idx) => (
-                                                                            <span
-                                                                                key={idx}
-                                                                                className={`text-micro inline-flex items-center rounded-sm px-2 py-0.5 font-bold tracking-wider uppercase ring-1 ring-inset ${getModifierStyle(mod)}`}
-                                                                            >
-                                                                                {mod}
-                                                                            </span>
-                                                                        )
-                                                                    )}
-                                                                </div>
-                                                            )}
-                                                        <p className="text-brand-neutral text-micro mt-2 font-bold tracking-wider uppercase">
-                                                            Status:{' '}
-                                                            {statusLabel(item.status ?? 'queued')}
-                                                        </p>
+                                                        )}
                                                     </div>
                                                 </div>
-                                                <div className="mt-3 flex flex-wrap gap-2">
+
+                                                <div className="mb-6 flex flex-wrap gap-2">
+                                                    {item.modifiers?.map((mod, idx) => (
+                                                        <span
+                                                            key={idx}
+                                                            className={`rounded-lg px-3 py-1 text-[10px] font-black tracking-widest uppercase ${
+                                                                isSelected
+                                                                    ? 'bg-white/10 text-white'
+                                                                    : 'bg-[#F7F5F2] text-gray-400'
+                                                            }`}
+                                                        >
+                                                            {mod}
+                                                        </span>
+                                                    ))}
+                                                </div>
+
+                                                <div className="flex gap-2">
                                                     {allowedActions(item.status ?? 'queued').map(
                                                         action => {
                                                             const key = `${order.id}:${item.id}:${action}`;
@@ -1153,70 +1040,86 @@ export function StationBoard({
                                                                             action
                                                                         )
                                                                     }
-                                                                    onFocus={() =>
-                                                                        setSelectedItemKey(itemKey)
-                                                                    }
-                                                                    onMouseEnter={() =>
-                                                                        setSelectedItemKey(itemKey)
-                                                                    }
                                                                     disabled={disabled}
-                                                                    className="bg-brand-canvas-alt text-brand-ink hover:bg-brand-neutral-soft/10 min-h-12 min-w-[100px] rounded-xl px-4 py-2 text-base font-bold transition-all active:scale-95 disabled:opacity-50"
+                                                                    className={`h-12 flex-1 rounded-xl text-sm font-black tracking-widest uppercase transition-all ${
+                                                                        isSelected
+                                                                            ? 'bg-[#DDF853] text-[#1A1C1E]'
+                                                                            : 'bg-[#1A1C1E] text-white'
+                                                                    } active:scale-95 disabled:opacity-50`}
                                                                 >
                                                                     {disabled
-                                                                        ? 'Working...'
+                                                                        ? '...'
                                                                         : actionLabel(action)}
                                                                 </button>
                                                             );
                                                         }
                                                     )}
                                                     {allowedActions(item.status ?? 'queued')
-                                                        .length === 0 ? (
-                                                        <span className="bg-state-success-bg/30 text-body-sm text-state-success rounded-xl px-4 py-2 font-bold">
+                                                        .length === 0 && (
+                                                        <div className="flex h-12 flex-1 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-sm font-black tracking-widest text-emerald-600 uppercase">
                                                             Ready
-                                                        </span>
-                                                    ) : null}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            </article>
+                                            </div>
                                         );
                                     })}
-                                    {order.stationItems.length === 0 ? (
-                                        <p className="border-brand-neutral-soft/20 bg-brand-canvas-alt/50 text-body-sm text-brand-neutral rounded-2xl border border-dashed p-6 text-center font-medium">
-                                            No {station} items in this ticket.
-                                        </p>
-                                    ) : null}
+                                    {order.stationItems.length === 0 && (
+                                        <div className="flex h-full flex-col items-center justify-center text-center text-gray-300 opacity-50">
+                                            <ChefHat className="mb-4 h-10 w-10" />
+                                            <p className="text-sm font-bold">No Items.</p>
+                                        </div>
+                                    )}
                                 </div>
-                            </section>
+                            </div>
                         );
                     })}
 
-                    {stationOrders.length === 0 ? (
-                        <div className="col-span-full flex min-h-[45vh] w-full flex-col items-center justify-center text-center text-gray-400">
-                            <ChefHat className="mb-3 h-12 w-12" />
-                            <h2 className="text-2xl font-bold">No active tickets</h2>
-                            <p className="text-sm">Incoming {station} items will appear here.</p>
+                    {stationOrders.length === 0 && (
+                        <div className="col-span-full flex flex-col items-center justify-center py-40">
+                            <div className="mb-8 flex h-24 w-24 items-center justify-center rounded-3xl border border-gray-100 bg-white text-gray-200">
+                                <ChefHat className="h-12 w-12" />
+                            </div>
+                            <h2 className="text-3xl font-bold text-[#1A1C1E]">Station Clear.</h2>
+                            <p className="mt-2 font-medium text-gray-400">
+                                Incoming orders will appear here in realtime.
+                            </p>
                         </div>
-                    ) : null}
+                    )}
                 </div>
             </main>
 
-            {selectedActionableItem ? (
-                <div className="border-brand-neutral-soft/10 shadow-strong sticky bottom-0 border-t bg-white/95 px-6 py-4 backdrop-blur-md">
-                    <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-3">
-                        <span className="text-body text-brand-ink mr-4 font-bold">
-                            Selected: {selectedActionableItem.name}
-                        </span>
-                        {allowedActions(selectedActionableItem.status).map(action => (
-                            <button
-                                key={`quick-${action}`}
-                                onClick={() => runSelectedItemAction(action)}
-                                className="bg-brand-accent text-brand-ink-strong shadow-soft min-h-12 min-w-[120px] rounded-xl px-5 py-2 text-base font-black tracking-tight transition-all hover:scale-105 active:scale-95"
-                            >
-                                {actionLabel(action)}
-                            </button>
-                        ))}
+            {/* Quick Actions Bar */}
+            {selectedActionableItem && (
+                <div className="animate-in slide-in-from-bottom-4 border-t border-gray-100 bg-white px-10 py-8 duration-300">
+                    <div className="mx-auto flex max-w-4xl items-center justify-between">
+                        <div className="flex items-center gap-6">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#F7F5F2] text-[#1A1C1E]">
+                                <ChefHat className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black tracking-widest text-gray-400 uppercase">
+                                    Currently Selected
+                                </p>
+                                <h4 className="text-lg font-bold text-[#1A1C1E]">
+                                    {selectedActionableItem.name}
+                                </h4>
+                            </div>
+                        </div>
+                        <div className="flex gap-4">
+                            {allowedActions(selectedActionableItem.status).map(action => (
+                                <button
+                                    key={`quick-${action}`}
+                                    onClick={() => runSelectedItemAction(action)}
+                                    className="h-16 rounded-2xl bg-[#DDF853] px-10 text-sm font-black tracking-widest text-[#1A1C1E] uppercase transition-all hover:scale-[1.02] active:scale-[0.98]"
+                                >
+                                    {actionLabel(action)}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
-            ) : null}
+            )}
         </div>
     );
 }
