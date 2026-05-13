@@ -54,7 +54,7 @@ export const LoginForm = () => {
             if (role === 'kitchen' || role === 'bar') {
                 router.push('/kds/display');
             } else if (role === 'waiter') {
-                router.push('/pos/mobile');
+                router.push('/waiter');
             } else {
                 router.push('/merchant');
             }

@@ -67,7 +67,7 @@ export function MiniNavbar() {
     ];
 
     const loginButtonElement = (
-        <Link href="/auth/login">
+        <Link href="/login">
             <button className="bg-foreground/10 text-foreground hover:bg-foreground/20 w-full rounded-full px-4 py-2 text-xs font-black shadow-sm transition-all duration-200 sm:w-auto sm:px-4 sm:text-sm dark:bg-white/10 dark:text-white/80 dark:hover:bg-white/20">
                 LogIn
             </button>
@@ -76,7 +76,7 @@ export function MiniNavbar() {
 
     const signupButtonElement = (
         <div className="group relative w-full sm:w-auto">
-            <Link href="/auth/signup">
+            <Link href="/signup">
                 <button className="bg-foreground text-background relative z-10 w-full rounded-full px-4 py-2 text-xs font-black shadow-lg shadow-black/10 transition-all duration-200 hover:scale-105 sm:w-auto sm:px-4 sm:text-sm dark:bg-white dark:text-black">
                     Signup
                 </button>

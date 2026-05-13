@@ -171,7 +171,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-    --background: #f5f5f3; /* brand-canvas */
+    --background: #ffffff; /* pure white */
     --foreground: #17120b; /* brand-ink */
 }
 
@@ -242,6 +242,7 @@ body {
 @utility app-container {
     min-height: 100dvh;
     width: 100vw;
+    overflow-x: clip;
 }
 
 @utility pt-safe {

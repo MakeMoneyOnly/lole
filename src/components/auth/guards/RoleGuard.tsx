@@ -41,12 +41,12 @@ function RoleGuardWithAuth({ children, allowedRoles, restaurantId, fallback }: R
         if (loading) return;
 
         if (!user) {
-            router.push('/auth/login');
+            router.push('/login');
             return;
         }
 
         if (!role || !allowedRoles.includes(role)) {
-            router.push('/auth/login');
+            router.push('/login');
         }
     }, [role, user, loading, allowedRoles, router]);
 

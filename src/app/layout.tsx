@@ -23,7 +23,7 @@ export const viewport: Viewport = {
     maximumScale: 5,
     userScalable: true,
     viewportFit: 'cover',
-    themeColor: '#A81818',
+    themeColor: 'transparent',
     interactiveWidget: 'overlays-content',
 };
 
