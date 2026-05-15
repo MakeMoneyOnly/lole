@@ -21,73 +21,73 @@ Use the minimal set of skills that covers the task. Prefer stack-specific skills
 
 ### Data & Security Foundations
 
-- `/.agents/skills/core/supabase-postgres-best-practices/SKILL.md`
+- `/.agents/skills/core-technologies/supabase-postgres-best-practices/SKILL.md`
     - Use for RLS design, indexing, and query optimization.
-- `/.agents/skills/security/security-threat-model/SKILL.md`
+- `/.agents/skills/security-and-ops/security-threat-model/SKILL.md`
     - Use for threat modeling and security audits.
-- `/.agents/skills/security/api-security-best-practices/SKILL.md`
+- `/.agents/skills/security-and-ops/api-security-best-practices/SKILL.md`
     - Use for endpoint hardening and rate limiting.
 
 ### Runtime Architecture
 
-- `/.agents/skills/core/nextjs-best-practices/SKILL.md`
+- `/.agents/skills/core-technologies/nextjs-best-practices/SKILL.md`
     - Use for App Router architecture and performance.
-- `/.agents/skills/core/nextjs-apollo/apollo-server/SKILL.md`
+- `/.agents/skills/core-technologies/apollo-server/SKILL.md`
     - Use for GraphQL resolver logic and server configuration.
-- `/.agents/skills/core/nextjs-apollo/apollo-router/SKILL.md`
+- `/.agents/skills/core-technologies/apollo-router/SKILL.md`
     - Use for production federation and traffic shaping.
-- `/.agents/skills/core/rust-best-practices/SKILL.md`
+- `/.agents/skills/core-technologies/rust-best-practices/SKILL.md`
     - Use for Apollo Router custom plugin development (Rust).
 
 ### Operations & Compliance
 
-- `/.agents/skills/ops/sentry-nextjs-sdk/SKILL.md`
+- `/.agents/skills/security-and-ops/sentry-nextjs-sdk/SKILL.md`
     - Use for error monitoring and session replay setup.
-- `/.agents/skills/ops/n8n-workflow-patterns/SKILL.md`
+- `/.agents/skills/security-and-ops/n8n-workflow-patterns/SKILL.md`
     - Use for automation and event-driven workflows.
-- `/.agents/skills/ops/courier-skills/SKILL.md`
+- `/.agents/skills/security-and-ops/courier-skills/SKILL.md`
     - Use for multi-channel notifications (SMS/Push).
-- `/.agents/skills/compliance/nutrient-document-processing/SKILL.md`
+- `/.agents/skills/compliance-and-domain/nutrient-document-processing/SKILL.md`
     - Use for PDF/A fiscal export and document processing.
-- `/.agents/skills/compliance/openaccountants-tax-logic/SKILL.md`
+- `/.agents/skills/compliance-and-domain/openaccountants-tax-logic/SKILL.md`
     - Use for tax classification and fiscal reporting.
 
 ### UX & Performance
 
-- `/.agents/skills/development/core-web-vitals/SKILL.md`
+- `/.agents/skills/compliance-and-domain/core-web-vitals/SKILL.md`
     - Use for LCP/INP/CLS optimization.
-- `/.agents/skills/creative-design/accessibility-auditor/SKILL.md`
+- `/.agents/skills/design-and-ui/accessibility-auditor/SKILL.md`
     - Use for WCAG 2.1 AA audits and fixes.
-- `/.agents/skills/creative-design/frontend-design/SKILL.md`
+- `/.agents/skills/design-and-ui/frontend-design/SKILL.md`
     - Use for net-new UI surfaces and design system maintenance.
 
 ### Enterprise Development (Superpowers)
 
-- `/.agents/skills/superpowers/using-superpowers/SKILL.md`
+- `/.agents/skills/workflow-and-superpowers/using-superpowers/SKILL.md`
     - Core bootstrap for the superpower ecosystem.
-- `/.agents/skills/superpowers/brainstorming/SKILL.md`
+- `/.agents/skills/workflow-and-superpowers/brainstorming/SKILL.md`
     - Use for requirements gathering and design specs.
-- `/.agents/skills/superpowers/writing-plans/SKILL.md`
+- `/.agents/skills/workflow-and-superpowers/writing-plans/SKILL.md`
     - Use for generating detailed implementation plans.
-- `/.agents/skills/superpowers/executing-plans/SKILL.md`
+- `/.agents/skills/workflow-and-superpowers/executing-plans/SKILL.md`
     - Use for executing plans with discipline and checkpoints.
-- `/.agents/skills/superpowers/subagent-driven-development/SKILL.md`
+- `/.agents/skills/workflow-and-superpowers/subagent-driven-development/SKILL.md`
     - Use for high-quality, task-isolated implementation.
-- `/.agents/skills/superpowers/dispatching-parallel-agents/SKILL.md`
+- `/.agents/skills/workflow-and-superpowers/dispatching-parallel-agents/SKILL.md`
     - Use for managing multiple independent investigation streams.
-- `/.agents/skills/superpowers/requesting-code-review/SKILL.md`
+- `/.agents/skills/workflow-and-superpowers/requesting-code-review/SKILL.md`
     - Use for formal quality gates before merging.
-- `/.agents/skills/superpowers/receiving-code-review/SKILL.md`
+- `/.agents/skills/workflow-and-superpowers/receiving-code-review/SKILL.md`
     - Use for technical evaluation of feedback.
-- `/.agents/skills/superpowers/using-git-worktrees/SKILL.md`
+- `/.agents/skills/workflow-and-superpowers/using-git-worktrees/SKILL.md`
     - Use for workspace isolation and context management.
-- `/.agents/skills/superpowers/systematic-debugging/SKILL.md`
+- `/.agents/skills/workflow-and-superpowers/systematic-debugging/SKILL.md`
     - Use for finding root causes before implementing fixes.
-- `/.agents/skills/superpowers/test-driven-development/SKILL.md`
+- `/.agents/skills/workflow-and-superpowers/test-driven-development/SKILL.md`
     - Use for implementing behavior with failing tests first.
-- `/.agents/skills/superpowers/verification-before-completion/SKILL.md`
+- `/.agents/skills/workflow-and-superpowers/verification-before-completion/SKILL.md`
     - Use for proving correctness before claiming success.
-- `/.agents/skills/superpowers/finishing-a-development-branch/SKILL.md`
+- `/.agents/skills/workflow-and-superpowers/finishing-a-development-branch/SKILL.md`
     - Use for merging and cleaning up after work is complete.
 
 ### External Intelligence (MCP Servers)

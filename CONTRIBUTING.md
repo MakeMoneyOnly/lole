@@ -1,81 +1,205 @@
 # Contributing to lole
 
-## Development Setup
+Thank you for your interest in contributing to lole! This document provides guidelines and instructions for contributing.
 
-1. Install Node.js 20+ and pnpm 9+
-2. Run `pnpm install` to install dependencies
-3. Run `pnpm prepare` to set up Husky hooks
-4. Create a `.env.local` file with required environment variables
+## 1. Development Environment Setup
 
-## Code Quality Standards
+### Prerequisites
 
-All contributions must follow the standards defined in `AGENTS.md`. Key requirements:
+- **Node.js** >= 22.0.0
+- **pnpm** >= 10.0.0
+- **Docker** (for Supabase local development)
 
-### Pre-Commit Hooks
+### Setup Steps
 
-Pre-commit hooks run automatically and check:
+1. **Clone the repository**
 
-- Code formatting (Prettier)
-- Linting (ESLint)
-- Type checking (TypeScript)
-- Security checks
-- No `any` types in production code
-- No `console.log` in production code
-- Use `<Image />` instead of `<img>`
+    ```bash
+    git clone <repository-url>
+    cd lole
+    ```
 
-### Before Committing
+2. **Install dependencies**
 
-Ensure these commands pass:
+    ```bash
+    pnpm install
+    ```
 
-```bash
-pnpm lint           # ESLint check
-pnpm type-check     # TypeScript check
-pnpm test           # Unit tests
-pnpm format:check   # Prettier check
-```
+3. **Set up environment variables**
 
-### Branch Naming
+    ```bash
+    cp .env.local.example .env.local
+    # Fill in required values
+    ```
 
-- `feature/xxx` - New features
-- `fix/xxx` - Bug fixes
-- `refactor/xxx` - Code refactoring
-- `docs/xxx` - Documentation updates
+4. **Set up Supabase**
+
+    ```bash
+    # Use Supabase CLI for local development
+    pnpm supabase:cli db push
+    ```
+
+5. **Run the development server**
+
+    ```bash
+    pnpm dev
+    ```
+
+    The application will be available at http://localhost:4000
+
+## 2. Code Standards
+
+All code must follow the standards defined in our [coding standards document](docs/10-reference/coding-standards.md).
+
+Key references:
+
+- **TypeScript standards** - Type safety, definitions, return types
+- **React standards** - Component structure, hooks rules, organization
+- **Next.js standards** - Server/Client components, Server Actions, API routes
+- **Naming conventions** - Files, code, database naming patterns
+- **Security checklist** - Required validation before merging
+
+## 3. Git Workflow
 
 ### Commit Messages
 
-Follow conventional commits:
+Follow [Conventional Commits](https://www.conventionalcommits.org/) format:
 
-- `feat:` - New feature
-- `fix:` - Bug fix
-- `refactor:` - Code refactoring
-- `docs:` - Documentation
-- `test:` - Adding tests
-- `chore:` - Maintenance tasks
-
-### Pull Request Checklist
-
-- [ ] Code follows AGENTS.md standards
-- [ ] All tests pass
-- [ ] No `any` types introduced
-- [ ] No `console.log` statements
-- [ ] Images use `<Image />` component
-- [ ] Database types updated if schema changed
-- [ ] Tests added for new functionality
-
-## Testing
-
-```bash
-pnpm test              # Run unit tests
-pnpm test:coverage     # Run with coverage
-pnpm test:e2e          # Run E2E tests
+```
+type(scope): description
 ```
 
-## Database Migrations
+**Types:**
 
-1. Create migration in `supabase/migrations/`
-2. Update types in `src/types/database.ts`
-3. Test migration locally
+- `feat` - New feature
+- `fix` - Bug fix
+- `docs` - Documentation changes
+- `style` - Formatting changes (no code change)
+- `refactor` - Code refactoring
+- `test` - Adding or updating tests
+- `chore` - Maintenance tasks
+
+**Scopes:**
+
+- `api` - API routes
+- `kds` - Kitchen display system
+- `guest` - Guest ordering
+- `merchant` - Merchant dashboard
+- `auth` - Authentication
+- `db` - Database
+
+**Examples:**
+
+```
+feat(kds): add order acknowledgment feature
+fix(api): resolve rate limiting bypass issue
+docs(readme): update installation instructions
+```
+
+### Branch Names
+
+- Feature: `feat/description`
+- Fix: `fix/description`
+- Release: `release/v1.0.0`
+- Hotfix: `hotfix/description`
+
+## 4. Pull Request Process
+
+1. **Create a feature branch** from `main`
+
+    ```bash
+    git checkout -b feat/your-feature-name
+    ```
+
+2. **Make your changes** following the code standards
+
+3. **Ensure all checks pass**
+
+    ```bash
+    pnpm lint
+    pnpm type-check
+    pnpm test:coverage
+    ```
+
+4. **Commit with conventional commits** format
+
+5. **Push and create a pull request**
+
+6. **PR Requirements:**
+    - All CI checks must pass
+    - Code coverage must meet thresholds (80% for lines/functions/statements, 70% for branches)
+    - At least one approval from a team member
+    - All security checklist items verified
+
+7. **After merge**, delete your branch
+
+## 5. Testing Requirements
+
+### Run Tests
+
+```bash
+# Unit tests
+pnpm test
+
+# Unit tests with coverage
+pnpm test:coverage
+
+# E2E tests
+pnpm test:e2e
+```
+
+### Coverage Requirements
+
+| Metric     | Target |
+| ---------- | ------ |
+| Lines      | 80%    |
+| Functions  | 80%    |
+| Statements | 80%    |
+| Branches   | 70%    |
+
+### Writing Tests
+
+- Use Vitest for unit tests
+- Use React Testing Library for component tests
+- Use Playwright for E2E tests
+- Follow the testing patterns in `docs/10-reference/coding-standards.md`
+
+## 6. Linting and Type Checking
+
+### Run Linting
+
+```bash
+# Check for linting errors
+pnpm lint
+
+# Auto-fix linting errors
+pnpm lint --fix
+```
+
+### Run Type Checking
+
+```bash
+pnpm type-check
+```
+
+### Run All Checks (CI)
+
+```bash
+pnpm test:ci
+```
+
+This runs linting, type checking, unit tests with coverage, and E2E tests.
+
+### Formatting
+
+```bash
+# Format code
+pnpm format
+
+# Check formatting
+pnpm format:check
+```
 
 ## Questions?
 
-See `AGENTS.md` for detailed engineering standards.
+If you have questions about contributing, please open an issue with the `question` label.
