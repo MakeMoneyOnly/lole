@@ -2,29 +2,25 @@
 
 import React from 'react';
 import { Search, SlidersHorizontal } from 'lucide-react';
-import { GUEST_MENU_GRADIENT } from './shared/GuestMenuGradient';
 
 export const GuestMenuSearchBar: React.FC<{
     onSearchTap?: () => void;
     onFilterTap?: () => void;
 }> = ({ onSearchTap, onFilterTap }) => {
     return (
-        <div className="flex w-full items-center gap-3 px-5 py-[7px]">
+        <div className="flex w-full items-center gap-3 px-5 py-3">
             <div
                 onClick={onSearchTap}
-                className="flex h-[52px] flex-1 cursor-pointer items-center gap-3 rounded-[18px] bg-[#FFFFFF] border border-brand-neutral-soft/10 px-4 transition-all hover:bg-gray-50"
+                className="flex h-[56px] flex-1 cursor-pointer items-center gap-3 rounded-[24px] bg-[#F6F6F6] px-5 transition-all hover:bg-gray-100"
             >
-                <Search className="h-5 w-5 text-gray-400" />
-                <span className="text-[14px] font-light text-gray-400">
-                    What's on your list?
-                </span>
+                <Search className="h-[18px] w-[18px] text-gray-500" strokeWidth={2} />
+                <span className="text-[15px] font-medium text-gray-400">Search Food...</span>
             </div>
             <button
                 onClick={onFilterTap}
-                className="flex h-[52px] w-[52px] items-center justify-center rounded-[18px] transition-transform active:scale-95"
-                style={{ background: GUEST_MENU_GRADIENT }}
+                className="flex h-[56px] w-[56px] items-center justify-center rounded-[24px] bg-[#FFFFFF] shadow-sm shadow-black/5 transition-transform active:scale-95"
             >
-                <SlidersHorizontal className="h-5 w-5 text-black" />
+                <SlidersHorizontal className="h-5 w-5 text-[#1A1A1A]" strokeWidth={1.5} />
             </button>
         </div>
     );
