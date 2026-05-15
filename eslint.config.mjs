@@ -1,6 +1,7 @@
 import { defineConfig, globalIgnores } from 'eslint/config';
 import nextVitals from 'eslint-config-next/core-web-vitals';
 import nextTs from 'eslint-config-next/typescript';
+import reactHooks from 'eslint-plugin-react-hooks';
 
 const eslintConfig = defineConfig([
     ...nextVitals,
@@ -13,18 +14,14 @@ const eslintConfig = defineConfig([
         'build/**',
         'coverage/**',
         'next-env.d.ts',
-        'SKILLS/**',
-        '.ts',
-        'lint_output.txt',
-        'clear-templates.js',
-        'fix-scaffold.js',
-        'scaffold-dashboard.js',
         'tests/load/**',
         'tests/performance/**',
         'public/@powersync/**',
-        'temp_vercel/**',
     ]),
     {
+        plugins: {
+            'react-hooks': reactHooks,
+        },
         rules: {
             // HIGH-007: Enforce no `any` in production code; test files exempted via overrides
             '@typescript-eslint/no-explicit-any': 'error',
@@ -45,29 +42,34 @@ const eslintConfig = defineConfig([
             // DISABLED: Requires explicit return types on ALL functions - too strict for this codebase
             // Would require adding return types to 900+ functions across hundreds of files
             '@typescript-eslint/explicit-function-return-type': 'off',
-            // MED-011: Error on console statements to enforce structured logging
-            // Use src/lib/logger.ts instead of console.* for production code
-            'no-console': ['error', { allow: ['warn', 'error'] }],
-            // Disable errors that block build but are not critical
-            // These patterns appear in legacy code and need careful refactoring
-            'react-hooks/rules-of-hooks': 'off',
-            // Disable all react-hooks rules for legacy patterns
-            'react-hooks/exhaustive-deps': 'off',
+            // MED-011: Enforce structured logging - no console statements allowed
+            'no-console': 'error',
             'react-hooks/purity': 'off',
+            // React hooks rules - error level for stricter enforcement
+            'react-hooks/rules-of-hooks': 'error',
+            'react-hooks/exhaustive-deps': 'error',
             // Disable for legacy code patterns
             'no-use-before-define': 'off',
             '@typescript-eslint/no-use-before-define': 'off',
         },
     },
     {
-        files: ['**/*.test.ts', '**/*.test.tsx', '**/__tests__/**/*', 'e2e/**/*', 'tests/**', '.col/**/*', 'scripts/**/*'],
+        files: [
+            '**/*.test.ts',
+            '**/*.test.tsx',
+            '**/__tests__/**/*',
+            'e2e/**/*',
+            'tests/**',
+            '.col/**/*',
+            'scripts/**/*',
+        ],
         rules: {
             '@typescript-eslint/no-explicit-any': 'off',
             '@typescript-eslint/no-unused-vars': 'off',
             'no-console': 'off',
         },
     },
-{
+    {
         files: [
             'src/app/**/*.{ts,tsx}',
             'src/components/**/*.{ts,tsx}',
@@ -110,18 +112,15 @@ const eslintConfig = defineConfig([
                         },
                         {
                             name: '@/lib/mobile/offline-conflict-resolver',
-                            message:
-                                'Deleted. Use @/lib/sync (conflict-resolution) instead.',
+                            message: 'Deleted. Use @/lib/sync (conflict-resolution) instead.',
                         },
                         {
                             name: '@/lib/mobile/background-sync',
-                            message:
-                                'Deleted. Use @/lib/sync (syncWorker) instead.',
+                            message: 'Deleted. Use @/lib/sync (syncWorker) instead.',
                         },
                         {
                             name: '@/features/kds/lib/offlineQueue',
-                            message:
-                                'Deleted. Use @/lib/sync (kdsSync + syncAdapter) instead.',
+                            message: 'Deleted. Use @/lib/sync (kdsSync + syncAdapter) instead.',
                         },
                     ],
                     patterns: [
@@ -132,28 +131,35 @@ const eslintConfig = defineConfig([
                         },
                         {
                             group: ['**/lib/offlineQueue', '**/lib/offlineQueue.ts'],
-                            message:
-                                'offlineQueue is deprecated. Use @/lib/sync instead.',
+                            message: 'offlineQueue is deprecated. Use @/lib/sync instead.',
                         },
                         {
-                            group: ['**/lib/mobile/offline-order-manager', '**/lib/mobile/offline-order-manager.ts'],
-                            message:
-                                'Deleted. Use @/lib/sync (orderSync) instead.',
+                            group: [
+                                '**/lib/mobile/offline-order-manager',
+                                '**/lib/mobile/offline-order-manager.ts',
+                            ],
+                            message: 'Deleted. Use @/lib/sync (orderSync) instead.',
                         },
                         {
-                            group: ['**/lib/mobile/offline-conflict-resolver', '**/lib/mobile/offline-conflict-resolver.ts'],
-                            message:
-                                'Deleted. Use @/lib/sync (conflict-resolution) instead.',
+                            group: [
+                                '**/lib/mobile/offline-conflict-resolver',
+                                '**/lib/mobile/offline-conflict-resolver.ts',
+                            ],
+                            message: 'Deleted. Use @/lib/sync (conflict-resolution) instead.',
                         },
                         {
-                            group: ['**/lib/mobile/background-sync', '**/lib/mobile/background-sync.ts'],
-                            message:
-                                'Deleted. Use @/lib/sync (syncWorker) instead.',
+                            group: [
+                                '**/lib/mobile/background-sync',
+                                '**/lib/mobile/background-sync.ts',
+                            ],
+                            message: 'Deleted. Use @/lib/sync (syncWorker) instead.',
                         },
                         {
-                            group: ['**/features/kds/lib/offlineQueue', '**/features/kds/lib/offlineQueue.ts'],
-                            message:
-                                'Deleted. Use @/lib/sync (kdsSync) instead.',
+                            group: [
+                                '**/features/kds/lib/offlineQueue',
+                                '**/features/kds/lib/offlineQueue.ts',
+                            ],
+                            message: 'Deleted. Use @/lib/sync (kdsSync) instead.',
                         },
                     ],
                 },
@@ -167,7 +173,8 @@ const eslintConfig = defineConfig([
                         'Custom database row types are forbidden. Use Database["public"]["Tables"][tableName]["Row"] from @/types/database.',
                 },
                 {
-                    selector: 'MemberExpression[object.name="process"][property.name="env"] > MemberExpression[property.name="SUPABASE_SERVICE_ROLE_KEY"], MemberExpression[object.name="process"][property.name="env"] > MemberExpression[property.name="SUPABASE_SECRET_KEY"]',
+                    selector:
+                        'MemberExpression[object.name="process"][property.name="env"] > MemberExpression[property.name="SUPABASE_SERVICE_ROLE_KEY"], MemberExpression[object.name="process"][property.name="env"] > MemberExpression[property.name="SUPABASE_SECRET_KEY"]',
                     message:
                         'SUPABASE_SERVICE_ROLE_KEY and SUPABASE_SECRET_KEY must only be used in server-side API routes and lib files. Use createServiceRoleClient() from @/lib/supabase/service-role instead.',
                 },

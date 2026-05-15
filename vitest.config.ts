@@ -67,14 +67,11 @@ export default defineConfig({
                 'src/lib/payments/payment-event-consumer.ts',
                 'src/lib/devices/config.ts',
             ],
-            // Thresholds apply only to testable (non-excluded) units
-            // Target: 80% for platform audit A+ grade
-            // Temporary: adjusted to match current coverage after adding new tests for delivery/gateway/auth
             thresholds: {
-                lines: 75,
-                functions: 79,
-                statements: 74,
-                branches: 66,
+                lines: 80,
+                functions: 80,
+                statements: 80,
+                branches: 70,
             },
         },
     },

@@ -176,7 +176,7 @@ const nextConfig: NextConfig = {
             },
             {
                 protocol: 'https',
-                hostname: 'axuegixbqsvztdraenkz.supabase.co',
+                hostname: '**.supabase.co',
                 pathname: '/storage/v1/object/public/**',
             },
             {
@@ -193,6 +193,11 @@ const nextConfig: NextConfig = {
                 protocol: 'https',
                 hostname: 'hoirqrkdgbmvpwutwuwj.supabase.co',
                 pathname: '/storage/v1/object/public/**',
+            },
+            {
+                protocol: 'https',
+                hostname: 'via.placeholder.com',
+                pathname: '/**',
             },
             {
                 protocol: 'https',
