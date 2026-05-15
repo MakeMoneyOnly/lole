@@ -13,6 +13,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runStaleDeviceDetection, StaleDeviceConfig } from '@/lib/sync/stale-device-monitor';
 import { sendInfoAlert } from '@/lib/monitoring/alerts';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('stale-device-check');
 
 /**
  * Cron secret validation
@@ -22,7 +25,7 @@ function validateCronSecret(request: NextRequest): boolean {
     const cronSecret = process.env.CRON_SECRET;
 
     if (!cronSecret) {
-        console.warn('[stale-device-check] CRON_SECRET not configured');
+        log.warn('CRON_SECRET not configured');
         return false;
     }
 
@@ -61,7 +64,7 @@ export async function POST(request: NextRequest) {
             maxDevicesPerRun: 100,
         };
 
-        console.warn('[stale-device-check] Starting detection with config:', {
+        log.info('Starting detection with config', {
             warningThreshold: config.warningThresholdMinutes,
             criticalThreshold: config.criticalThresholdMinutes,
             businessHoursOnly: config.businessHoursOnly,
@@ -73,7 +76,7 @@ export async function POST(request: NextRequest) {
         const duration = Date.now() - startTime;
 
         // Log summary
-        console.warn('[stale-device-check] Detection complete:', {
+        log.info('Detection complete', {
             duration: `${duration}ms`,
             checked: result.checked,
             warning: result.warningDevices.length,
@@ -105,7 +108,7 @@ export async function POST(request: NextRequest) {
             errors: result.errors.length > 0 ? result.errors : undefined,
         });
     } catch (error) {
-        console.error('[stale-device-check] Error:', error);
+        log.error('Error', error);
 
         return NextResponse.json(
             {

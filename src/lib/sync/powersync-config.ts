@@ -940,7 +940,7 @@ export function getPowerSyncConfig(): PowerSyncConfig {
     const accessToken = process.env.NEXT_PUBLIC_POWERSYNC_ACCESS_TOKEN ?? '';
 
     if (process.env.NODE_ENV === 'production' && accessToken && accessToken.length > 0) {
-        console.error(
+        logger.error(
             '[PowerSync] SECURITY: NEXT_PUBLIC_POWERSYNC_ACCESS_TOKEN is set in production. ' +
                 'This exposes a static access token to all clients, bypassing Supabase JWT auth. ' +
                 'Remove NEXT_PUBLIC_POWERSYNC_ACCESS_TOKEN from production environment variables immediately.'

@@ -246,7 +246,7 @@ export async function enqueueInternalJob<TBody extends Record<string, unknown>>(
 
     if (!client) {
         if (process.env.NODE_ENV !== 'test') {
-            console.warn(`[jobs] QStash not configured, skipping enqueue for ${params.path}`);
+            logger.warn(`[jobs] QStash not configured, skipping enqueue for ${params.path}`);
         }
         return undefined;
     }

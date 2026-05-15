@@ -7,6 +7,9 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('UpsellService');
 
 // =========================================================
 // Type Definitions
@@ -144,7 +147,7 @@ export async function getFrequentlyBoughtTogether(
 
         return results;
     } catch (error) {
-        console.error('[UpsellService] Error getting frequently bought together:', error);
+        log.error('Error getting frequently bought together', error);
         return [];
     }
 }
@@ -289,7 +292,7 @@ export async function getEnhancedUpsellRecommendations(
 
         return recommendations;
     } catch (error) {
-        console.error('[UpsellService] Error getting enhanced recommendations:', error);
+        log.error('Error getting enhanced recommendations', error);
         return recommendations;
     }
 }
@@ -382,7 +385,7 @@ export async function getPersonalizedRecommendations(
             order_count: item.order_count,
         }));
     } catch (error) {
-        console.error('[UpsellService] Error getting personalized recommendations:', error);
+        log.error('Error getting personalized recommendations', error);
         return [];
     }
 }
@@ -422,13 +425,13 @@ export async function trackUpsellImpression(
             .single();
 
         if (error) {
-            console.error('[UpsellService] Error tracking impression:', error);
+            log.error('Error tracking impression', error);
             return null;
         }
 
         return result?.id ?? null;
     } catch (error) {
-        console.error('[UpsellService] Error tracking impression:', error);
+        log.error('Error tracking impression', error);
         return null;
     }
 }
@@ -453,7 +456,7 @@ export async function trackUpsellClick(
             })
             .eq('id', analyticsId);
     } catch (error) {
-        console.error('[UpsellService] Error tracking click:', error);
+        log.error('Error tracking click', error);
     }
 }
 
@@ -478,7 +481,7 @@ export async function trackUpsellConversion(
             })
             .eq('id', analyticsId);
     } catch (error) {
-        console.error('[UpsellService] Error tracking conversion:', error);
+        log.error('Error tracking conversion', error);
     }
 }
 
@@ -601,7 +604,7 @@ export async function getUpsellAnalytics(
             topRecommendations,
         };
     } catch (error) {
-        console.error('[UpsellService] Error getting analytics:', error);
+        log.error('Error getting analytics', error);
         return {
             totalImpressions: 0,
             totalClicks: 0,

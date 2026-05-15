@@ -8,6 +8,9 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('PriceOverride');
 
 // =========================================================
 // Type Definitions
@@ -88,7 +91,7 @@ export async function canOverridePrices(
 
         return { allowed: true };
     } catch (error) {
-        console.error('[PriceOverride] Permission check error:', error);
+        log.error('Permission check error', error);
         return { allowed: false, reason: 'Error checking permissions' };
     }
 }
@@ -201,7 +204,7 @@ export async function createPriceOverride(
             .single();
 
         if (overrideError) {
-            console.error('[PriceOverride] Failed to create:', overrideError);
+            log.error('Failed to create price override', overrideError);
             return { success: false, error: 'Failed to create price override' };
         }
 
@@ -211,7 +214,7 @@ export async function createPriceOverride(
             .eq('id', input.orderItemId);
 
         if (updateError) {
-            console.error('[PriceOverride] Failed to update item price:', updateError);
+            log.error('Failed to update item price', updateError);
             await db.from('price_overrides').delete().eq('id', override.id);
             return { success: false, error: 'Failed to update item price' };
         }
@@ -246,13 +249,13 @@ export async function getPriceOverridesForOrder(
             .order('created_at', { ascending: false });
 
         if (error) {
-            console.error('[PriceOverride] Failed to fetch:', error);
+            log.error('Failed to fetch price overrides', error);
             return [];
         }
 
         return data ?? [];
     } catch (error) {
-        console.error('[PriceOverride] Error:', error);
+        log.error('Error fetching price overrides', error);
         return [];
     }
 }

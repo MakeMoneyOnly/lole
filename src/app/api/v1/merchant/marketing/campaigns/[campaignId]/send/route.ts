@@ -10,6 +10,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { sendCampaign, getCampaign } from '@/lib/services/marketingCampaignService';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[Campaign Send API]');
 
 export async function POST(
     request: NextRequest,
@@ -128,7 +131,7 @@ export async function POST(
             },
         });
     } catch (error) {
-        console.error('[Campaign Send API] Error:', error);
+        log.error('Error', error);
         return NextResponse.json(
             { error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' } },
             { status: 500 }

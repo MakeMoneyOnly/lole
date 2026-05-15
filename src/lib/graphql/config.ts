@@ -5,14 +5,16 @@
  * Introspection should be disabled in production for security.
  */
 
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[graphql/config]');
+
 const ENABLE_INTROSPECTION =
     process.env.GRAPHQL_ENABLE_INTROSPECTION === 'true' || process.env.NODE_ENV !== 'production';
 
 // Warn if introspection is enabled in production
 if (ENABLE_INTROSPECTION && process.env.NODE_ENV === 'production') {
-    console.warn(
-        '⚠️ GraphQL introspection is ENABLED in production. This should be disabled for security.'
-    );
+    log.warn('GraphQL introspection is ENABLED in production. This should be disabled for security.');
 }
 
 export const graphqlConfig = {
@@ -22,7 +24,5 @@ export const graphqlConfig = {
 
 // Log configuration on startup
 if (process.env.NODE_ENV !== 'test') {
-    console.warn(
-        `GraphQL Configuration: introspection=${ENABLE_INTROSPECTION}, debug=${graphqlConfig.debug}`
-    );
+    log.warn('GraphQL Configuration', { introspection: ENABLE_INTROSPECTION, debug: graphqlConfig.debug });
 }

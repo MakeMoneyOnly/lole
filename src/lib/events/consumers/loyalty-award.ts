@@ -8,6 +8,9 @@
 import type { loleEvent } from '@/lib/events/contracts';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { writeAuditLog } from '@/lib/api/audit';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[events/loyalty-award]');
 
 /**
  * Loyalty earning rules configuration

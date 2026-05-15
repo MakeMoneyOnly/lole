@@ -8,6 +8,9 @@ import { buildSubgraphSchema } from '@apollo/subgraph';
 import gql from 'graphql-tag';
 import type { GraphQLContext } from './context';
 import { graphqlConfig } from './config';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[graphql/apollo-config]');
 
 export interface SubgraphConfig {
     typeDefs: string;
@@ -205,7 +208,7 @@ export function createSubgraphServer(config: SubgraphConfig): ApolloServer<Graph
         formatError: (formattedError, error) => {
             // Log internal errors for debugging
             if (formattedError.extensions?.code === 'INTERNAL_SERVER_ERROR') {
-                console.error('GraphQL Internal Error:', error);
+                log.error('GraphQL Internal Error', error);
             }
 
             // Don't expose internal errors to clients in production

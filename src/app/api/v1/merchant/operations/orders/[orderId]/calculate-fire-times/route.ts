@@ -9,10 +9,13 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { logger } from '@/lib/logger';
 import {
     calculateOrderFireTimes,
     calculateCourseFireTimes,
 } from '@/features/kds/lib/prepTimeCalculator';
+
+const log = logger.child('merchant-operations/fire-times');
 
 export async function POST(
     request: NextRequest,
@@ -115,7 +118,7 @@ export async function POST(
             },
         });
     } catch (error) {
-        console.error('[FireTimes API] Error:', error);
+        log.error('Error', error);
         return NextResponse.json(
             { error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' } },
             { status: 500 }
@@ -181,7 +184,7 @@ export async function GET(
             },
         });
     } catch (error) {
-        console.error('[FireTimes API] Error:', error);
+        log.error('Error', error);
         return NextResponse.json(
             { error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' } },
             { status: 500 }

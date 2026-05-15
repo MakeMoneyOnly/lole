@@ -1,5 +1,6 @@
 import { getSupabaseClient } from '@/lib/supabase/client';
 import { useEffect, useMemo, useState } from 'react';
+import { logger } from '@/lib/logger';
 import type { StaffRole } from '@/types/status';
 import { useRouter } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
@@ -92,7 +93,10 @@ export function useRole(restaurantId: string | null): UseRoleResult {
 
                 if (error) {
                     if (cancelled) return;
-                    console.warn('Error fetching role:', error.message);
+                    logger.warn('Error fetching role', {
+                        error: error.message,
+                        source: '[features/auth/hooks/useRole]',
+                    });
                     setRole(null);
                 } else if (data && data.is_active !== false) {
                     if (cancelled) return;
@@ -105,7 +109,7 @@ export function useRole(restaurantId: string | null): UseRoleResult {
                 }
             } catch (err) {
                 if (cancelled) return;
-                console.error('Error in useRole:', err);
+                logger.error('Error in useRole', err, { source: '[features/auth/hooks/useRole]' });
                 setRole(null);
             } finally {
                 if (cancelled) return;

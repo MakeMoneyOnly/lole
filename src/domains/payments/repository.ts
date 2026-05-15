@@ -7,6 +7,7 @@ import {
     columnsToString,
 } from '@/lib/constants/query-columns';
 import { getRepositoryClient, normalizePagination } from '@/lib/db/repository-base';
+import { logger } from '@/lib/logger';
 
 export type PaymentRow = Database['public']['Tables']['payments']['Row'];
 
@@ -39,7 +40,7 @@ export class PaymentsRepository {
             .maybeSingle();
 
         if (error) {
-            console.error('[payments/repository] Error fetching payment:', error);
+            logger.error('[payments/repository] Error fetching payment:', error, { source: '[payments/repository]' });
             throw new Error(error.message);
         }
 
@@ -73,7 +74,7 @@ export class PaymentsRepository {
         const { data, error } = await query;
 
         if (error) {
-            console.error('[payments/repository] Error fetching payments by order:', error);
+            logger.error('[payments/repository] Error fetching payments by order:', error, { source: '[payments/repository]' });
             throw new Error(error.message);
         }
 
@@ -107,7 +108,7 @@ export class PaymentsRepository {
         const { data, error } = await query;
 
         if (error) {
-            console.error('[payments/repository] Error fetching payments by restaurant:', error);
+            logger.error('[payments/repository] Error fetching payments by restaurant:', error, { source: '[payments/repository]' });
             throw new Error(error.message);
         }
 
@@ -145,7 +146,7 @@ export class PaymentsRepository {
             .single();
 
         if (error) {
-            console.error('[payments/repository] Error creating payment:', error);
+            logger.error('[payments/repository] Error creating payment:', error, { source: '[payments/repository]' });
             throw new Error(error.message);
         }
 
@@ -182,7 +183,7 @@ export class PaymentsRepository {
             .single();
 
         if (error) {
-            console.error('[payments/repository] Error updating payment status:', error);
+            logger.error('[payments/repository] Error updating payment status:', error, { source: '[payments/repository]' });
             throw new Error(error.message);
         }
 
@@ -200,9 +201,10 @@ export class PaymentsRepository {
             .maybeSingle();
 
         if (error) {
-            console.error(
+            logger.error(
                 '[payments/repository] Error fetching payment by idempotency key:',
-                error
+                error,
+                { source: '[payments/repository]' }
             );
             throw new Error(error.message);
         }
@@ -223,7 +225,7 @@ export class PaymentsRepository {
             .in('id', ids);
 
         if (error) {
-            console.error('[payments/repository] Error fetching payments by IDs:', error);
+            logger.error('[payments/repository] Error fetching payments by IDs:', error, { source: '[payments/repository]' });
             throw new Error(error.message);
         }
 

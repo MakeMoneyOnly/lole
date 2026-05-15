@@ -1,12 +1,11 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState, Suspense } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase';
 import { useParams, useSearchParams } from 'next/navigation';
-import { CartProvider, useCart } from '@/context/CartContext';
+import { useCart } from '@/context/CartContext';
 import { FOOD_ITEMS } from '@/lib/constants';
 import { isAbortError } from '@/hooks/useSafeFetch';
-import { isRemoteOrDataImageSrc } from '@/lib/utils';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -80,11 +79,6 @@ export interface GuestContextPayload {
     is_online_order?: boolean;
 }
 
-interface CampaignAttributionPayload {
-    campaign_delivery_id: string;
-    campaign_id?: string;
-}
-
 // ─── Data Hook ───────────────────────────────────────────────────────────────
 
 /**
@@ -125,7 +119,7 @@ export function useGuestMenuData() {
     const paymentOrderId = getQueryParam('order_id');
 
     const supabase = useMemo(() => createClient(), []);
-    const { addToCart, count } = useCart();
+    const { addToCart, count, items, removeFromCart, updateQuantity } = useCart();
 
     // ── Payment return ────────────────────────────────────────────────────────
     useEffect(() => {
@@ -465,10 +459,24 @@ export function useGuestMenuData() {
         slug,
         // Actions
         handleAddToCart,
+        cartItems: items,
+        handleRemoveFromCart: removeFromCart,
+        handleUpdateQuantity: updateQuantity,
     };
 }
 
 // ─── Page Shell ───────────────────────────────────────────────────────────────
+
+import { GuestMenuHeader } from '@/components/guest-menu/GuestMenuHeader';
+import { GuestMenuSearchBar } from '@/components/guest-menu/GuestMenuSearchBar';
+import { GuestMenuBannerCarousel } from '@/components/guest-menu/GuestMenuBannerCarousel';
+import { GuestMenuCategoryChips } from '@/components/guest-menu/GuestMenuCategoryChips';
+import { GuestMenuProductGrid } from '@/components/guest-menu/GuestMenuProductCard';
+import { HorizontalPremiumProductCard } from '@/components/guest-menu/HorizontalPremiumProductCard';
+import { GuestMenuBottomNav } from '@/components/guest-menu/GuestMenuBottomNav';
+import { GuestMenuCart } from '@/components/guest-menu/GuestMenuCart';
+import { GuestMenuProfile } from '@/components/guest-menu/GuestMenuProfile';
+import { ChevronRight } from 'lucide-react';
 
 /**
  * MenuClientContent — blank canvas.
@@ -476,68 +484,140 @@ export function useGuestMenuData() {
  */
 export function MenuClientContent() {
     const data = useGuestMenuData();
+    const [activeIndex, setActiveIndex] = useState(0);
 
     // Loading / error boundary stubs — replace with new design components.
     if (data.contextLoading) {
         return (
-            <div className="flex min-h-screen w-full items-center justify-center bg-[var(--background)]">
-                {/* TODO: new loading skeleton */}
-                <p className="text-sm text-white/40">Loading…</p>
+            <div className="flex min-h-screen w-full items-center justify-center bg-white">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-black border-t-transparent" />
+                    <p className="text-sm font-medium text-black/40">Preparing your menu...</p>
+                </div>
             </div>
         );
     }
 
     if (data.contextError) {
         return (
-            <div className="flex min-h-screen w-full flex-col items-center justify-center bg-[var(--background)] px-4 text-center">
-                {/* TODO: new error state */}
-                <p className="text-red-400">{data.contextError}</p>
+            <div className="flex min-h-screen w-full flex-col items-center justify-center bg-white px-4 text-center">
+                <p className="text-red-500 font-medium">{data.contextError}</p>
+                <button 
+                    onClick={() => window.location.reload()}
+                    className="mt-4 rounded-xl bg-black px-6 py-2 text-sm font-medium text-white"
+                >
+                    Try Again
+                </button>
             </div>
         );
     }
 
     if (!data.guestContext) {
         return (
-            <div className="flex min-h-screen w-full flex-col items-center justify-center bg-[var(--background)] px-4 text-center">
-                {/* TODO: new invalid-link state */}
-                <p className="text-yellow-400">Invalid or expired link.</p>
+            <div className="flex min-h-screen w-full flex-col items-center justify-center bg-white px-4 text-center">
+                <p className="text-yellow-600 font-medium">Invalid or expired link.</p>
+                <p className="mt-2 text-sm text-black/40">Please scan the table QR code again.</p>
             </div>
         );
     }
 
-    // ── Main menu canvas — build here ─────────────────────────────────────────
+    const categories = Array.from(new Set(data.realItems.map(item => item.categories.name)))
+        .map(name => ({ id: name.toLowerCase(), name }));
+
+    const handleNavChange = (index: number) => {
+        setActiveIndex(index);
+    };
+
+    // ── Screen Rendering ─────────────────────────────────────────────────────
+    const renderScreen = () => {
+        switch (activeIndex) {
+            case 3: // Cart
+                return (
+                    <GuestMenuCart 
+                        cartItems={data.cartItems}
+                        onBack={() => setActiveIndex(0)}
+                        onUpdateQuantity={data.handleUpdateQuantity}
+                        onRemove={data.handleRemoveFromCart}
+                        onCheckout={() => console.log('Checkout')}
+                    />
+                );
+            case 4: // Profile
+                return <GuestMenuProfile onLogout={() => console.log('Logout')} />;
+            case 0: // Home
+            default:
+                return (
+                    <div className="mx-auto max-w-md bg-white">
+                        <GuestMenuHeader />
+                        
+                        <GuestMenuSearchBar />
+
+                        <GuestMenuBannerCarousel />
+
+                        <div className="mt-3">
+                            <GuestMenuCategoryChips 
+                                categories={categories}
+                                activeCategoryId={data.activeCategoryId}
+                                onCategoryChange={data.setActiveCategoryId}
+                            />
+                        </div>
+
+                        {/* Special Offers (Horizontal List) */}
+                        <section className="mt-8">
+                            <div className="mb-4 flex items-center justify-between px-5">
+                                <div className="flex flex-col gap-1">
+                                    <h2 className="text-[22px] font-bold text-black tracking-tight">
+                                        Special Offers
+                                    </h2>
+                                    <p className="text-[13px] font-light text-black/40">
+                                        Don't miss out on our exclusive deals.
+                                    </p>
+                                </div>
+                                <button className="flex items-center gap-1 text-[13px] font-light text-black/40">
+                                    View All
+                                    <ChevronRight className="h-4 w-4" />
+                                </button>
+                            </div>
+
+                            <div className="no-scrollbar flex w-full gap-4 overflow-x-auto px-5">
+                                {data.filteredItems.map((item) => (
+                                    <div key={item.id} className="w-[85%] shrink-0">
+                                        <HorizontalPremiumProductCard 
+                                            item={item} 
+                                            onAddToCart={data.handleAddToCart}
+                                            onSelect={data.setSelectedItem}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+
+                        {/* More for You (Grid) */}
+                        <section className="mt-10">
+                            <div className="mb-4 px-5">
+                                <h2 className="text-[22px] font-bold text-black tracking-tight">
+                                    More for You
+                                </h2>
+                            </div>
+                            <GuestMenuProductGrid 
+                                items={data.realItems.slice(0, 8)} 
+                                onAddToCart={data.handleAddToCart}
+                                onSelect={data.setSelectedItem}
+                            />
+                        </section>
+                    </div>
+                );
+        }
+    };
+
     return (
-        <main className="min-h-screen w-full bg-[var(--background)]">
-            {/*
-             * ════════════════════════════════════════════════════
-             *   BLANK CANVAS — NEW GUEST MENU DESIGN GOES HERE
-             * ════════════════════════════════════════════════════
-             *
-             *  Available data:
-             *    data.guestContext        → restaurant name, logo, table info
-             *    data.filteredItems       → menu items for current tab/category
-             *    data.realItems           → all loaded menu items
-             *    data.activeTab           → 'food' | 'drinks'
-             *    data.setActiveTab        → tab switcher
-             *    data.activeCategoryId    → active category filter
-             *    data.setActiveCategoryId → category filter setter
-             *    data.loading             → menu loading state
-             *    data.cartCount           → cart item count
-             *    data.cartOpen            → cart drawer open state
-             *    data.setCartOpen         → open/close cart
-             *    data.handleAddToCart     → add item to cart
-             *    data.selectedItem        → currently selected item
-             *    data.setSelectedItem     → select / deselect item
-             *    data.isOnlineOrderMode   → true for storefront, false for QR
-             *    data.authState           → 'guest' | 'authenticated'
-             *    data.showPreMenuSplash   → pre-menu splash flag
-             *    data.setShowPreMenuSplash
-             */}
-            <div className="flex min-h-screen items-center justify-center">
-                <p className="text-sm text-white/20 select-none">
-                    [ New Guest Menu — Design starts here ]
-                </p>
-            </div>
+        <main className="min-h-screen w-full bg-[#FFFFFF] pb-32 font-inter">
+            {renderScreen()}
+
+            {/* Cloned Bottom Navigation Bar */}
+            <GuestMenuBottomNav 
+                activeIndex={activeIndex} 
+                onIndexChange={handleNavChange} 
+            />
         </main>
     );
 }

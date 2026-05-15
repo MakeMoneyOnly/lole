@@ -6,6 +6,9 @@ import {
     createServiceRoleClient as _createServiceRoleClient,
     createAuditedServiceRoleClient,
 } from '@/lib/supabase/service-role';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('webhook');
 
 type PaymentProvider = 'chapa';
 
@@ -128,9 +131,7 @@ export function verifyChapaWebhookSignature(
     // HIGH-011: Require explicit webhook secret even in development
     // If no secret is configured, fail verification
     if (!secret) {
-        console.error(
-            '[Chapa Webhook] CHAPA_WEBHOOK_SECRET is not configured. Webhook verification failed.'
-        );
+        log.error('CHAPA_WEBHOOK_SECRET is not configured. Webhook verification failed.');
         // In development, allow a dedicated test secret to be used
         const testSecret = process.env.CHAPA_WEBHOOK_TEST_SECRET;
         if (testSecret && process.env.NODE_ENV !== 'production') {

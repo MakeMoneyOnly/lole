@@ -1,6 +1,7 @@
 // Orders Domain - Repository Layer
 // Database access layer - Supabase queries only, no business logic
 import { Database } from '@/types/database';
+import { logger } from '@/lib/logger';
 import {
     ORDER_LIST_COLUMNS,
     ORDER_DETAIL_COLUMNS,
@@ -136,11 +137,11 @@ export class OrdersRepository {
                 fire_mode: 'full',
                 idempotency_key: data.idempotency_key,
             })
-            .select()
+            .select(columnsToString(ORDER_DETAIL_COLUMNS))
             .single();
 
         if (error) throw new Error(error.message);
-        return order!;
+        return order as unknown as OrderRow;
     }
 
     async updateStatus(id: string, status: string): Promise<OrderRow> {
@@ -148,11 +149,11 @@ export class OrdersRepository {
             .from('orders')
             .update({ status, updated_at: new Date().toISOString() })
             .eq('id', id)
-            .select()
+            .select(columnsToString(ORDER_DETAIL_COLUMNS))
             .single();
 
         if (error) throw new Error(error.message);
-        return order!;
+        return order as unknown as OrderRow;
     }
 
     async cancel(id: string, reason?: string): Promise<OrderRow> {
@@ -164,11 +165,11 @@ export class OrdersRepository {
                 updated_at: new Date().toISOString(),
             })
             .eq('id', id)
-            .select()
+            .select(columnsToString(ORDER_DETAIL_COLUMNS))
             .single();
 
         if (error) throw new Error(error.message);
-        return order!;
+        return order as unknown as OrderRow;
     }
 
     // Order Items
@@ -212,7 +213,7 @@ export class OrdersRepository {
                     name: item.name || 'Item',
                 }))
             )
-            .select();
+            .select(columnsToString(ORDER_ITEM_LIST_COLUMNS) as '*');
 
         if (error) throw new Error(error.message);
         return data ?? [];
@@ -232,7 +233,7 @@ export class OrdersRepository {
 
         if (error) {
             if (error.code === 'PGRST116') return null;
-            console.error('[orders/repository] Error fetching order item:', error);
+            logger.error('Error fetching order item', error, { source: '[orders/repository]' });
             throw new Error(error.message);
         }
 
@@ -254,11 +255,52 @@ export class OrdersRepository {
             .order('created_at', { ascending: true });
 
         if (error) {
-            console.error('[orders/repository] Error fetching order items by order IDs:', error);
+            logger.error('Error fetching order items by order IDs', error, { source: '[orders/repository]' });
             throw new Error(error.message);
         }
 
         return data ?? [];
+    }
+
+    /**
+     * Validate required modifiers for a menu item via RPC
+     */
+    async validateModifiers(
+        menuItemId: string,
+        selectedModifierIds: string[]
+    ): Promise<{
+        is_valid: boolean;
+        missing_groups: string[];
+        error_message: string | null;
+        error_message_am: string | null;
+    } | null> {
+        try {
+            // Cast to any for custom RPC function not in generated types
+            const client = getRepositoryClient() as any;
+            const { data, error } = await client.rpc('validate_required_modifiers', {
+                p_menu_item_id: menuItemId,
+                p_selected_modifier_ids: selectedModifierIds,
+            });
+
+            if (error) {
+                logger.error('Modifier validation error', error, { source: '[orders/repository]' });
+                return null;
+            }
+
+            if (data && typeof data === 'object' && !Array.isArray(data) && 'is_valid' in data) {
+                return data as {
+                    is_valid: boolean;
+                    missing_groups: string[];
+                    error_message: string | null;
+                    error_message_am: string | null;
+                };
+            }
+
+            return null;
+        } catch (err) {
+            logger.error('Modifier validation exception', err, { source: '[orders/repository]' });
+            return null;
+        }
     }
 }
 

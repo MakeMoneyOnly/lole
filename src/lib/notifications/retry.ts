@@ -14,7 +14,10 @@
 
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { sendSms, type SmsSendResult } from './sms';
+import { logger } from '@/lib/logger';
 import type { SupabaseClient } from '@supabase/supabase-js';
+
+const log = logger.child('[retry]');
 
 // =========================================================
 // Retry Configuration
@@ -248,7 +251,7 @@ async function upsertNotificationQueue(
             .single();
 
         if (error) {
-            console.error('[retry] Failed to update notification queue:', error);
+            log.error('Failed to update notification queue', error);
             return null;
         }
 
@@ -271,7 +274,7 @@ async function upsertNotificationQueue(
         .single();
 
     if (error) {
-        console.error('[retry] Failed to insert notification queue:', error);
+        log.error('Failed to insert notification queue', error);
         return null;
     }
 
@@ -298,7 +301,7 @@ async function markNotificationSent(
         .eq('idempotency_key', idempotencyKey);
 
     if (error) {
-        console.error('[retry] Failed to mark notification as sent:', error);
+        log.error('Failed to mark notification as sent', error);
     }
 }
 
@@ -321,7 +324,7 @@ async function markNotificationFailed(
         .eq('idempotency_key', idempotencyKey);
 
     if (error) {
-        console.error('[retry] Failed to mark notification as failed:', error);
+        log.error('Failed to mark notification as failed', error);
     }
 }
 
@@ -391,10 +394,10 @@ export async function sendSmsWithRetry(params: SendSmsParams): Promise<SmsResult
                 };
             }
 
-            // SMS failed - record error
-            lastError = smsResult.error ?? 'Unknown SMS error';
+// SMS failed - record error
+         lastError = smsResult.error ?? 'Unknown SMS error';
 
-            console.error(`[retry] SMS attempt ${attempts} failed: ${lastError}`);
+         log.error(`SMS attempt ${attempts} failed: ${lastError}`);
 
             // Check if we should retry
             if (shouldRetry(attempts, maxRetries)) {
@@ -423,7 +426,7 @@ export async function sendSmsWithRetry(params: SendSmsParams): Promise<SmsResult
             }
         } catch (error) {
             lastError = error instanceof Error ? error.message : String(error);
-            console.error(`[retry] Unexpected error during SMS attempt ${attempts}: ${lastError}`);
+            log.error(`Unexpected error during SMS attempt ${attempts}`, error, { lastError });
 
             if (shouldRetry(attempts, maxRetries)) {
                 await upsertNotificationQueue(
@@ -488,7 +491,7 @@ export async function processPendingNotifications(limit: number = 100): Promise<
         .limit(limit);
 
     if (error) {
-        console.error('[retry] Failed to fetch pending notifications:', error);
+        log.error('Failed to fetch pending notifications', error);
         return 0;
     }
 

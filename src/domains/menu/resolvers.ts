@@ -18,6 +18,7 @@ import {
 } from '@/lib/validators/graphql';
 import { JSONScalar } from '@/lib/graphql/scalars';
 import { PAGINATION } from '@/lib/graphql/constants';
+import { logger } from '@/lib/logger';
 
 export const menuResolvers = {
     JSON: JSONScalar,
@@ -67,7 +68,7 @@ export const menuResolvers = {
         category: async (_: unknown, args: { id: string }, _context: GraphQLContext) => {
             // For now, return null - would need a getCategory method
             // This is a placeholder for federation reference resolution
-            console.warn('[menu/resolvers] category query called with id:', args.id);
+            logger.warn('[menu/resolvers] category query called with id:', { id: args.id, source: '[menu/resolvers]' });
             return null;
         },
 
@@ -250,8 +251,10 @@ export const menuResolvers = {
             // Validate tenant isolation
             if (menuItem && context.user?.restaurantId) {
                 if (menuItem.restaurant_id !== context.user.restaurantId) {
-                    console.error(
-                        `Tenant isolation violation: User ${context.user.id} attempted to access menu item ${reference.id}`
+                    logger.error(
+                        `[menu/resolvers] Tenant isolation violation: User ${context.user.id} attempted to access menu item ${reference.id}`,
+                        undefined,
+                        { source: '[menu/resolvers]' }
                     );
                     return null;
                 }
@@ -290,8 +293,10 @@ export const menuResolvers = {
             // Validate tenant isolation
             if (category && context.user?.restaurantId) {
                 if (category.restaurant_id !== context.user.restaurantId) {
-                    console.error(
-                        `Tenant isolation violation: User ${context.user.id} attempted to access category ${reference.id}`
+                    logger.error(
+                        `[menu/resolvers] Tenant isolation violation: User ${context.user.id} attempted to access category ${reference.id}`,
+                        undefined,
+                        { source: '[menu/resolvers]' }
                     );
                     return null;
                 }
@@ -320,12 +325,14 @@ export const menuResolvers = {
                 const menuItemId = modifierGroup.menu_item_id as string | undefined;
                 if (menuItemId) {
                     const menuItem = await context.dataLoaders.menuItems.load(menuItemId);
-                    if (menuItem && menuItem.restaurant_id !== context.user.restaurantId) {
-                        console.error(
-                            `Tenant isolation violation: User ${context.user.id} attempted to access modifier group ${reference.id}`
-                        );
-                        return null;
-                    }
+if (menuItem && menuItem.restaurant_id !== context.user.restaurantId) {
+                         logger.error(
+                             `[menu/resolvers] Tenant isolation violation: User ${context.user.id} attempted to access modifier group ${reference.id}`,
+                             undefined,
+                             { source: '[menu/resolvers]' }
+                         );
+                         return null;
+                     }
                 }
             }
 
@@ -360,12 +367,14 @@ export const menuResolvers = {
                         const menuItemId = modifierGroup.menu_item_id as string | undefined;
                         if (menuItemId) {
                             const menuItem = await context.dataLoaders.menuItems.load(menuItemId);
-                            if (menuItem && menuItem.restaurant_id !== context.user.restaurantId) {
-                                console.error(
-                                    `Tenant isolation violation: User ${context.user.id} attempted to access modifier option ${reference.id}`
-                                );
-                                return null;
-                            }
+if (menuItem && menuItem.restaurant_id !== context.user.restaurantId) {
+                                 logger.error(
+                                     `[menu/resolvers] Tenant isolation violation: User ${context.user.id} attempted to access modifier option ${reference.id}`,
+                                     undefined,
+                                     { source: '[menu/resolvers]' }
+                                 );
+                                 return null;
+                             }
                         }
                     }
                 }

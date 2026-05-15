@@ -12,6 +12,7 @@ import {
 import { enforcePaginationLimit } from '@/lib/graphql/constants';
 import { guestsRepository } from './repository';
 import { guestsService } from './service';
+import { logger } from '@/lib/logger';
 
 export const guestsResolvers = {
     Query: {
@@ -247,8 +248,10 @@ export const guestsResolvers = {
             // Tenant isolation
             if (guest && authContext.user?.restaurantId) {
                 if (guest.restaurant_id !== authContext.user.restaurantId) {
-                    console.error(
-                        `[guests/resolvers] Tenant isolation violation: User ${authContext.user.id} attempted to access guest ${reference.id}`
+                    logger.error(
+                        `[guests/resolvers] Tenant isolation violation: User ${authContext.user.id} attempted to access guest ${reference.id}`,
+                        undefined,
+                        { source: 'guests/resolvers' }
                     );
                     return null;
                 }

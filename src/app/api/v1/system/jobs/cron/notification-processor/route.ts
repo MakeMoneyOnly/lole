@@ -13,6 +13,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { processQueue, getQueueStats, type ProcessResult } from '@/lib/notifications/queue';
 import { clearOldEntries } from '@/lib/notifications/deduplication';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('notification-processor');
 
 /**
  * Cron secret validation
@@ -22,7 +25,7 @@ function validateCronSecret(request: NextRequest): boolean {
     const cronSecret = process.env.CRON_SECRET;
 
     if (!cronSecret) {
-        console.warn('[notification-processor] CRON_SECRET not configured');
+        log.warn('CRON_SECRET not configured');
         return false;
     }
 
@@ -44,7 +47,7 @@ async function cleanupOldNotifications(olderThanDays: number = 7): Promise<numbe
         .lt('created_at', cutoffDate);
 
     if (error) {
-        console.error('[notification-processor] Failed to cleanup old notifications:', error);
+        log.error('Failed to cleanup old notifications', error);
         return 0;
     }
 
@@ -78,7 +81,7 @@ export async function POST(request: NextRequest) {
         const limit = parseInt(searchParams.get('limit') || '50', 10);
         const cleanupDays = parseInt(searchParams.get('cleanup_days') || '7', 10);
 
-        console.warn('[notification-processor] Starting notification processing:', {
+        log.info('Starting notification processing', {
             limit,
             cleanupDays,
         });
@@ -100,8 +103,7 @@ export async function POST(request: NextRequest) {
 
         const duration = Date.now() - startTime;
 
-        // Log summary
-        console.warn('[notification-processor] Processing complete:', {
+        log.info('Processing complete', {
             duration: `${duration}ms`,
             processed: processResult.processed,
             sent: processResult.sent,
@@ -134,7 +136,7 @@ export async function POST(request: NextRequest) {
             },
         });
     } catch (error) {
-        console.error('[notification-processor] Error:', error);
+        log.error('Error', error);
 
         return NextResponse.json(
             {

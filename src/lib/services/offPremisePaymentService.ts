@@ -6,6 +6,9 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('OffPremisePayment');
 
 /**
  * Generate a unique ID without external dependency
@@ -96,7 +99,7 @@ export async function initializeOffPremisePayment(
         .single();
 
     if (paymentError || !payment) {
-        console.error('Failed to create payment record:', paymentError);
+        log.error('Failed to create payment record', paymentError);
         return { success: false, error: 'Failed to initialize payment' };
     }
 
@@ -127,7 +130,7 @@ export async function initializeOffPremisePayment(
     }
 
     // Mock for development
-    console.warn('No payment provider configured, using mock payment');
+    log.warn('No payment provider configured, using mock payment');
     return {
         success: true,
         paymentId: payment.id,
@@ -192,7 +195,7 @@ async function initializeChapaPayment(params: {
 
         return { success: true, checkoutUrl: data.data.checkout_url, reference: params.reference };
     } catch (error) {
-        console.error('Chapa payment initialization failed:', error);
+        log.error('Chapa payment initialization failed', error);
         return {
             success: false,
             error: error instanceof Error ? error.message : 'Payment initialization failed',
@@ -295,7 +298,7 @@ async function verifyChapaPayment(
             reference: txData.reference ?? reference,
         };
     } catch (error) {
-        console.error('Chapa verification failed:', error);
+        log.error('Chapa verification failed', error);
         return {
             success: false,
             status: 'failed',

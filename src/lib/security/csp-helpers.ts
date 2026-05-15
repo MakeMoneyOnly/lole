@@ -6,6 +6,9 @@
  */
 
 import { headers } from 'next/headers';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[CSP]');
 
 /**
  * Get the CSP nonce for the current request
@@ -30,7 +33,7 @@ export async function getScriptNonceAttrs(): Promise<{ nonce: string }> {
     if (!nonce) {
         // In development, this might happen - return empty but warn
         if (process.env.NODE_ENV === 'development') {
-            console.warn('[CSP] No nonce available - CSP may block inline scripts');
+            log.warn('No nonce available - CSP may block inline scripts');
         }
         return { nonce: '' };
     }
@@ -47,7 +50,7 @@ export async function getStyleNonceAttrs(): Promise<{ nonce: string }> {
     const nonce = await getCSPNonce();
     if (!nonce) {
         if (process.env.NODE_ENV === 'development') {
-            console.warn('[CSP] No nonce available - CSP may block inline styles');
+            log.warn('No nonce available - CSP may block inline styles');
         }
         return { nonce: '' };
     }

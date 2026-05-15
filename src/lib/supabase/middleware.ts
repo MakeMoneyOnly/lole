@@ -5,6 +5,9 @@ import {
     isValidE2EBypassSecret,
     logE2ESecurityEvent,
 } from '@/lib/security/e2e-validation';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('middleware');
 
 export async function updateSession(request: NextRequest) {
     let supabaseResponse = NextResponse.next({
@@ -124,7 +127,7 @@ export async function updateSession(request: NextRequest) {
     // If no real credentials, we can't initialize Supabase - but still need to
     // pass cookies through for subsequent requests that might have valid session
     if (!hasRealCredentials) {
-        console.warn('Supabase credentials not available - passing through request without auth');
+        log.warn('Supabase credentials not available - passing through request without auth');
         // Pass cookies through without Supabase auth check
         return supabaseResponse;
     }
@@ -133,7 +136,7 @@ export async function updateSession(request: NextRequest) {
     try {
         new URL(supabaseUrl);
     } catch {
-        console.error('Invalid SUPABASE_URL format:', supabaseUrl);
+        log.error('Invalid SUPABASE_URL format', undefined, { url: supabaseUrl });
         return supabaseResponse;
     }
 

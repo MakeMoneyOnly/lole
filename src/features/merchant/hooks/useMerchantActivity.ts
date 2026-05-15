@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { logger } from '@/lib/logger';
 import { transformActivityData } from '../utils/transformActivity';
 import { ActivityItem, ActivityType } from '../types';
 
@@ -32,10 +33,15 @@ export function useMerchantActivity() {
                 if (!mounted) return;
                 setLoading(true);
 
-                console.warn('[Hook] Fetching merchant activity...');
+                logger.warn('Fetching merchant activity...', {
+                    source: '[features/merchant/hooks/useMerchantActivity]',
+                });
                 const response = await fetch('/api/v1/merchant/core/activity');
 
-                console.warn('[Hook] Response status:', response.status);
+                logger.warn('Response status:', {
+                    status: response.status,
+                    source: '[features/merchant/hooks/useMerchantActivity]',
+                });
 
                 if (!response.ok) {
                     if (response.status === 401 || response.status === 404) {
@@ -43,15 +49,19 @@ export function useMerchantActivity() {
                         if (mounted) setLoading(false);
                         return;
                     }
-                    console.error('[Hook] API Error. Status:', response.status);
+                    logger.error('API Error', undefined, {
+                        status: response.status,
+                        source: '[features/merchant/hooks/useMerchantActivity]',
+                    });
                     return;
                 }
 
                 const data = await response.json();
-                console.warn('[Hook] Received data:', {
+                logger.warn('Received data', {
                     orderCount: data.orders?.length || 0,
                     requestCount: data.requests?.length || 0,
                     restaurant: data.restaurant,
+                    source: '[features/merchant/hooks/useMerchantActivity]',
                 });
 
                 if (!mounted) return;
@@ -71,7 +81,9 @@ export function useMerchantActivity() {
                 const combined = transformActivityData(data);
                 setActivities(combined);
             } catch (error) {
-                console.error('Error fetching merchant activity:', error);
+                logger.error('Error fetching merchant activity', error, {
+                    source: '[features/merchant/hooks/useMerchantActivity]',
+                });
             } finally {
                 if (mounted) setLoading(false);
             }
@@ -111,7 +123,9 @@ export function useMerchantActivity() {
             const combined = transformActivityData(data);
             setActivities(combined);
         } catch (error) {
-            console.error('Error refreshing activity:', error);
+            logger.error('Error refreshing activity', error, {
+                source: '[features/merchant/hooks/useMerchantActivity]',
+            });
         } finally {
             setLoading(false);
         }

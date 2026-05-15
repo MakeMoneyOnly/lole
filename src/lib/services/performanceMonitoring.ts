@@ -10,6 +10,10 @@
  * - Custom APM-like functionality
  */
 
+import { logger } from '@/lib/logger';
+
+const log = logger.child('Performance');
+
 /**
  * Web Vitals metric type
  * Based on the web-vitals library interface
@@ -132,7 +136,7 @@ class PerformanceMonitorService {
         this.events.push(event);
 
         if (this.isDevelopment) {
-            console.warn(`[Performance] ${name}: ${duration.toFixed(2)}ms`, metadata ?? '');
+            log.warn(`${name}: ${duration.toFixed(2)}ms`, metadata);
         }
 
         // Report to analytics
@@ -168,10 +172,10 @@ class PerformanceMonitorService {
             }
 
             return duration ?? null;
-        } catch (error) {
-            console.warn('[Performance] Measure failed:', error);
-            return null;
-        }
+} catch (error) {
+                log.warn('Measure failed', { error });
+                return null;
+            }
     }
 
     /**
@@ -246,9 +250,7 @@ class PerformanceMonitorService {
         if (!this.isDevelopment) return;
 
         const emoji = metric.rating === 'good' ? '✅' : metric.rating === 'poor' ? '❌' : '⚠️';
-        console.warn(
-            `[WebVitals] ${emoji} ${metric.name}: ${metric.value.toFixed(2)}ms (${metric.rating})`
-        );
+        log.warn(`${emoji} ${metric.name}: ${metric.value.toFixed(2)}ms (${metric.rating})`);
     }
 
     /**

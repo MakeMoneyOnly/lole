@@ -4,6 +4,9 @@ import { createClient } from '@/lib/supabase/server';
 import { createAuditedServiceRoleClient } from '@/lib/supabase/service-role';
 import { revalidatePath } from 'next/cache';
 import { verifyOrigin } from '@/lib/security/csrf';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('auth:invite');
 
 export async function acceptInvite(code: string) {
     // CSRF Protection - verify origin before processing
@@ -71,7 +74,7 @@ export async function acceptInvite(code: string) {
     });
 
     if (insertError) {
-        console.error('Failed to add staff member:', insertError);
+        log.error('Failed to add staff member', insertError);
         return { error: 'Failed to join restaurant. Please try again.' };
     }
 

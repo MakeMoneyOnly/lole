@@ -5,6 +5,9 @@ import { getAuthenticatedUser } from '@/lib/api/authz';
 import { parseJsonBody } from '@/lib/api/validation';
 import { writeAuditLog } from '@/lib/api/audit';
 import { enforcePilotAccess } from '@/lib/api/pilotGate';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('service-requests');
 
 const UpdateServiceRequestSchema = z.object({
     status: z.enum(['pending', 'in_progress', 'completed']),
@@ -135,7 +138,7 @@ export async function PATCH(
         metadata: { source: 'merchant_dashboard_orders_queue' },
     });
     if (auditError) {
-        console.warn('[PATCH /api/service-requests/:id] audit insert failed:', auditError.message);
+        log.warn('audit insert failed', { message: auditError.message });
     }
 
     return apiSuccess(updatedRequest);

@@ -2,10 +2,13 @@ import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { enforcePilotAccess } from '@/lib/api/pilotGate';
 import { ORDER_LIST_COLUMNS, columnsToString } from '@/lib/constants/query-columns';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('merchant-core-activity');
 
 export async function GET(request: Request) {
     try {
-        console.warn('[API] Starting merchant activity fetch...');
+        log.info('Starting merchant activity fetch...');
         const supabase = await createClient();
 
         // Get the current user
@@ -14,14 +17,14 @@ export async function GET(request: Request) {
             error: userError,
         } = await supabase.auth.getUser();
 
-        console.warn('[API] User check:', {
+        log.info('User check', {
             hasUser: !!user,
             userId: user?.id,
             userError: userError?.message,
         });
 
         if (userError || !user) {
-            console.warn('[API] No user found, returning 401');
+            log.warn('No user found, returning 401');
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -35,7 +38,7 @@ export async function GET(request: Request) {
             .limit(1)
             .maybeSingle();
 
-        console.warn('[API] Staff lookup:', {
+        log.info('Staff lookup', {
             staffEntry,
             staffError: staffError?.message,
         });
@@ -50,7 +53,7 @@ export async function GET(request: Request) {
                 .eq('user_id', user.id)
                 .maybeSingle();
 
-            console.warn('[API] Agency lookup:', {
+            log.info('Agency lookup', {
                 agencyUser,
                 agencyError: agencyError?.message,
             });
@@ -60,10 +63,10 @@ export async function GET(request: Request) {
             }
         }
 
-        console.warn('[API] Final restaurant ID:', restaurantId);
+        log.info('Final restaurant ID', { restaurantId });
 
         if (!restaurantId) {
-            console.warn('[API] No restaurant found for user');
+            log.warn('No restaurant found for user');
             return NextResponse.json({ error: 'No restaurant found for user' }, { status: 404 });
         }
 
@@ -97,17 +100,17 @@ export async function GET(request: Request) {
         const { data: requests, error: requestError } = requestsResult;
         const { data: restaurant } = restaurantResult;
 
-        console.warn('[API] Orders fetch:', {
+        log.info('Orders fetch', {
             count: orders?.length || 0,
             error: orderError?.message,
         });
 
-        console.warn('[API] Requests fetch:', {
+        log.info('Requests fetch', {
             count: requests?.length || 0,
             error: requestError?.message,
         });
 
-        console.warn('[API] Restaurant info:', restaurant);
+        log.info('Restaurant info', { restaurant });
 
         const response = {
             orders: orders || [],
@@ -120,7 +123,7 @@ export async function GET(request: Request) {
             },
         };
 
-        console.warn('[API] Returning response with:', {
+        log.info('Returning response with', {
             orderCount: response.orders.length,
             requestCount: response.requests.length,
             restaurantName: response.restaurant.name,
@@ -128,7 +131,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json(response);
     } catch (error) {
-        console.error('[API] Error:', error);
+        log.error('Error:', error);
         return NextResponse.json(
             {
                 error: 'Internal server error',

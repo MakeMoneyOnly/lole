@@ -3,6 +3,9 @@
 import { createClient } from '@/lib/supabase/server';
 import { createAuditedServiceRoleClient } from '@/lib/supabase/service-role';
 import { verifyOrigin } from '@/lib/security/csrf';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('auth:join');
 
 // Role-based redirect map
 const ROLE_REDIRECTS: Record<string, string> = {
@@ -125,7 +128,7 @@ export async function provisionDevice(data: {
         return { success: true, redirectTo: `${target}?restaurantId=${invite.restaurant_id}` };
     } catch (e: unknown) {
         const message = e instanceof Error ? e.message : 'Server provisioning failed';
-        console.error('Provisioning Error:', e);
+        log.error('Provisioning Error', e);
         return { error: message, redirectTo: '/login' };
     }
 }

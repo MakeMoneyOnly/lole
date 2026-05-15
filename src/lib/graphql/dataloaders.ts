@@ -13,6 +13,9 @@ import DataLoader from 'dataloader';
 import { menuRepository } from '@/domains/menu/repository';
 import { ordersRepository, OrderItemRow } from '@/domains/orders/repository';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[graphql/dataloaders]');
 
 /**
  * Tenant context for DataLoader operations
@@ -150,9 +153,7 @@ export function createDataLoaders(tenantContext: TenantContext): DataLoaders {
             if (!item) return null;
             // Verify tenant ownership - if restaurant_id exists, it must match
             if (item.restaurant_id && item.restaurant_id !== restaurantId) {
-                console.warn(
-                    `[DataLoader] Tenant isolation violation: attempted access to ${id} by restaurant ${restaurantId}`
-                );
+                log.warn('Tenant isolation violation', { id, restaurantId });
                 return null;
             }
             return item;
@@ -304,7 +305,7 @@ export function createDataLoaders(tenantContext: TenantContext): DataLoaders {
                 .in('id', [...ids]);
 
             if (error) {
-                console.error('[DataLoader] Error loading guests:', error.message);
+                log.error('Error loading guests', { message: error.message });
                 return ids.map(() => null);
             }
 
@@ -326,7 +327,7 @@ export function createDataLoaders(tenantContext: TenantContext): DataLoaders {
                 .in('id', [...sessionIds]);
 
             if (error) {
-                console.error('[DataLoader] Error loading guests by session:', error.message);
+                log.error('Error loading guests by session', { message: error.message });
                 return sessionIds.map(() => []);
             }
 
@@ -360,7 +361,7 @@ export function createDataLoaders(tenantContext: TenantContext): DataLoaders {
                 .in('id', [...ids]);
 
             if (error) {
-                console.error('[DataLoader] Error loading payments:', error.message);
+                log.error('Error loading payments', { message: error.message });
                 return ids.map(() => null);
             }
 
@@ -382,7 +383,7 @@ export function createDataLoaders(tenantContext: TenantContext): DataLoaders {
                 .in('order_id', [...orderIds]);
 
             if (error) {
-                console.error('[DataLoader] Error loading payments by order:', error.message);
+                log.error('Error loading payments by order', { message: error.message });
                 return orderIds.map(() => []);
             }
 
@@ -413,7 +414,7 @@ export function createDataLoaders(tenantContext: TenantContext): DataLoaders {
                 .in('id', [...ids]);
 
             if (error) {
-                console.error('[DataLoader] Error loading restaurants:', error.message);
+                log.error('Error loading restaurants', { message: error.message });
                 return ids.map(() => null);
             }
 

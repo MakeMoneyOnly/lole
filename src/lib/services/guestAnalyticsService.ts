@@ -7,6 +7,9 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('GuestAnalytics');
 
 // ============================================================================
 // Types
@@ -142,10 +145,10 @@ export async function generateGuestAnalytics(
             },
             error: null,
         };
-    } catch (error) {
-        console.error('Error generating guest analytics:', error);
-        return { data: null, error: error as Error };
-    }
+} catch (error) {
+         log.error('Error generating guest analytics', error);
+         return { data: null, error: error as Error };
+     }
 }
 
 /**
@@ -202,10 +205,10 @@ export async function getGuestRetentionRate(
             firstPeriodGuests.size > 0 ? (returningGuests / firstPeriodGuests.size) * 100 : 0;
 
         return { data: Math.round(retentionRate * 100) / 100, error: null };
-    } catch (error) {
-        console.error('Error calculating retention rate:', error);
-        return { data: null, error: error as Error };
-    }
+} catch (error) {
+         log.error('Error calculating retention rate', error);
+         return { data: null, error: error as Error };
+     }
 }
 
 /**
@@ -260,10 +263,10 @@ export async function getGuestLifetimeValue(
             },
             error: null,
         };
-    } catch (error) {
-        console.error('Error calculating guest LTV:', error);
-        return { data: null, error: error as Error };
-    }
+} catch (error) {
+         log.error('Error calculating guest LTV', error);
+         return { data: null, error: error as Error };
+     }
 }
 
 // ============================================================================

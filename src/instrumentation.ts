@@ -4,6 +4,8 @@
  * Runs once at server startup. Validates all required secrets before
  * the application starts accepting traffic.
  */
+import { logger } from '@/lib/logger';
+
 export async function register() {
     if (process.env.NEXT_RUNTIME === 'nodejs') {
         const { assertSecretsValid } = await import('@/lib/security/startup-checks');
@@ -11,7 +13,7 @@ export async function register() {
         try {
             assertSecretsValid();
         } catch (error) {
-            console.error(error instanceof Error ? error.message : String(error));
+            logger.error('Startup secret validation failed', error);
             if (process.env.NODE_ENV === 'production') {
                 process.exit(1);
             }

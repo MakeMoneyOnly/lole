@@ -7,6 +7,9 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Json, TablesInsert } from '@/types/database';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('CentralizedMenu');
 
 type DbClient = SupabaseClient<Database>;
 
@@ -109,10 +112,10 @@ export async function getMenuLocations(
             )
             .eq('menu_config_id', config.id);
 
-        if (error) {
-            console.error('[CentralizedMenu] Failed to fetch locations:', error);
-            return [];
-        }
+if (error) {
+                log.error('Failed to fetch locations', error);
+                return [];
+            }
 
         return (links ?? []).map(
             (link: {
@@ -135,7 +138,7 @@ export async function getMenuLocations(
             })
         );
     } catch (error) {
-        console.error('[CentralizedMenu] Error:', error);
+        log.error('Error fetching menu locations', error);
         return [];
     }
 }
@@ -302,7 +305,7 @@ export async function pushMenuToLocations(
             results,
         };
     } catch (error) {
-        console.error('[CentralizedMenu] Push failed:', error);
+        log.error('Push failed', error);
         return { success: false, results: [] };
     }
 }
@@ -736,7 +739,7 @@ export async function recordMenuChange(
             });
         }
     } catch (error) {
-        console.error('[CentralizedMenu] Failed to record change:', error);
+        log.error('Failed to record change', error);
     }
 }
 
@@ -771,13 +774,13 @@ export async function getPendingChanges(
             .order('created_at', { ascending: true });
 
         if (error) {
-            console.error('[CentralizedMenu] Failed to fetch pending changes:', error);
+            log.error('Failed to fetch pending changes', error);
             return [];
         }
 
         return (data ?? []) as MenuChange[];
     } catch (error) {
-        console.error('[CentralizedMenu] Error:', error);
+        log.error('Error fetching pending changes', error);
         return [];
     }
 }

@@ -1,4 +1,7 @@
 import { createBrowserClient } from '@supabase/ssr';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('supabase:browser');
 
 /**
  * SECURITY: Check if mock client is allowed in the current environment.
@@ -34,21 +37,18 @@ export const createClient = () => {
     if (isPlaceholderUrl || isPlaceholderKey) {
         // SECURITY: Check if mock client is allowed
         if (!isMockClientAllowed()) {
-            console.error(
-                '[SECURITY CRITICAL] Placeholder Supabase credentials detected in production! ' +
-                    'This is a critical security vulnerability. ' +
-                    'Set proper NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY environment variables.'
+            log.error(
+                'SECURITY CRITICAL: Placeholder Supabase credentials detected in production.',
+                undefined,
+                { isPlaceholderUrl, isPlaceholderKey }
             );
             // Return a client that will fail gracefully
             // This prevents the app from running with mock data in production
         } else {
-            console.warn(
-                '[Browser] Using mock client - placeholder credentials detected:',
-                'isPlaceholderUrl:',
+            log.warn('Using mock client - placeholder credentials detected', {
                 isPlaceholderUrl,
-                'isPlaceholderKey:',
-                isPlaceholderKey
-            );
+                isPlaceholderKey,
+            });
         }
         // Return a mock client for E2E tests
         return {
@@ -203,7 +203,7 @@ export const createClient = () => {
     }
 
     if (!url || !key) {
-        console.warn('Supabase environment variables are not set. Authentication will not work.');
+        log.warn('Supabase environment variables are not set. Authentication will not work.');
         // Return a mock client that won't crash but won't work either
         return {
             auth: {

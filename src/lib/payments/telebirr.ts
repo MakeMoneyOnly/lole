@@ -17,6 +17,9 @@ import {
     PaymentVerifyResponse,
 } from './types';
 import { createHmac, createHash as _createHash } from 'crypto';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('Telebirr');
 
 const TELEBIRR_API_URL = 'https://api.telebirr.com/v1';
 const TELEBIRR_APP_ID = process.env.TELEBIRR_APP_ID;
@@ -128,7 +131,7 @@ export function verifyTelebirrWebhookSignature(
     appKey: string
 ): boolean {
     if (!appKey) {
-        console.error('[Telebirr] Missing app key for webhook verification');
+        log.error('Missing app key for webhook verification');
         return false;
     }
 
@@ -140,7 +143,7 @@ export function verifyTelebirrWebhookSignature(
         const { sign: receivedSign, ...paramsWithoutSign } = params;
 
         if (!receivedSign) {
-            console.error('[Telebirr] No signature in webhook payload');
+            log.error('No signature in webhook payload');
             return false;
         }
 
@@ -150,7 +153,7 @@ export function verifyTelebirrWebhookSignature(
         // Constant-time comparison
         return calculatedSign === receivedSign;
     } catch (error) {
-        console.error('[Telebirr] Webhook signature verification failed:', error);
+        log.error('Webhook signature verification failed', error);
         return false;
     }
 }

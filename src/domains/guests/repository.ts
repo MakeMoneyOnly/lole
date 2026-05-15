@@ -7,6 +7,7 @@ import {
     GUEST_DETAIL_COLUMNS,
     columnsToString,
 } from '@/lib/constants/query-columns';
+import { logger } from '@/lib/logger';
 
 // Lazy initialization of Supabase client
 let supabase: SupabaseClient<Database> | null = null;
@@ -48,7 +49,7 @@ export class GuestsRepository {
             .maybeSingle();
 
         if (error) {
-            console.error('[guests/repository] Error fetching guest:', error);
+            logger.error('[guests/repository] Error fetching guest', error, { source: 'guests/repository' });
             throw new Error(error.message);
         }
 
@@ -86,7 +87,7 @@ export class GuestsRepository {
         const { data, error } = await query;
 
         if (error) {
-            console.error('[guests/repository] Error fetching guests list:', error);
+            logger.error('[guests/repository] Error fetching guests list', error, { source: 'guests/repository' });
             throw new Error(error.message);
         }
 
@@ -122,7 +123,7 @@ export class GuestsRepository {
             .single();
 
         if (error) {
-            console.error('[guests/repository] Error creating guest:', error);
+            logger.error('[guests/repository] Error creating guest', error, { source: 'guests/repository' });
             throw new Error(error.message);
         }
 
@@ -153,7 +154,7 @@ export class GuestsRepository {
             .single();
 
         if (error) {
-            console.error('[guests/repository] Error updating guest:', error);
+            logger.error('[guests/repository] Error updating guest', error, { source: 'guests/repository' });
             throw new Error(error.message);
         }
 
@@ -183,7 +184,7 @@ export class GuestsRepository {
             .single();
 
         if (error) {
-            console.error('[guests/repository] Error updating visit stats:', error);
+            logger.error('[guests/repository] Error updating visit stats', error, { source: 'guests/repository' });
             throw new Error(error.message);
         }
 
@@ -206,7 +207,7 @@ export class GuestsRepository {
             .limit(limit);
 
         if (error) {
-            console.error('[guests/repository] Error searching guests:', error);
+            logger.error('[guests/repository] Error searching guests', error, { source: 'guests/repository' });
             throw new Error(error.message);
         }
 
@@ -226,7 +227,7 @@ export class GuestsRepository {
             .in('id', ids);
 
         if (error) {
-            console.error('[guests/repository] Error fetching guests by IDs:', error);
+            logger.error('[guests/repository] Error fetching guests by IDs', error, { source: 'guests/repository' });
             throw new Error(error.message);
         }
 

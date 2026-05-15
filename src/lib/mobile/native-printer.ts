@@ -1,4 +1,7 @@
 import { isCapacitorNativeRuntime } from '@/lib/mobile/capacitor';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('NativePrinter');
 
 export interface PrinterInfo {
     id: string;
@@ -58,7 +61,7 @@ export async function discoverNativePrinters(): Promise<PrinterInfo[]> {
         const response = await plugin.discover();
         return response.printers ?? [];
     } catch (error) {
-        console.error('[NativePrinter] Discovery failed:', error);
+        log.error('Discovery failed', error);
         return [];
     }
 }

@@ -9,6 +9,9 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('LaborReports');
 
 // ============================================================================
 // Types
@@ -298,10 +301,10 @@ export async function generateLaborReport(
             },
             error: null,
         };
-    } catch (error) {
-        console.error('Error generating labor report:', error);
-        return { data: null, error: error as Error };
-    }
+} catch (error) {
+         log.error('Error generating labor report', error);
+         return { data: null, error: error as Error };
+     }
 }
 
 /**
@@ -363,10 +366,10 @@ export async function getLaborCostPercentage(
         });
 
         return { data: metrics.laborCostPercent, error: null };
-    } catch (error) {
-        console.error('Error calculating labor cost percentage:', error);
-        return { data: null, error: error as Error };
-    }
+} catch (error) {
+         log.error('Error calculating labor cost percentage', error);
+         return { data: null, error: error as Error };
+     }
 }
 
 // ============================================================================

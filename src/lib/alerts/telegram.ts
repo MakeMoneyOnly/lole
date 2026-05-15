@@ -13,6 +13,10 @@
  * @see docs/1. Engineering Foundation/6. ENGINEERING_RUNOOK.md - Monitoring Checklist
  */
 
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[alerts/telegram]');
+
 /**
  * Alert severity levels
  */
@@ -209,10 +213,7 @@ export async function sendAlert(
     // If not configured, log to console in development
     if (!botToken || !chatId) {
         if (process.env.NODE_ENV === 'development') {
-            console.warn(
-                `[TELEGRAM ALERT - ${level.toUpperCase()}] ${message}`,
-                context ? JSON.stringify(context, null, 2) : ''
-            );
+            log.warn(`[${level.toUpperCase()}] ${message}`, context ?? {});
         }
         return false;
     }
@@ -241,7 +242,7 @@ export async function sendAlert(
         const result = (await response.json()) as TelegramResponse;
 
         if (!result.ok) {
-            console.error('Telegram alert failed:', {
+            log.error('Telegram alert failed', {
                 error_code: result.error_code,
                 description: result.description,
             });
@@ -250,7 +251,7 @@ export async function sendAlert(
 
         return true;
     } catch (error) {
-        console.error('Failed to send Telegram alert:', error);
+        log.error('Failed to send Telegram alert', error);
         return false;
     }
 }
@@ -329,7 +330,7 @@ export async function sendEodReport(
     // Fallback to console in development
     if (!botToken || !chatId) {
         if (process.env.NODE_ENV === 'development') {
-            console.warn('[EOD REPORT]', lines.join('\n'));
+            log.warn('[EOD REPORT]', { report: lines.join('\n') });
         }
         return false;
     }
@@ -348,7 +349,7 @@ export async function sendEodReport(
         const result = (await response.json()) as TelegramResponse;
         return result.ok;
     } catch (error) {
-        console.error('Failed to send EOD report:', error);
+        log.error('Failed to send EOD report', error);
         return false;
     }
 }
@@ -367,7 +368,7 @@ export function isTelegramConfigured(): boolean {
  */
 export async function testTelegramConnection(): Promise<boolean> {
     if (!isTelegramConfigured()) {
-        console.warn('Telegram alerts not configured');
+        log.warn('Telegram alerts not configured');
         return false;
     }
 

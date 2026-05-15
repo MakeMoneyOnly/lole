@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { apiError, apiSuccess } from '@/lib/api/response';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[verify-contact]');
 
 const SendVerificationSchema = z.object({
     guestId: z.string().uuid().optional(),
@@ -166,7 +169,7 @@ export async function POST(request: Request) {
 
         return apiSuccess({ message: 'Verification code sent' });
     } catch (error) {
-        console.error('Error in verify-contact:', error);
+        log.error('Error in verify-contact', error);
         return apiError('Internal server error', 500, 'INTERNAL_ERROR');
     }
 }
@@ -277,7 +280,7 @@ export async function PATCH(request: Request) {
             }
         });
     } catch (error) {
-        console.error('Error in verify-contact PATCH:', error);
+        log.error('Error in verify-contact PATCH', error);
         return apiError('Internal server error', 500, 'INTERNAL_ERROR');
     }
 }

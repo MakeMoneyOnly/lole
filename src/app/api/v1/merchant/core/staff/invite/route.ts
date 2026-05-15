@@ -7,6 +7,9 @@ import { writeAuditLog } from '@/lib/api/audit';
 import { resend, EMAIL_FROM } from '@/lib/email/client';
 import { StaffInviteEmail } from '@/lib/email/templates/staff-invite';
 import { STAFF_ROLES } from '@/types/status';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('merchant-core-staff/invite');
 
 const InviteStaffSchema = z.object({
     email: z.string().email().optional().nullable(),
@@ -75,7 +78,7 @@ export async function POST(request: Request) {
     let emailSent = false;
 
     if (parsed.data.email && resend) {
-        console.warn('Attempting to send email to:', parsed.data.email);
+        log.info('Attempting to send email', { email: parsed.data.email });
         try {
             const { data: emailData, error: emailError } = await resend.emails.send({
                 from: EMAIL_FROM,
@@ -89,22 +92,17 @@ export async function POST(request: Request) {
             });
 
             if (emailError) {
-                console.error('Resend API returned error:', emailError);
+                log.error('Resend API returned error', emailError);
             } else {
-                console.warn('Email sent successfully:', emailData);
+                log.info('Email sent successfully', { emailData });
                 emailSent = true;
             }
         } catch (emailError) {
-            console.error('Failed to send invite email:', emailError);
+            log.error('Failed to send invite email', emailError);
             // We don't fail the request if email fails, but we'll flag it in the response
         }
     } else {
-        console.warn(
-            'Skipping email: Email provided?',
-            Boolean(parsed.data.email),
-            'Resend client ready?',
-            Boolean(resend)
-        );
+        log.warn('Skipping email', { hasEmail: Boolean(parsed.data.email), resendReady: Boolean(resend) });
     }
 
     await writeAuditLog(context.supabase, {

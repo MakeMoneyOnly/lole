@@ -11,6 +11,9 @@
 import { NextResponse } from 'next/server';
 import { getAuthenticatedUser, getAuthorizedRestaurantContext } from '@/lib/api/authz';
 import { getNotificationMetrics, type DateRange } from '@/lib/monitoring/notification-metrics';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[analytics/notifications]');
 
 /**
  * Range options for date filtering
@@ -133,7 +136,7 @@ export async function GET(request: Request) {
             },
         });
     } catch (error) {
-        console.error('[analytics/notifications] Error fetching metrics:', error);
+        log.error('Error fetching metrics', error);
 
         return NextResponse.json(
             {

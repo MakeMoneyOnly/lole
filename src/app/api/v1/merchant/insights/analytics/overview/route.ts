@@ -6,6 +6,9 @@ import {
     type AnalyticsRange,
 } from '@/lib/services/timescaleAnalyticsService';
 import { getCacheHeaders, CACHE_PRESETS } from '@/lib/api/cache';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[analytics/overview]');
 
 export async function GET(request: Request) {
     const auth = await getAuthenticatedUser();
@@ -41,7 +44,7 @@ export async function GET(request: Request) {
             rangeParam
         );
     } catch (error) {
-        console.warn('[analytics/overview] TimescaleDB not available, using direct queries', error);
+        log.warn('TimescaleDB not available, using direct queries', { error });
     }
 
     // If TimescaleDB has data, use it; otherwise fall back to direct queries

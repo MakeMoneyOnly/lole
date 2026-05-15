@@ -1,12 +1,11 @@
 // Orders Domain - Service Layer
 // Business logic — pure TypeScript, no framework coupling
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { ordersRepository, OrderRow, OrderItemRow } from './repository';
-import { Database } from '@/types/database';
 import { loleGraphQLError } from '@/lib/graphql/errors';
 import { publishEvent } from '@/lib/events/publisher';
 import { getMenuItemsByIds } from '../menu/repository';
 import { routeOrderItemToPrimaryStation } from '@/lib/kds/station-router';
+import type { OrderStatus } from '@/types/status';
 
 export interface CreateOrderInput {
     restaurantId: string;
@@ -26,7 +25,7 @@ export interface CreateOrderInput {
 
 export interface UpdateOrderStatusInput {
     id: string;
-    status: OrderRow['status'];
+    status: OrderStatus;
     staffId: string;
 }
 
@@ -64,25 +63,6 @@ function calculateItemTotal(
     return totalSantim;
 }
 
-// Lazy initialization of Supabase client
-let supabase: SupabaseClient<Database> | null = null;
-
-function getSupabaseClient(): SupabaseClient<Database> {
-    if (!supabase) {
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const supabaseKey = process.env.SUPABASE_SECRET_KEY;
-
-        if (!supabaseUrl || !supabaseKey) {
-            throw new Error(
-                `Supabase configuration missing. NEXT_PUBLIC_SUPABASE_URL: ${!!supabaseUrl}, SUPABASE_SECRET_KEY: ${!!supabaseKey}`
-            );
-        }
-
-        supabase = createClient<Database>(supabaseUrl, supabaseKey);
-    }
-    return supabase;
-}
-
 // Type for the validation result from the RPC function
 interface _ModifierValidationResult {
     is_valid: boolean;
@@ -92,63 +72,35 @@ interface _ModifierValidationResult {
 }
 
 /**
- * Validate required modifiers for a menu item
- * Returns validation result with error message if invalid
- */
-async function validateRequiredModifiers(
-    menuItemId: string,
-    selectedModifierIds: string[]
-): Promise<{
-    isValid: boolean;
-    missingGroups?: string[];
-    errorMessage?: string;
-    errorMessageAm?: string;
-}> {
-    try {
-        const supabase = getSupabaseClient();
-
-        type ValidateModifiersResult = {
-            is_valid: boolean;
-            missing_groups: string[];
-            error_message: string | null;
-            error_message_am: string | null;
-        };
-
-        const { data, error } = await (
-            supabase as unknown as {
-                rpc: (
-                    fn: string,
-                    args: Record<string, unknown>
-                ) => Promise<{
-                    data: ValidateModifiersResult[] | null;
-                    error: { message: string } | null;
-                }>;
-            }
-        ).rpc('validate_required_modifiers', {
-            p_menu_item_id: menuItemId,
-            p_selected_modifier_ids: selectedModifierIds,
-        });
-
-        if (error) {
-            console.error('[OrdersService] Modifier validation error:', error);
-            return { isValid: true };
-        }
-
-        if (data && Array.isArray(data) && data.length > 0) {
-            const result = data[0];
-            return {
-                isValid: result.is_valid,
-                missingGroups: result.missing_groups,
-                errorMessage: result.error_message ?? undefined,
-                errorMessageAm: result.error_message_am ?? undefined,
-            };
-        }
-    } catch (err) {
-        console.error('[OrdersService] Modifier validation exception:', err);
-    }
-
-    return { isValid: true };
-}
+  * Validate required modifiers for a menu item
+  * Returns validation result with error message if invalid
+  * Gracefully handles exceptions by treating them as valid (fallback behavior)
+  */
+ async function validateRequiredModifiers(
+     menuItemId: string,
+     selectedModifierIds: string[]
+ ): Promise<{
+     isValid: boolean;
+     missingGroups?: string[];
+     errorMessage?: string;
+     errorMessageAm?: string;
+ }> {
+     try {
+         const result = await ordersRepository.validateModifiers(menuItemId, selectedModifierIds);
+         if (!result) {
+             return { isValid: true };
+         }
+         return {
+             isValid: result.is_valid,
+             missingGroups: result.missing_groups,
+             errorMessage: result.error_message ?? undefined,
+             errorMessageAm: result.error_message_am ?? undefined,
+         };
+     } catch {
+         // Graceful fallback: treat validation errors as valid to avoid blocking order creation
+         return { isValid: true };
+     }
+ }
 
 export class OrdersService {
     async createOrder(input: CreateOrderInput): Promise<OrderRow> {
@@ -309,7 +261,7 @@ export class OrdersService {
     async getOrders(
         restaurantId: string,
         options: {
-            status?: OrderRow['status'];
+            status?: OrderStatus;
             tableId?: string;
             limit?: number;
             offset?: number;

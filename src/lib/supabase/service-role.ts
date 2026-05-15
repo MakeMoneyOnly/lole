@@ -1,5 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { logServiceRoleAudit, type ServiceRoleAuditParams } from '@/lib/audit';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('supabase:service-role');
 
 /**
  * Creates an audited service role client that automatically logs all database operations.
@@ -173,16 +176,11 @@ export function createServiceRoleClient() {
             );
         }
 
-        console.error('CRITICAL ERROR: Supabase Administrative configuration missing.');
-        console.error('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? 'Set' : 'Missing');
-        console.error(
-            'Administrative Key (Secret/Service):',
-            supabaseKey ? `Set (Length: ${supabaseKey.length})` : 'Missing'
-        );
-        console.error(
-            'Full Environment Keys:',
-            Object.keys(process.env).filter(k => k.includes('SUPABASE'))
-        );
+        log.error('CRITICAL ERROR: Supabase Administrative configuration missing.', undefined, {
+            urlSet: !!supabaseUrl,
+            secretKeySet: supabaseKey ? `Set (Length: ${supabaseKey.length})` : 'Missing',
+            envKeys: Object.keys(process.env).filter(k => k.includes('SUPABASE')),
+        });
         throw new Error('Missing Supabase Administrative configuration');
     }
 

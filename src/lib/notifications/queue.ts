@@ -17,6 +17,9 @@ import { isDuplicate, recordNotification, type NotificationType } from './dedupl
 import { calculateNextRetry, shouldRetry, RETRY_CONFIG } from './retry';
 import { publishEvent, type EventType, type EventPayload } from '@/lib/events/publisher';
 import { createHash } from 'crypto';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[queue]');
 
 // =========================================================
 // Types and Interfaces
@@ -156,7 +159,7 @@ export async function enqueueNotification(params: EnqueueParams): Promise<string
     });
 
     if (isDuplicateResult) {
-        console.warn('[queue] Notification is duplicate, skipping:', {
+        log.warn('Notification is duplicate, skipping', {
             restaurantId,
             guestPhone,
             notificationType,
@@ -191,7 +194,7 @@ export async function enqueueNotification(params: EnqueueParams): Promise<string
         .single();
 
     if (error) {
-        console.error('[queue] Failed to enqueue notification:', error);
+        log.error('Failed to enqueue notification', error);
         throw new Error(`FAILED_TO_ENQUEUE: ${error.message}`);
     }
 
@@ -218,7 +221,7 @@ export async function enqueueNotification(params: EnqueueParams): Promise<string
         idempotency_key: idempotencyKey,
     });
 
-    console.warn('[queue] Notification enqueued:', {
+    log.info('Notification enqueued', {
         notificationId,
         restaurantId,
         guestPhone,
@@ -255,7 +258,7 @@ export async function processQueue(limit: number = 50): Promise<ProcessResult> {
         .limit(limit);
 
     if (error) {
-        console.error('[queue] Failed to fetch pending notifications:', error);
+        log.error('Failed to fetch pending notifications', error);
         return {
             processed: 0,
             sent: 0,
@@ -292,7 +295,7 @@ export async function processQueue(limit: number = 50): Promise<ProcessResult> {
         }
     }
 
-    console.warn('[queue] Queue processed:', result);
+    log.info('Queue processed', result as unknown as Record<string, unknown>);
     return result;
 }
 
@@ -332,11 +335,11 @@ async function processNotification(
             sendResult = await sendSms(guest_phone, message_en || '');
         } else if (channel === 'push') {
             // Push notification - placeholder
-            console.warn('[queue] Push notification not implemented yet');
+            log.warn('Push notification not implemented yet');
             sendResult = { success: true, provider: 'log', skipped: true };
         } else if (channel === 'email') {
             // Email notification - placeholder
-            console.warn('[queue] Email notification not implemented yet');
+            log.warn('Email notification not implemented yet');
             sendResult = { success: true, provider: 'log', skipped: true };
         } else {
             throw new Error(`Unsupported channel: ${channel}`);
@@ -432,7 +435,7 @@ async function processNotification(
         return { success: false, retryScheduled: false, error: sendResult.error };
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error('[queue] Error processing notification:', error);
+        log.error('Error processing notification', error);
 
         // Mark as failed
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -488,7 +491,7 @@ export async function scheduleRetry(notificationId: string, delayMs: number): Pr
         .eq('status', 'failed');
 
     if (error) {
-        console.error('[queue] Failed to schedule retry:', error);
+        log.error('Failed to schedule retry', error);
         throw new Error(`FAILED_TO_SCHEDULE_RETRY: ${error.message}`);
     }
 
@@ -533,11 +536,11 @@ export async function cancelNotification(notificationId: string): Promise<void> 
         .eq('status', 'pending');
 
     if (error) {
-        console.error('[queue] Failed to cancel notification:', error);
+        log.error('Failed to cancel notification', error);
         throw new Error(`FAILED_TO_CANCEL: ${error.message}`);
     }
 
-    console.warn('[queue] Notification cancelled:', notificationId);
+    log.info('Notification cancelled', { notificationId });
 }
 
 /**
@@ -567,7 +570,7 @@ export async function getQueueStats(restaurantId?: string): Promise<{
     const { count: _count, error } = await query;
 
     if (error) {
-        console.error('[queue] Failed to get queue stats:', error);
+        log.error('Failed to get queue stats', error);
         return {
             pending: 0,
             processing: 0,
@@ -637,7 +640,7 @@ async function publishNotificationEvent(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await publishEvent(eventName as any, payload);
     } catch (error) {
-        console.error('[queue] Failed to publish event:', error);
+        log.error('Failed to publish event', error);
         // Don't throw - event publishing failure shouldn't fail the notification
     }
 }

@@ -11,6 +11,9 @@
 import { sendSms, SmsSendResult as _SmsSendResult } from '@/lib/notifications/sms';
 import { resend, EMAIL_FROM } from '@/lib/email/client';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('Campaign');
 
 export type Channel = 'sms' | 'email' | 'whatsapp' | 'telegram';
 
@@ -281,7 +284,7 @@ export async function getVerifiedRecipients(
     const { data: guests, error } = await query;
 
     if (error) {
-        console.error('Error fetching campaign recipients:', error);
+        log.error('Error fetching campaign recipients', error);
         return [];
     }
 

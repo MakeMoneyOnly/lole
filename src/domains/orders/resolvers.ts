@@ -18,6 +18,7 @@ import {
 } from '@/lib/validators/graphql';
 import { JSONScalar } from '@/lib/graphql/scalars';
 import { enforcePaginationLimit } from '@/lib/graphql/constants';
+import { logger } from '@/lib/logger';
 
 const mapOrderStatus = (
     status: string
@@ -351,15 +352,17 @@ export const ordersResolvers = {
         __resolveReference: async (reference: { id: string }, context: GraphQLContext) => {
             const order = await ordersService.getOrder(reference.id);
 
-            // Validate tenant isolation
-            if (order && context.user?.restaurantId) {
-                if (order.restaurant_id !== context.user.restaurantId) {
-                    console.error(
-                        `Tenant isolation violation: User ${context.user.id} attempted to access order ${reference.id}`
-                    );
-                    return null;
-                }
-            }
+// Validate tenant isolation
+                         if (order && context.user?.restaurantId) {
+                             if (order.restaurant_id !== context.user.restaurantId) {
+                                 logger.error(
+                                     `Tenant isolation violation: User ${context.user.id} attempted to access order ${reference.id}`,
+                                     undefined,
+                                     { source: 'orders/resolvers' }
+                                 );
+                                 return null;
+                             }
+                         }
 
             return order;
         },
@@ -372,15 +375,17 @@ export const ordersResolvers = {
         __resolveReference: async (reference: { id: string }, context: GraphQLContext) => {
             const orderItem = await ordersRepository.getItemById(reference.id);
 
-            // Validate tenant isolation via parent order
-            if (orderItem && context.user?.restaurantId) {
-                if (orderItem.restaurant_id !== context.user.restaurantId) {
-                    console.error(
-                        `Tenant isolation violation: User ${context.user.id} attempted to access order item ${reference.id}`
-                    );
-                    return null;
-                }
-            }
+// Validate tenant isolation via parent order
+                         if (orderItem && context.user?.restaurantId) {
+                             if (orderItem.restaurant_id !== context.user.restaurantId) {
+                                 logger.error(
+                                     `Tenant isolation violation: User ${context.user.id} attempted to access order item ${reference.id}`,
+                                     undefined,
+                                     { source: 'orders/resolvers' }
+                                 );
+                                 return null;
+                             }
+                         }
 
             return orderItem;
         },

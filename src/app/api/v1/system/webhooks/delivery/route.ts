@@ -6,6 +6,9 @@ import { AggregatorService } from '@/lib/delivery/aggregator';
 import { getStoreGatewayService } from '@/lib/gateway/service';
 import { z } from 'zod';
 import type { Json } from '@/types/database';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('webhooks/delivery');
 
 /**
  * Inbound Webhook Endpoint for Delivery Partners
@@ -186,7 +189,7 @@ export async function POST(request: NextRequest) {
         .maybeSingle();
 
     if (partnerError) {
-        console.error('Failed to query delivery partner:', partnerError);
+        log.error('Failed to query delivery partner', partnerError);
         return apiError('Internal server error', 500, 'DATABASE_ERROR');
     }
 
@@ -246,7 +249,7 @@ export async function POST(request: NextRequest) {
             .single();
 
         if (updateError) {
-            console.error('Failed to update external order:', updateError);
+            log.error('Failed to update external order', updateError);
             return apiError('Failed to update order', 500, 'UPDATE_FAILED');
         }
 
@@ -277,7 +280,7 @@ export async function POST(request: NextRequest) {
         .single();
 
     if (createError) {
-        console.error('Failed to create external order:', createError);
+        log.error('Failed to create external order', createError);
         return apiError('Failed to create order', 500, 'CREATE_FAILED', createError.message);
     }
 
@@ -338,7 +341,7 @@ export async function POST(request: NextRequest) {
     );
 
     if (!aggregatorResult.success && aggregatorResult.error !== 'Order already exists') {
-        console.error('Failed to inject webhook order into aggregator runtime:', aggregatorResult);
+        log.error('Failed to inject webhook order into aggregator runtime', undefined, aggregatorResult);
     }
 
     // Check if auto-accept is enabled

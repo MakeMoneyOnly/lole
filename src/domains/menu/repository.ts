@@ -5,6 +5,7 @@
  */
 
 import { createClient } from '@/lib/supabase/client';
+import { logger } from '@/lib/logger';
 import {
     MENU_ITEM_LIST_COLUMNS,
     MENU_ITEM_DETAIL_COLUMNS,
@@ -52,7 +53,7 @@ export async function getMenuItems(
     const { data, error } = await query;
 
     if (error) {
-        console.error('[menu/repository] Error fetching menu items:', error);
+        logger.error('Error fetching menu items', error, { source: '[menu/repository]' });
         throw error;
     }
 
@@ -74,7 +75,7 @@ export async function getMenuItem(id: string): Promise<Record<string, unknown> |
 
     if (error) {
         if (error.code === 'PGRST116') return null;
-        console.error('[menu/repository] Error fetching menu item:', error);
+        logger.error('Error fetching menu item', error, { source: '[menu/repository]' });
         throw error;
     }
 
@@ -94,7 +95,7 @@ export async function getMenuCategories(restaurantId: string): Promise<Record<st
         .eq('restaurant_id', restaurantId);
 
     if (error) {
-        console.error('[menu/repository] Error fetching categories:', error);
+        logger.error('Error fetching categories', error, { source: '[menu/repository]' });
         throw error;
     }
 
@@ -115,7 +116,7 @@ export async function getModifierGroups(menuItemId: string): Promise<Record<stri
         .eq('is_active', true);
 
     if (error) {
-        console.error('[menu/repository] Error fetching modifier groups:', error);
+        logger.error('Error fetching modifier groups', error, { source: '[menu/repository]' });
         throw error;
     }
 
@@ -138,7 +139,7 @@ export async function getModifierOptions(
         .eq('is_available', true);
 
     if (error) {
-        console.error('[menu/repository] Error fetching modifier options:', error);
+        logger.error('Error fetching modifier options', error, { source: '[menu/repository]' });
         throw error;
     }
 
@@ -160,7 +161,7 @@ export async function getMenuItemsByIds(ids: string[]): Promise<Record<string, u
         .in('id', ids);
 
     if (error) {
-        console.error('[menu/repository] Error fetching menu items by IDs:', error);
+        logger.error('Error fetching menu items by IDs', error, { source: '[menu/repository]' });
         throw error;
     }
 
@@ -185,7 +186,7 @@ export async function getModifierGroupsByMenuItemIds(
         .eq('is_active', true);
 
     if (error) {
-        console.error('[menu/repository] Error fetching modifier groups by menu item IDs:', error);
+        logger.error('Error fetching modifier groups by menu item IDs', error, { source: '[menu/repository]' });
         throw error;
     }
 
@@ -210,7 +211,7 @@ export async function getModifierOptionsByGroupIds(
         .eq('is_available', true);
 
     if (error) {
-        console.error('[menu/repository] Error fetching modifier options by group IDs:', error);
+        logger.error('Error fetching modifier options by group IDs', error, { source: '[menu/repository]' });
         throw error;
     }
 
@@ -232,7 +233,7 @@ export async function getCategoriesByIds(ids: string[]): Promise<Record<string, 
         .in('id', ids);
 
     if (error) {
-        console.error('[menu/repository] Error fetching categories by IDs:', error);
+        logger.error('Error fetching categories by IDs', error, { source: '[menu/repository]' });
         throw error;
     }
 
@@ -254,7 +255,7 @@ export async function getModifierGroupsByIds(ids: string[]): Promise<Record<stri
         .in('id', ids);
 
     if (error) {
-        console.error('[menu/repository] Error fetching modifier groups by IDs:', error);
+        logger.error('Error fetching modifier groups by IDs', error, { source: '[menu/repository]' });
         throw error;
     }
 
@@ -276,7 +277,7 @@ export async function getModifierOptionsByIds(ids: string[]): Promise<Record<str
         .in('id', ids);
 
     if (error) {
-        console.error('[menu/repository] Error fetching modifier options by IDs:', error);
+        logger.error('Error fetching modifier options by IDs', error, { source: '[menu/repository]' });
         throw error;
     }
 

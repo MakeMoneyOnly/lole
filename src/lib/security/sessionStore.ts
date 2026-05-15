@@ -8,6 +8,9 @@
  */
 
 import { env, hasRedis } from '@/lib/config/env';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[session-store]');
 
 /**
  * Session data structure
@@ -245,7 +248,7 @@ async function createRedisClient(): Promise<RedisClient | null> {
             lazyConnect: true,
             retryStrategy: (times: number) => {
                 if (times > 3) {
-                    console.warn('Redis connection retry limit reached');
+                    log.warn('Redis connection retry limit reached');
                     return null;
                 }
                 return Math.min(times * 100, 3000);
@@ -255,10 +258,10 @@ async function createRedisClient(): Promise<RedisClient | null> {
         // Test connection
         await redis.ping();
 
-        console.warn('✅ Redis connected for session storage');
+        log.info('Redis connected for session storage');
         return redis as unknown as RedisClient;
     } catch (error) {
-        console.warn('⚠️ Redis connection failed, falling back to memory store:', error);
+        log.warn('Redis connection failed, falling back to memory store', { error });
         return null;
     }
 }
@@ -288,9 +291,9 @@ export async function initializeSessionStore(): Promise<void> {
             }
         }
 
-        // Fall back to memory store
-        memoryStore = new MemorySessionStore();
-        console.warn('📝 Using in-memory session store (not recommended for production)');
+// Fall back to memory store
+         memoryStore = new MemorySessionStore();
+         log.warn('Using in-memory session store (not recommended for production)');
     })();
 
     return initializationPromise;

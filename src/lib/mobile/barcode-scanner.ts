@@ -1,4 +1,7 @@
 import { isCapacitorNativeRuntime } from '@/lib/mobile/capacitor';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('BarcodeScanner');
 
 export interface ScanResult {
     type: string;
@@ -25,13 +28,13 @@ async function getBarcodeScannerPlugin(): Promise<BarcodeScannerPlugin | null> {
 
 export async function startBarcodeScan(): Promise<ScanResult | null> {
     if (!isCapacitorNativeRuntime()) {
-        console.warn('[BarcodeScanner] Not in native runtime. Scan unavailable.');
+        log.warn('Not in native runtime. Scan unavailable');
         return null;
     }
 
     const plugin = await getBarcodeScannerPlugin();
     if (!plugin) {
-        console.warn('[BarcodeScanner] Plugin not installed.');
+        log.warn('Plugin not installed');
         return null;
     }
 
@@ -43,7 +46,7 @@ export async function startBarcodeScan(): Promise<ScanResult | null> {
             raw: result.raw ?? result.value,
         };
     } catch (error) {
-        console.error('[BarcodeScanner] Scan failed:', error);
+        log.error('Scan failed', error);
         return null;
     }
 }

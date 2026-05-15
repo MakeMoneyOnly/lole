@@ -8,11 +8,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { logger } from '@/lib/logger';
 import {
     canOverridePrices,
     createPriceOverride,
     validatePriceOverrideInput,
 } from '@/lib/services/priceOverrideService';
+
+const log = logger.child('merchant-operations/orders/items/override-price');
 
 export async function POST(
     request: NextRequest,
@@ -144,7 +147,7 @@ export async function POST(
             meta: { message: 'Price override applied successfully' },
         });
     } catch (error) {
-        console.error('[PriceOverride API] Error:', error);
+        log.error('Error', error);
         return NextResponse.json(
             { error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' } },
             { status: 500 }

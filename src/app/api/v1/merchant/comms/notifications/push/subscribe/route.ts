@@ -10,6 +10,7 @@
 
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
+import { logger } from '@/lib/logger';
 import {
     registerDeviceToken,
     unsubscribeDevice,
@@ -19,6 +20,8 @@ import {
 import { updateGuestPushPreference } from '@/lib/notifications/fallback';
 import { parseJsonBody, parseQuery } from '@/lib/api/validation';
 import { apiError, apiSuccess } from '@/lib/api/response';
+
+const log = logger.child('push-notifications/subscribe');
 
 // =========================================================
 // Schemas
@@ -106,7 +109,7 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        console.warn('[push:subscribe] Subscription registered', {
+        log.info('Subscription registered', {
             guestId: effectiveGuestId,
             restaurantId: effectiveRestaurantId,
             deviceType,
@@ -121,7 +124,7 @@ export async function POST(request: NextRequest) {
             },
         });
     } catch (error) {
-        console.error('[push:subscribe] Error:', error);
+        log.error('Error', error);
         return apiError(
             error instanceof Error ? error.message : 'Failed to register subscription',
             500,
@@ -147,7 +150,7 @@ export async function DELETE(request: NextRequest) {
         // Unsubscribe the device
         await unsubscribeDevice(token);
 
-        console.warn('[push:subscribe] Unsubscribed', {
+        log.info('Unsubscribed', {
             token: token.slice(0, 50) + '...',
         });
 
@@ -155,7 +158,7 @@ export async function DELETE(request: NextRequest) {
             message: 'Push subscription removed successfully',
         });
     } catch (error) {
-        console.error('[push:unsubscribe] Error:', error);
+        log.error('Error', error);
         return apiError(
             error instanceof Error ? error.message : 'Failed to remove subscription',
             500,
@@ -196,7 +199,7 @@ export async function GET(request: NextRequest) {
             isConfigured: true,
         });
     } catch (error) {
-        console.error('[push:vapid] Error:', error);
+        log.error('Error', error);
         return apiError(
             error instanceof Error ? error.message : 'Failed to get VAPID key',
             500,

@@ -7,6 +7,9 @@ import {
     listChapaBanks,
     maskSettlementAccountNumber,
 } from '@/lib/services/chapaService';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('merchant-core-onboarding');
 
 export interface OnboardingPayload {
     full_name: string;
@@ -212,7 +215,7 @@ export async function POST(req: NextRequest) {
             .single();
 
         if (updateError || !updated) {
-            console.error('Restaurant update failed:', updateError);
+            log.error('Restaurant update failed', updateError);
             return apiError('Failed to update restaurant', 500);
         }
 
@@ -228,7 +231,7 @@ export async function POST(req: NextRequest) {
             .single();
 
         if (restaurantError || !restaurant) {
-            console.error('Restaurant creation failed:', restaurantError);
+            log.error('Restaurant creation failed', restaurantError);
             return apiError('Failed to create restaurant', 500);
         }
 

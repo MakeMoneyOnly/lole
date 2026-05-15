@@ -2,6 +2,9 @@ import { z } from 'zod';
 import { apiError, apiSuccess } from '@/lib/api/response';
 import { getAuthenticatedUser, getAuthorizedRestaurantContext } from '@/lib/api/authz';
 import { parseJsonBody } from '@/lib/api/validation';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('merchant-core-settings/payments');
 
 export const dynamic = 'force-dynamic';
 import {
@@ -73,7 +76,7 @@ function normalizePayoutStatus(params: {
         .toLowerCase();
     const haystack = `${providerStatus} ${providerMessage}`;
 
-    console.warn('normalizePayoutStatus called with:', {
+    log.debug('normalizePayoutStatus called', {
         subaccountId,
         providerStatus,
         providerMessage,
@@ -91,29 +94,29 @@ function normalizePayoutStatus(params: {
         haystack.includes('subaccount created');
 
     if (isSuccess) {
-        console.warn('normalizePayoutStatus: returning active (success detected)');
+        log.debug('normalizePayoutStatus: returning active', { reason: 'success detected' });
         return 'active';
     }
 
     // If we have a subaccount ID, the account was created successfully
     if (subaccountId) {
-        console.warn('normalizePayoutStatus: returning active (subaccount ID present)');
+        log.debug('normalizePayoutStatus: returning active', { reason: 'subaccount ID present' });
         return 'active';
     }
 
     // If account already exists - this is actually a success case
     if (haystack.includes('exist') || haystack.includes('already')) {
-        console.warn('normalizePayoutStatus: returning active (already exists)');
+        log.debug('normalizePayoutStatus: returning active', { reason: 'already exists' });
         return 'active';
     }
 
     // Only return verification_required if there's an actual error message
     if (providerMessage && !isSuccess) {
-        console.warn('normalizePayoutStatus: returning failed (error message present)');
+        log.debug('normalizePayoutStatus: returning failed', { reason: 'error message present' });
         return 'failed';
     }
 
-    console.warn('normalizePayoutStatus: returning not_configured');
+    log.debug('normalizePayoutStatus: returning not_configured');
     return 'not_configured';
 }
 
@@ -304,7 +307,7 @@ export async function PATCH(request: Request) {
             split_value: HOSTED_CHECKOUT_FEE_PERCENTAGE,
         });
 
-        console.warn('Chapa subaccount response:', JSON.stringify(subaccount, null, 2));
+        log.info('Chapa subaccount response', { response: subaccount });
 
         const returnedSubaccountId = subaccount.data?.id?.trim();
         if (returnedSubaccountId) {
@@ -348,7 +351,7 @@ export async function PATCH(request: Request) {
         nextLastError = message;
     }
 
-    console.warn('Saving to database:', {
+    log.info('Saving to database', {
         restaurantId: context.restaurantId,
         nextBankCode,
         nextBankName,
@@ -379,7 +382,7 @@ export async function PATCH(request: Request) {
         .single();
 
     if (updateError || !updated) {
-        console.error('Database update error:', updateError);
+        log.error('Database update error', updateError);
         return apiError(
             'Failed to update payment settings',
             500,
@@ -389,7 +392,7 @@ export async function PATCH(request: Request) {
     }
 
     const updatedRecord = updated as unknown as RestaurantPaymentRecord;
-    console.warn('Database updated successfully. New values:', {
+    log.info('Database updated successfully', {
         chapa_subaccount_status: updatedRecord.chapa_subaccount_status,
         chapa_settlement_bank_code: updatedRecord.chapa_settlement_bank_code,
         chapa_settlement_account_name: updatedRecord.chapa_settlement_account_name,

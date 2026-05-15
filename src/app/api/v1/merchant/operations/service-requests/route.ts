@@ -7,6 +7,9 @@ import { resolveGuestContext } from '@/lib/security/guestContext';
 import { apiError, apiSuccess } from '@/lib/api/response';
 import { getAuthorizedRestaurantContext, getAuthenticatedUser } from '@/lib/api/authz';
 import { parseQuery } from '@/lib/api/validation';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('service-requests');
 
 const CreateServiceRequestSchema = z.object({
     guest_context: z.object({
@@ -134,10 +137,7 @@ export async function POST(request: NextRequest) {
                 .neq('status', 'available');
 
             if (tableStateError) {
-                console.warn(
-                    '[POST /api/service-requests] failed to promote table to bill_requested:',
-                    tableStateError.message
-                );
+                log.warn('failed to promote table to bill_requested', { message: tableStateError.message });
             }
         }
 
@@ -157,12 +157,12 @@ export async function POST(request: NextRequest) {
             },
         });
         if (auditError) {
-            console.warn('[POST /api/service-requests] audit insert failed:', auditError.message);
+            log.warn('audit insert failed', { message: auditError.message });
         }
 
         return NextResponse.json({ data }, { status: 201 });
     } catch (error) {
-        console.error('[POST /api/service-requests] failed:', error);
+        log.error('failed', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }

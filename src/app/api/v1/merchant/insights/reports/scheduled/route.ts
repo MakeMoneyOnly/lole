@@ -10,8 +10,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { createScheduledReport, getScheduledReports } from '@/lib/services/scheduledReportsService';
+import { logger } from '@/lib/logger';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
+
+const log = logger.child('merchant-insights/reports/scheduled');
 
 export async function GET(request: NextRequest) {
     try {
@@ -74,7 +77,7 @@ export async function GET(request: NextRequest) {
             data: reports,
         });
     } catch (error) {
-        console.error('[Scheduled Reports API] Error:', error);
+        log.error('Error', error);
         return NextResponse.json(
             { error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' } },
             { status: 500 }
@@ -210,7 +213,7 @@ export async function POST(request: NextRequest) {
             data: result.report,
         });
     } catch (error) {
-        console.error('[Scheduled Reports API] Error:', error);
+        log.error('Error', error);
         return NextResponse.json(
             { error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' } },
             { status: 500 }

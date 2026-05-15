@@ -7,6 +7,9 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('ScheduledReports');
 
 // =========================================================
 // Type Definitions
@@ -208,7 +211,7 @@ export async function getScheduledReports(
     const { data, error } = await query;
 
     if (error) {
-        console.error('[ScheduledReports] Failed to fetch:', error);
+        log.error('Failed to fetch scheduled reports', { error });
         return [];
     }
 
@@ -333,7 +336,7 @@ export async function getReportsDueForExecution(
         .lte('next_run_at', new Date().toISOString());
 
     if (error) {
-        console.error('[ScheduledReports] Failed to fetch due reports:', error);
+        log.error('Failed to fetch due reports', { error });
         return [];
     }
 
@@ -438,7 +441,7 @@ export async function getExecutionHistory(
         .limit(limit);
 
     if (error) {
-        console.error('[ScheduledReports] Failed to fetch history:', error);
+        log.error('Failed to fetch execution history', { error });
         return [];
     }
 
@@ -627,7 +630,7 @@ async function sendReportEmail(
     _fileUrl: string
 ): Promise<void> {
     // In production, integrate with Resend/SendGrid
-    console.warn(`[ScheduledReports] Would send email to ${report.recipient_emails.join(', ')}`);
+    log.warn('Would send email to recipients', { emails: report.recipient_emails });
 }
 
 async function getExecution(

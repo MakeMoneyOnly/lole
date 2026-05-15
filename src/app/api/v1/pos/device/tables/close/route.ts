@@ -16,6 +16,9 @@ import { isChapaConfigured, verifyChapaTransaction } from '@/lib/services/chapaS
 import { ensurePaymentSessionForRecordedPayment } from '@/lib/payments/payment-sessions';
 import { createloleEvent } from '@/lib/events/contracts';
 import { enqueueInternalJob } from '@/lib/events/runtime';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('close-table');
 
 const CloseTableSchema = z.object({
     table_id: z.string().uuid().optional(),
@@ -407,7 +410,7 @@ export async function POST(request: Request) {
                 }) as unknown as Record<string, unknown>,
                 deduplicationKey: `order-completed-${orderId}`,
             }).catch(err => {
-                console.error(`[close-table] Failed to queue job for order ${orderId}:`, err);
+                log.error(`Failed to queue job for order ${orderId}`, err);
                 return undefined;
             })
         );

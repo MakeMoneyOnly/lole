@@ -8,6 +8,9 @@
  */
 
 const CHAPA_BASE_URL = 'https://api.chapa.co/v1';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('Chapa');
 
 export interface ChapaInitializeParams {
     amount: number; // ETB amount
@@ -117,7 +120,7 @@ export async function listChapaBanks(): Promise<ChapaBankRecord[]> {
         throw new Error('CHAPA_SECRET_KEY is not configured');
     }
 
-    console.warn('Fetching banks from Chapa API...');
+    log.info('Fetching banks from Chapa API...');
 
     const response = await fetch(`${CHAPA_BASE_URL}/banks`, {
         method: 'GET',
@@ -133,7 +136,7 @@ export async function listChapaBanks(): Promise<ChapaBankRecord[]> {
         data?: Array<Record<string, unknown>>;
     };
 
-    console.warn('Chapa banks API response:', {
+    log.info('Chapa banks API response', {
         status: response.status,
         ok: response.ok,
         payloadStatus: payload.status,
@@ -147,7 +150,7 @@ export async function listChapaBanks(): Promise<ChapaBankRecord[]> {
     if (!response.ok || !Array.isArray(payload.data)) {
         const errorMsg =
             payload.message ?? `Failed to load Chapa banks (status: ${response.status})`;
-        console.error('Chapa banks API error:', errorMsg);
+        log.error('Chapa banks API error', null, { message: errorMsg });
         throw new Error(errorMsg);
     }
 
@@ -172,7 +175,7 @@ export async function listChapaBanks(): Promise<ChapaBankRecord[]> {
         .filter((bank): bank is ChapaBankRecord => bank !== null)
         .sort((left, right) => left.name.localeCompare(right.name));
 
-    console.warn(`Parsed ${banks.length} valid banks from Chapa response`);
+    log.info(`Parsed ${banks.length} valid banks from Chapa response`);
     return banks;
 }
 
@@ -188,7 +191,7 @@ export async function createChapaSubaccount(
         throw new Error('CHAPA_SECRET_KEY is not configured');
     }
 
-    console.warn('Creating Chapa subaccount with params:', {
+    log.info('Creating Chapa subaccount with params', {
         business_name: params.business_name,
         account_name: params.account_name,
         bank_code: params.bank_code,
@@ -207,7 +210,7 @@ export async function createChapaSubaccount(
 
     const data = (await response.json()) as ChapaSubaccountResponse;
 
-    console.warn('Chapa subaccount API response:', {
+    log.info('Chapa subaccount API response', {
         httpStatus: response.status,
         ok: response.ok,
         status: data.status,

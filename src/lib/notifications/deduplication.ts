@@ -18,6 +18,9 @@
 import { Redis } from '@upstash/redis';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { createHash } from 'crypto';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[deduplication]');
 
 // =========================================================
 // Deduplication Configuration
@@ -103,7 +106,7 @@ function getRedisClient(): Redis | null {
     const token = process.env.UPSTASH_REDIS_REST_TOKEN;
 
     if (!url || !token) {
-        console.warn('[deduplication] Redis credentials not configured, using database fallback');
+        log.warn('Redis credentials not configured, using database fallback');
         return null;
     }
 
@@ -114,7 +117,7 @@ function getRedisClient(): Redis | null {
         });
         return redisClient;
     } catch (error) {
-        console.error('[deduplication] Failed to initialize Redis client:', error);
+        log.error('Failed to initialize Redis client', error);
         return null;
     }
 }
@@ -241,7 +244,7 @@ async function checkDuplicateRedis(params: DedupeCheckParams): Promise<DedupeChe
             expiresIn: ttl > 0 ? ttl : undefined,
         };
     } catch (error) {
-        console.error('[deduplication] Redis error during duplicate check:', error);
+        log.error('Redis error during duplicate check', error);
         // Fallback to database on error
         return checkDuplicateDatabase(params);
     }
@@ -271,7 +274,7 @@ async function recordNotificationRedis(params: RecordNotificationParams): Promis
             ex: windowSeconds,
         });
     } catch (error) {
-        console.error('[deduplication] Redis error during record:', error);
+        log.error('Redis error during record', error);
         // Fallback to database on error
         await recordNotificationDatabase(params);
     }
@@ -311,7 +314,7 @@ async function checkDuplicateDatabase(params: DedupeCheckParams): Promise<Dedupe
             .maybeSingle();
 
         if (error) {
-            console.error('[deduplication] Database error during duplicate check:', error);
+            log.error('Database error during duplicate check', error);
             // On database error, allow the notification (fail open)
             return result;
         }
@@ -376,10 +379,10 @@ async function recordNotificationDatabase(params: RecordNotificationParams): Pro
         );
 
         if (error) {
-            console.error('[deduplication] Database error during record:', error);
+            log.error('Database error during record', error);
         }
     } catch (error) {
-        console.error('[deduplication] Unexpected database error during record:', error);
+        log.error('Unexpected database error during record', error);
     }
 }
 
@@ -476,7 +479,7 @@ export async function clearOldEntries(olderThanHours: number = 24): Promise<numb
 
             return deletedCount;
         } catch (error) {
-            console.error('[deduplication] Error during Redis cleanup:', error);
+            log.error('Error during Redis cleanup', error);
         }
     }
 
@@ -493,16 +496,16 @@ export async function clearOldEntries(olderThanHours: number = 24): Promise<numb
             .eq('metadata->>is_dedup_marker', 'true')
             .lt('created_at', olderThan);
 
-        if (error) {
-            console.error('[deduplication] Database cleanup error:', error);
-            return 0;
-        }
-
-        return Array.isArray(data) ? data.length : 0;
-    } catch (error) {
-        console.error('[deduplication] Unexpected cleanup error:', error);
+if (error) {
+        log.error('Database cleanup error', error);
         return 0;
     }
+
+    return Array.isArray(data) ? data.length : 0;
+} catch (error) {
+    log.error('Unexpected cleanup error', error);
+    return 0;
+}
 }
 
 /**
@@ -537,7 +540,7 @@ export async function getDeduplicationStats(): Promise<{
             keysCount,
         };
     } catch (error) {
-        console.error('[deduplication] Error getting stats:', error);
+        log.error('Error getting stats', error);
         return { redisAvailable: false };
     }
 }

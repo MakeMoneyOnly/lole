@@ -9,6 +9,9 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 import { publishEvent } from '@/lib/events/publisher';
 import { toGatewayLanEvent, type GatewayLanEventMessage } from '@/lib/gateway/local-events';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[delivery/aggregator]');
 
 // =========================================================
 // Type Definitions
@@ -209,7 +212,7 @@ export async function getActivePartners(
         .eq('is_active', true);
 
     if (error) {
-        console.error('[DeliveryAggregator] Failed to fetch partners:', error);
+        log.error('Failed to fetch partners', { error });
         return [];
     }
 
@@ -337,10 +340,10 @@ export async function receiveExternalOrder(
             )
             .single();
 
-        if (error) {
-            console.error('[DeliveryAggregator] Failed to create order:', error);
-            return { success: false, error: 'Failed to create order' };
-        }
+if (error) {
+        log.error('Failed to create order', { error });
+        return { success: false, error: 'Failed to create order' };
+    }
 
         // Check if auto-accept is enabled
         const partner = await db
@@ -415,7 +418,7 @@ export async function getPendingAggregatorOrders(
         .order('placed_at', { ascending: true });
 
     if (error) {
-        console.error('[DeliveryAggregator] Failed to fetch pending orders:', error);
+        log.error('Failed to fetch pending orders', { error });
         return [];
     }
 
@@ -607,7 +610,7 @@ export async function getMenuSyncHistory(
         .limit(limit);
 
     if (error) {
-        console.error('[DeliveryAggregator] Failed to fetch sync history:', error);
+        log.error('Failed to fetch sync history', { error });
         return [];
     }
 

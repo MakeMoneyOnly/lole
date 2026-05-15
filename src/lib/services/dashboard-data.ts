@@ -8,6 +8,9 @@ import {
     calculateLaborMetricsFromTimeEntries,
     getHourlyRateConfig,
 } from '@/lib/services/laborReportsService';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('Dashboard');
 
 // ============================================================================
 // Types
@@ -362,7 +365,7 @@ export async function getCommandCenterData(
             },
         };
     } catch (error) {
-        console.error('Error fetching command center data:', error);
+        log.error('Error fetching command center data', error);
         return null;
     }
 }
@@ -450,7 +453,7 @@ export async function getTablesPageData(): Promise<TablesPageData | null> {
             timeline_buckets,
         };
     } catch (error) {
-        console.error('Error fetching tables page data:', error);
+        log.error('Error fetching tables page data', error);
         return null;
     }
 }
@@ -537,7 +540,7 @@ export async function getOrdersPageData(
             })),
         };
     } catch (error) {
-        console.error('Error fetching orders page data:', error);
+        log.error('Error fetching orders page data', error);
         return null;
     }
 }
@@ -645,7 +648,7 @@ export async function getAnalyticsPageData(
 
         return { metrics };
     } catch (error) {
-        console.error('Error fetching analytics page data:', error);
+        log.error('Error fetching analytics page data', error);
         return null;
     }
 }

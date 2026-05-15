@@ -3,6 +3,7 @@
 import { staffRepository, StaffRow, StaffListOptions } from './repository';
 import { hashStaffPin } from './pin';
 import { STAFF_ROLES, StaffRole } from '@/types/status';
+import { logger } from '@/lib/logger';
 
 export interface CreateStaffInput {
     restaurantId: string;
@@ -39,8 +40,10 @@ export class StaffService {
 
         // Tenant isolation check
         if (staff && expectedRestaurantId && staff.restaurant_id !== expectedRestaurantId) {
-            console.error(
-                `[staff/service] Tenant isolation violation: Attempted to access staff ${id} from restaurant ${expectedRestaurantId}`
+            logger.error(
+                `Tenant isolation violation: Attempted to access staff ${id} from restaurant ${expectedRestaurantId}`,
+                undefined,
+                { source: '[staff/service]' }
             );
             return null;
         }
@@ -59,8 +62,10 @@ export class StaffService {
 
         // Tenant isolation check
         if (staff && expectedRestaurantId && staff.restaurant_id !== expectedRestaurantId) {
-            console.error(
-                `[staff/service] Tenant isolation violation: Attempted to access staff by user ${userId} from restaurant ${expectedRestaurantId}`
+            logger.error(
+                `Tenant isolation violation: Attempted to access staff by user ${userId} from restaurant ${expectedRestaurantId}`,
+                undefined,
+                { source: '[staff/service]' }
             );
             return null;
         }
@@ -168,8 +173,10 @@ export class StaffService {
 
         // Tenant isolation check
         if (staff && expectedRestaurantId && staff.restaurant_id !== expectedRestaurantId) {
-            console.error(
-                `[staff/service] Tenant isolation violation: PIN verification for staff ${staffId} from restaurant ${expectedRestaurantId}`
+            logger.error(
+                `Tenant isolation violation: PIN verification for staff ${staffId} from restaurant ${expectedRestaurantId}`,
+                undefined,
+                { source: '[staff/service]' }
             );
             return null;
         }

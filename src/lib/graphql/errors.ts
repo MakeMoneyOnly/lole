@@ -1,4 +1,7 @@
 import { GraphQLError } from 'graphql';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[graphql/errors]');
 
 /**
  * Standardized error codes for GraphQL resolvers
@@ -72,7 +75,7 @@ export function handleResolverError(error: unknown): ErrorResult {
 
     if (error instanceof Error) {
         // Log unexpected errors
-        console.error('Resolver error:', error);
+        log.error('Resolver error', error);
         return createErrorResult('INTERNAL_ERROR', 'An unexpected error occurred');
     }
 

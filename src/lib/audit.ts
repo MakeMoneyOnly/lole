@@ -14,6 +14,7 @@
 import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Json } from '@/types/database';
+import { logger } from '@/lib/logger';
 
 /**
  * Parameters for service role audit logging
@@ -53,7 +54,7 @@ function createAuditClient(): SupabaseClient<Database> {
 
     if (!supabaseUrl || !supabaseAnonKey) {
         // Return a minimal client that will fail gracefully
-        console.error('[AUDIT] Missing Supabase configuration for audit logging');
+        logger.error('[AUDIT] Missing Supabase configuration for audit logging');
         return createClient(supabaseUrl || 'https://placeholder.supabase.co', 'placeholder-key');
     }
 
@@ -118,14 +119,14 @@ export async function logServiceRoleAudit(
         });
 
         if (error) {
-            console.error('[AUDIT] Failed to write service role audit log:', error);
+            logger.error('[AUDIT] Failed to write service role audit log', error);
             return { error: error };
         }
 
         return { error: null };
     } catch (error) {
         // Log error but don't throw - audit failures should not affect main operations
-        console.error('[AUDIT] Exception in service role audit logging:', error);
+        logger.error('[AUDIT] Exception in service role audit logging', error);
         return { error: error as Error };
     }
 }

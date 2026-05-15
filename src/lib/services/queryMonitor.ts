@@ -10,6 +10,9 @@
  * - Integration with audit logging
  */
 
+import { logger } from '@/lib/logger';
+const log = logger.child('QueryMonitor');
+
 /**
  * Configuration for query monitoring
  */
@@ -63,7 +66,6 @@ const DEFAULT_CONFIG: QueryMonitorConfig = {
 class QueryMonitorService {
     private config: QueryMonitorConfig;
     private stats: Map<string, QueryStats> = new Map();
-    private isDevelopment = process.env.NODE_ENV === 'development';
 
     constructor(config: Partial<QueryMonitorConfig> = {}) {
         this.config = { ...DEFAULT_CONFIG, ...config };
@@ -227,21 +229,12 @@ class QueryMonitorService {
             ...(error && { error: error.message }),
         };
 
-        if (this.isDevelopment) {
-            const prefix = isSlow ? '🐢' : error ? '❌' : '✓';
-            console.warn(
-                `[QueryMonitor] ${prefix} ${queryName}: ${durationMs.toFixed(2)}ms`,
-                logData
-            );
+        if (error) {
+            log.error(`Query failed: ${queryName}`, error, logData);
+        } else if (isSlow) {
+            log.warn(`Slow query: ${queryName}`, logData);
         } else {
-            // In production, use structured logging
-            console.warn(
-                JSON.stringify({
-                    level: logLevel,
-                    message: `Query executed: ${queryName}`,
-                    ...logData,
-                })
-            );
+            log.info(`Query executed: ${queryName}`, logData);
         }
     }
 
@@ -253,13 +246,7 @@ class QueryMonitorService {
         durationMs: number,
         metadata?: Record<string, unknown>
     ): void {
-        // Log to console in development
-        if (this.isDevelopment) {
-            console.warn(
-                `[QueryMonitor] SLOW QUERY ALERT: ${queryName} took ${durationMs.toFixed(2)}ms`,
-                metadata
-            );
-        }
+        log.warn(`SLOW QUERY ALERT: ${queryName} took ${durationMs.toFixed(2)}ms`, metadata);
 
         // In production, this could:
         // 1. Send to Sentry

@@ -13,6 +13,9 @@ import {
     runSilentCallbackDetection,
     getWebhookHealthStats,
 } from '@/lib/monitoring/payment-webhook-monitor';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('silent-callback-check');
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
@@ -43,12 +46,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
         // Log for observability
         if (detectionResult.alertsSent > 0) {
-            console.warn('[silent-callback-check] Alerts sent:', {
+            log.warn('Alerts sent', {
                 count: detectionResult.alertsSent,
                 silentCallbacks: detectionResult.silentCallbacks.length,
             });
         } else {
-            console.warn('[silent-callback-check] Check complete:', {
+            log.warn('Check complete', {
                 pendingSessions: healthStats.pendingSessions,
                 recentCallbacks: healthStats.recentCallbacks,
             });
@@ -56,7 +59,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
         return NextResponse.json(response);
     } catch (error) {
-        console.error('[silent-callback-check] Error:', error);
+        log.error('Error', error);
         return NextResponse.json(
             {
                 error: {

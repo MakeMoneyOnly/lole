@@ -93,7 +93,7 @@ async function recalculatePositions(supabase: any, restaurantId: string): Promis
         .order('position', { ascending: true });
 
     if (error) {
-        console.error('[waitlist] Error fetching entries for position recalculation:', error);
+        logger.error('[waitlist] Error fetching entries for position recalculation', error);
         return;
     }
 
@@ -322,7 +322,7 @@ export async function notifyGuest(waitlistId: string): Promise<NotifyResult> {
     });
 
     if (dedupeResult.isDuplicate) {
-        console.warn('[waitlist] Duplicate notification detected, skipping:', waitlistId);
+        logger.warn('[waitlist] Duplicate notification detected, skipping', { waitlistId });
         // Still update the status to notified even if it's a duplicate
         await updateStatusInternal(db, waitlistId, 'notified');
 

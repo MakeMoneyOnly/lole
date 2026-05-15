@@ -15,6 +15,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[EOD]');
 
 const EODReportJobSchema = z.object({
     restaurant_id: z.string().uuid().optional(),
@@ -247,7 +250,7 @@ async function getActiveRestaurants(): Promise<string[]> {
     const { data, error } = await admin.from('restaurants').select('id').eq('status', 'active');
 
     if (error) {
-        console.error('[EOD] Failed to fetch restaurants:', error);
+        log.error('Failed to fetch restaurants', error);
         return [];
     }
 

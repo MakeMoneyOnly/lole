@@ -8,6 +8,8 @@
  * Called from instrumentation.ts or the root layout at app initialization.
  */
 
+import { logger } from '@/lib/logger';
+
 interface SecretCheck {
     key: string;
     minLength: number;
@@ -235,12 +237,10 @@ export function validateSecrets(
  */
 export function assertSecretsValid(envOverrides?: Record<string, string | undefined>): void {
     const result = validateSecrets(envOverrides);
+    const log = logger.child('[Startup]');
 
     if (result.warnings.length > 0) {
-        console.warn('[Startup] Secret validation warnings:');
-        for (const warning of result.warnings) {
-            console.warn('  - ' + warning);
-        }
+        log.warn('Secret validation warnings', { warnings: result.warnings });
     }
 
     if (!result.valid) {

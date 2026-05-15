@@ -9,6 +9,9 @@ import { createloleEvent } from '@/lib/events/contracts';
 import { publishEvent } from '@/lib/events/runtime';
 import { redisRateLimiters } from '@/lib/security';
 import { monitoredQuery } from '@/lib/services/queryMonitor';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('order-status');
 
 const UpdateOrderStatusSchema = z.object({
     status: z.enum([
@@ -250,7 +253,7 @@ export async function PATCH(
             }),
             smsPromise,
         ]).catch(err => {
-            console.warn('[PATCH /api/orders/:id/status] background write failed:', err);
+            log.warn('background write failed', { error: err });
         });
 
         return response;

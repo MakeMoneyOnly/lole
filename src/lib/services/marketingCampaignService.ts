@@ -8,6 +8,9 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('MarketingCampaign');
 
 // =========================================================
 // Type Definitions
@@ -205,10 +208,10 @@ export async function createCampaign(
             )
             .single();
 
-        if (error) {
-            console.error('[MarketingCampaign] Failed to create campaign:', error);
-            return { success: false, error: 'Failed to create campaign' };
-        }
+if (error) {
+             log.error('Failed to create campaign', error);
+             return { success: false, error: 'Failed to create campaign' };
+         }
 
         return { success: true, campaign: campaign as unknown as MarketingCampaign };
     } catch (error) {
@@ -257,10 +260,10 @@ export async function getCampaigns(
 
     const { data, error } = await query;
 
-    if (error) {
-        console.error('[MarketingCampaign] Failed to fetch campaigns:', error);
-        return [];
-    }
+if (error) {
+         log.error('Failed to fetch campaigns', error);
+         return [];
+     }
 
     return (data ?? []) as MarketingCampaign[];
 }
@@ -283,10 +286,10 @@ export async function getCampaign(
         .eq('restaurant_id', restaurantId)
         .maybeSingle();
 
-    if (error) {
-        console.error('[MarketingCampaign] Failed to fetch campaign:', error);
-        return null;
-    }
+if (error) {
+         log.error('Failed to fetch campaign', error);
+         return null;
+     }
 
     return data as MarketingCampaign | null;
 }
@@ -392,10 +395,10 @@ export async function getCampaignTargetGuests(
 
         const { data: guests, error } = await query.limit(10000);
 
-        if (error) {
-            console.error('[MarketingCampaign] Failed to get target guests:', error);
-            return [];
-        }
+if (error) {
+         log.error('Failed to get target guests', error);
+         return [];
+     }
 
         // Filter out unsubscribed
         const unsubscribedGuests = await getUnsubscribedGuests(supabase, restaurantId);
@@ -408,10 +411,10 @@ export async function getCampaignTargetGuests(
             email: (g.metadata?.email as string | null) ?? null,
             phone: (g.metadata?.phone as string | null) ?? null,
         }));
-    } catch (error) {
-        console.error('[MarketingCampaign] Error getting target guests:', error);
-        return [];
-    }
+} catch (error) {
+         log.error('Error getting target guests', error);
+         return [];
+     }
 }
 
 /**
@@ -532,16 +535,16 @@ export async function getCampaignAnalytics(
             p_campaign_id: campaignId,
         });
 
-        if (error) {
-            console.error('[MarketingCampaign] Failed to get analytics:', error);
-            return null;
-        }
+if (error) {
+         log.error('Failed to get analytics', error);
+         return null;
+     }
 
         return data as CampaignAnalytics | null;
-    } catch (error) {
-        console.error('[MarketingCampaign] Error getting analytics:', error);
-        return null;
-    }
+} catch (error) {
+         log.error('Error getting analytics', error);
+         return null;
+     }
 }
 
 /**
@@ -669,10 +672,10 @@ export async function getEmailTemplates(
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-    if (error) {
-        console.error('[MarketingCampaign] Failed to fetch templates:', error);
-        return [];
-    }
+if (error) {
+         log.error('Failed to fetch templates', error);
+         return [];
+     }
 
     return (data ?? []) as EmailTemplate[];
 }

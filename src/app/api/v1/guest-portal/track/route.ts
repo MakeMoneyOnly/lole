@@ -12,6 +12,9 @@ import { z } from 'zod';
 import { apiError, apiSuccess } from '@/lib/api/response';
 import { verifySignedQRCode } from '@/lib/security/hmac';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[guest-portal/track]');
 
 const TrackQuerySchema = z.object({
     slug: z.string().min(1).max(128),
@@ -84,7 +87,7 @@ export async function GET(request: NextRequest) {
         .maybeSingle();
 
     if (orderError) {
-        console.error('[GET /api/v1/guest-portal/track] order fetch failed:', orderError.message);
+        log.error('Order fetch failed', orderError);
         return apiError('Failed to fetch order', 500, 'ORDER_FETCH_FAILED');
     }
     if (!order) {
@@ -102,7 +105,7 @@ export async function GET(request: NextRequest) {
         .order('created_at', { ascending: true });
 
     if (kdsError) {
-        console.warn('[GET /api/v1/guest-portal/track] kds_order_items fetch warning:', kdsError.message);
+        log.warn('kds_order_items fetch warning', { error: kdsError });
     }
 
     return apiSuccess({

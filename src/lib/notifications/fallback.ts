@@ -15,7 +15,10 @@ import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { sendSms, type SmsSendResult } from './sms';
 import { sendPushNotification, getGuestPushTokens } from './push';
 import { enqueueNotification, type NotificationChannel } from './queue';
+import { logger } from '@/lib/logger';
 import type { SupabaseClient } from '@supabase/supabase-js';
+
+const log = logger.child('[fallback]');
 
 // =========================================================
 // Types and Interfaces
@@ -167,12 +170,12 @@ export async function sendWithFallback(
 
         if (smsResult.success) {
             smsSuccess = true;
-            console.warn('[fallback] SMS sent successfully on attempt', smsAttempts);
+            log.info('SMS sent successfully on attempt', { attempt: smsAttempts });
             break;
         }
 
         smsError = smsResult.error || 'Unknown SMS error';
-        console.warn(`[fallback] SMS attempt ${smsAttempts} failed:`, smsError);
+        log.warn('SMS attempt failed', { attempt: smsAttempts, error: smsError });
 
         // Wait before retry (simple delay, normally handled by queue)
         if (smsAttempts < maxSmsRetries) {
@@ -204,7 +207,7 @@ export async function sendWithFallback(
     }
 
     // Step 2: SMS failed, try push as fallback
-    console.warn('[fallback] SMS failed after', smsAttempts, 'attempts, trying push');
+    log.warn('SMS failed after attempts, trying push', { attempts: smsAttempts });
 
     let pushTokenToUse = pushToken;
 
@@ -263,7 +266,7 @@ export async function sendWithFallback(
     }
 
     // No push token available, queue for later retry
-    console.warn('[fallback] No push token available, queuing fallback notification');
+    log.warn('No push token available, queuing fallback notification');
 
     try {
         await enqueueNotification({
@@ -286,7 +289,7 @@ export async function sendWithFallback(
             },
         });
     } catch (queueError) {
-        console.error('[fallback] Failed to queue fallback notification:', queueError);
+        log.error('Failed to queue fallback notification', queueError);
     }
 
     return {
@@ -538,9 +541,9 @@ export async function processSmsFailuresForPush(limit: number = 50): Promise<num
                 .eq('id', notification.id);
 
             queued++;
-        } catch (err) {
-            console.error('[fallback] Error processing SMS failure:', err);
-        }
+} catch (err) {
+        log.error('Error processing SMS failure', err);
+    }
     }
 
     return queued;
@@ -590,7 +593,7 @@ async function logNotificationToQueue(
         );
     } catch (error) {
         // Log but don't fail the main operation
-        console.error('[fallback] Failed to log notification:', error);
+        log.error('Failed to log notification', error);
     }
 }
 

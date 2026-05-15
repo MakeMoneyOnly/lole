@@ -11,6 +11,9 @@
 
 import { createClient } from '@/lib/supabase/server';
 import type { Database } from '@/types/database';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[audit/agency]');
 
 type AuditLogInsert = Database['public']['Tables']['audit_logs']['Insert'];
 type Json = Database['public']['Tables']['audit_logs']['Row']['old_value'];
@@ -108,12 +111,12 @@ export async function logAgencyAction(entry: AgencyAuditEntry): Promise<void> {
 
         const { error } = await supabase.from('audit_logs').insert(auditLog);
 
-        if (error) {
-            console.error('[AgencyAuditLogger] Database error:', error);
-            // Don't throw - audit logging should not break the main operation
-        }
+if (error) {
+        log.error('Database error', { error });
+        // Don't throw - audit logging should not break the main operation
+    }
     } catch (error) {
-        console.error('[AgencyAuditLogger] Failed to log agency action:', error);
+        log.error('Failed to log agency action', { error });
         // Don't throw - audit logging should not break the main operation
     }
 }
@@ -361,13 +364,13 @@ export async function queryAgencyAuditLogs(params: {
         const { data, error, count } = await query;
 
         if (error) {
-            console.error('[AgencyAuditLogger] Query error:', error);
+            log.error('Query error', { error });
             return { logs: [], total: 0 };
         }
 
         return { logs: data ?? [], total: count ?? 0 };
     } catch (error) {
-        console.error('[AgencyAuditLogger] Failed to query audit logs:', error);
+        log.error('Failed to query audit logs', { error });
         return { logs: [], total: 0 };
     }
 }

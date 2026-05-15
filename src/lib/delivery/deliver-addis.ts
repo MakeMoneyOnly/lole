@@ -15,6 +15,9 @@
 import { createHmac, createHash } from 'crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[delivery/deliver-addis]');
 
 // =========================================================
 // Type Definitions
@@ -122,7 +125,7 @@ export async function getDeliverAddisConfig(
         .maybeSingle();
 
     if (error || !partner) {
-        console.error('[DeliverAddis] Failed to get partner config:', error);
+        log.error('Failed to get partner config', { error });
         return null;
     }
 
@@ -208,7 +211,7 @@ export async function createOrder(
         };
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.error('[DeliverAddis] createOrder error:', errorMessage);
+        log.error('createOrder error', { message: errorMessage });
         return {
             success: false,
             partner_order_id: order.partner_order_id,
@@ -253,7 +256,7 @@ export async function updateOrderStatus(
         return { success: true };
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.error('[DeliverAddis] updateOrderStatus error:', errorMessage);
+        log.error('updateOrderStatus error', { message: errorMessage });
         return { success: false, error: errorMessage };
     }
 }
@@ -322,7 +325,7 @@ export async function getDeliveryFee(
         };
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.error('[DeliverAddis] getDeliveryFee error:', errorMessage);
+        log.error('getDeliveryFee error', { message: errorMessage });
         return {
             success: false,
             distance_km: 0,
@@ -373,7 +376,7 @@ export async function sendStatusWebhook(
         return { success: true };
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.error('[DeliverAddis] sendStatusWebhook error:', errorMessage);
+        log.error('sendStatusWebhook error', { message: errorMessage });
         return { success: false, error: errorMessage };
     }
 }
@@ -428,7 +431,7 @@ export function parseWebhookEvent(rawBody: string): {
             data: payload,
         };
     } catch {
-        console.error('[DeliverAddis] Failed to parse webhook:', rawBody);
+        log.error('Failed to parse webhook', { rawBody });
         return null;
     }
 }

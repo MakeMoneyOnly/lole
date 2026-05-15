@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import { logger } from '@/lib/logger';
 import type {
     DeviceProfile,
     HardwareDeviceMetadata,
@@ -56,7 +57,9 @@ export function useDevices(initialData?: HardwareDevice[]) {
             const freshDevices = (payload?.data?.devices ?? []) as HardwareDevice[];
             setDevices(freshDevices);
         } catch (fetchError) {
-            console.error(fetchError);
+            logger.error('Failed to fetch devices', fetchError, {
+                source: '[features/merchant/hooks/useDevices]',
+            });
             setError(fetchError instanceof Error ? fetchError.message : 'Failed to fetch devices.');
         } finally {
             setLoading(false);

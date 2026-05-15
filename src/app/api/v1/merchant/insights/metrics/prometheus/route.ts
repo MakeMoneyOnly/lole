@@ -12,6 +12,9 @@
 
 import { NextResponse } from 'next/server';
 import { getPrometheusMetrics, getPrometheusContentType } from '@/lib/monitoring/prometheus';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('merchant-insights/metrics');
 
 /**
  * GET /api/metrics/prometheus
@@ -42,7 +45,7 @@ export async function GET(): Promise<NextResponse> {
         });
     } catch (error) {
         // Log error but return empty metrics to avoid breaking scrapers
-        console.error('[PrometheusMetrics] Error generating metrics:', error);
+        log.error('Error generating metrics', error);
 
         return new NextResponse('# Error generating metrics\n# Please check application logs\n', {
             status: 500,

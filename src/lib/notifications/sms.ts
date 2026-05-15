@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger';
+
 type SmsProvider = 'africas_talking' | 'log';
 
 export interface SmsSendResult {
@@ -146,7 +148,8 @@ export async function sendSms(toPhone: string, message: string): Promise<SmsSend
         return sendWithAfricasTalking(normalizedPhone, message);
     }
 
-    console.warn('[SMS:log]', { toPhone: normalizedPhone, message });
+    const log = logger.child('[sms]');
+    log.warn('[SMS:log]', { toPhone: normalizedPhone, message });
     return { success: true, provider: 'log' };
 }
 

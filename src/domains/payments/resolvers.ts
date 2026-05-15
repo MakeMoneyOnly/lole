@@ -8,6 +8,7 @@ import { validateInput, InitiatePaymentInputSchema } from '@/lib/validators/grap
 import { paymentsRepository } from './repository';
 import { paymentsService } from './service';
 import { PaymentStatus } from './repository';
+import { logger } from '@/lib/logger';
 
 export const paymentsResolvers = {
     Query: {
@@ -243,15 +244,17 @@ export const paymentsResolvers = {
             // Fetch payment
             const payment = await paymentsRepository.getPayment(reference.id);
 
-            // Tenant isolation
-            if (payment && authContext.user?.restaurantId) {
-                if (payment.restaurant_id !== authContext.user.restaurantId) {
-                    console.error(
-                        `[payments/resolvers] Tenant isolation violation: User ${authContext.user.id} attempted to access payment ${reference.id}`
-                    );
-                    return null;
-                }
-            }
+// Tenant isolation
+             if (payment && authContext.user?.restaurantId) {
+                 if (payment.restaurant_id !== authContext.user.restaurantId) {
+                     logger.error(
+                         `[payments/resolvers] Tenant isolation violation: User ${authContext.user.id} attempted to access payment ${reference.id}`,
+                         undefined,
+                         { source: '[payments/resolvers]' }
+                     );
+                     return null;
+                 }
+             }
 
             return payment;
         },

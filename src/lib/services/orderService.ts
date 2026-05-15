@@ -13,6 +13,9 @@ import {
     insertOrder,
     fetchItemsForValidation,
 } from '@/lib/supabase/queries';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('OrderService');
 
 // Type aliases
 type Tables = Database['public']['Tables'];
@@ -136,7 +139,7 @@ export async function checkRateLimit(
 
     if (error) {
         // Fail open - allow order if we can't check rate limit
-        console.error('[RateLimit] Failed to check:', error);
+        log.error('Failed to check rate limit', error);
         return { allowed: true };
     }
 
@@ -160,7 +163,7 @@ export async function checkDuplicateOrder(
     const { data, error } = await getOrderByIdempotencyKey(supabase, idempotencyKey);
 
     if (error) {
-        console.error('[OrderService] Failed to check duplicate:', error);
+        log.error('Failed to check duplicate order', error);
         return null;
     }
 
@@ -249,7 +252,7 @@ export async function createOrder(
     const { data: order, error } = await insertOrder(supabase, orderInsert);
 
     if (error || !order) {
-        console.error('[OrderService] Failed to create order:', error);
+        log.error('Failed to create order', error);
         return { success: false, error: error?.message || 'Failed to create order' };
     }
 

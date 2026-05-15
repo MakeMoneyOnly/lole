@@ -11,6 +11,9 @@
 
 import { useEffect, useCallback, useRef } from 'react';
 import { getSupabaseClient } from '@/lib/supabase/client';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('SessionRefresh');
 
 /**
  * Configuration options for session refresh behavior
@@ -105,9 +108,9 @@ export function useSessionRefresh(config: SessionRefreshConfig = {}) {
                 timeUntilExpiry,
             };
         } catch (error) {
-            console.error('[SessionRefresh] Error getting session info:', error);
-            return null;
-        }
+        log.error('Error getting session info', error);
+        return null;
+    }
     }, [supabase]);
 
     /**
@@ -127,7 +130,7 @@ export function useSessionRefresh(config: SessionRefreshConfig = {}) {
             } = await supabase.auth.refreshSession();
 
             if (error) {
-                console.error('[SessionRefresh] Refresh failed:', error);
+                log.error('Refresh failed', error);
                 onError?.(new Error(error.message));
                 return false;
             }
@@ -143,7 +146,7 @@ export function useSessionRefresh(config: SessionRefreshConfig = {}) {
             return false;
         } catch (error) {
             const err = error instanceof Error ? error : new Error('Unknown refresh error');
-            console.error('[SessionRefresh] Refresh error:', err);
+            log.error('Refresh error', err);
             onError?.(err);
             return false;
         } finally {
@@ -165,17 +168,16 @@ export function useSessionRefresh(config: SessionRefreshConfig = {}) {
 
         if (!sessionInfo.isValid) {
             // Session has already expired
-            console.warn('[SessionRefresh] Session has expired');
+            log.warn('Session has expired');
             onExpired?.();
             return;
         }
 
         // Refresh if session is about to expire
         if (sessionInfo.timeUntilExpiry <= refreshThresholdSeconds) {
-            console.warn(
-                '[SessionRefresh] Session expiring soon, refreshing...',
-                `Time until expiry: ${sessionInfo.timeUntilExpiry}s`
-            );
+            log.warn('Session expiring soon, refreshing...', {
+                timeUntilExpiry: sessionInfo.timeUntilExpiry,
+            });
             await refreshSession();
         }
     }, [getSessionInfo, refreshSession, refreshThresholdSeconds, onExpired]);

@@ -15,6 +15,9 @@
 import { createHmac, createHash } from 'crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[delivery/beu]');
 
 // =========================================================
 // Type Definitions
@@ -122,7 +125,7 @@ export async function getBEUConfig(
         .maybeSingle();
 
     if (error || !partner) {
-        console.error('[BEU] Failed to get partner config:', error);
+        log.error('Failed to get partner config', { error });
         return null;
     }
 
@@ -209,7 +212,7 @@ export async function createOrder(config: BEUConfig, order: BEUOrder): Promise<B
         };
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.error('[BEU] createOrder error:', errorMessage);
+        log.error('createOrder error', { message: errorMessage });
         return {
             success: false,
             partner_order_id: order.partner_order_id,

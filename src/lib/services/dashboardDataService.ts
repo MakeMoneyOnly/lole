@@ -13,6 +13,9 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('DashboardData');
 
 // ============================================================================
 // Types
@@ -635,13 +638,13 @@ export async function getTablesPageData(): Promise<TablesPageData | null> {
         .eq('restaurant_id', restaurantId)
         .order('table_number', { ascending: true });
 
-    if (error) {
-        console.error('Failed to fetch tables:', error);
-        return {
-            tables: [],
-            restaurant_id: restaurantId,
-        };
-    }
+if (error) {
+         log.error('Failed to fetch tables', error);
+         return {
+             tables: [],
+             restaurant_id: restaurantId,
+         };
+     }
 
     return {
         tables: (data ?? []) as TableSummary[],
@@ -672,19 +675,19 @@ export async function getAnalyticsPageData(
         .eq('restaurant_id', restaurantId)
         .gte('created_at', sinceIso);
 
-    if (error) {
-        console.error('Failed to fetch analytics data:', error);
-        return {
-            summary: {
-                total_revenue: 0,
-                total_orders: 0,
-                avg_order_value: 0,
-                peak_hour: null,
-            },
-            chart_data: [],
-            restaurant_id: restaurantId,
-        };
-    }
+if (error) {
+         log.error('Failed to fetch analytics data', error);
+         return {
+             summary: {
+                 total_revenue: 0,
+                 total_orders: 0,
+                 avg_order_value: 0,
+                 peak_hour: null,
+             },
+             chart_data: [],
+             restaurant_id: restaurantId,
+         };
+     }
 
     const totalRevenue = orders?.reduce((sum, o) => sum + Number(o.total_price ?? 0), 0) ?? 0;
     const totalOrders = orders?.length ?? 0;
@@ -753,13 +756,13 @@ export async function getMenuPageData(): Promise<MenuPageData | null> {
         .eq('restaurant_id', restaurantId)
         .order('order_index');
 
-    if (error) {
-        console.error('Failed to fetch menu:', error);
-        return {
-            categories: [],
-            restaurant_id: restaurantId,
-        };
-    }
+if (error) {
+         log.error('Failed to fetch menu', error);
+         return {
+             categories: [],
+             restaurant_id: restaurantId,
+         };
+     }
 
     return {
         categories: (data ?? []) as CategoryWithItems[],
@@ -790,14 +793,14 @@ export async function getGuestsPageData(limit: number = 100): Promise<GuestsPage
         .order('last_seen_at', { ascending: false })
         .limit(limit);
 
-    if (error) {
-        console.error('Failed to fetch guests:', error);
-        return {
-            guests: [],
-            total_count: 0,
-            restaurant_id: restaurantId,
-        };
-    }
+if (error) {
+         log.error('Failed to fetch guests', error);
+         return {
+             guests: [],
+             total_count: 0,
+             restaurant_id: restaurantId,
+         };
+     }
 
     return {
         guests: (data ?? []) as unknown as GuestSummary[],

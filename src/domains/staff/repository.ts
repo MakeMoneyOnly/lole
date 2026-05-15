@@ -1,6 +1,7 @@
 // Staff Domain - Repository Layer
 // Database access layer - Supabase queries only, no business logic
 import { Database } from '@/types/database';
+import { logger } from '@/lib/logger';
 import {
     STAFF_LIST_COLUMNS,
     STAFF_DETAIL_COLUMNS,
@@ -30,7 +31,7 @@ export class StaffRepository {
             .maybeSingle();
 
         if (error) {
-            console.error('[staff/repository] Error fetching staff member:', error);
+            logger.error('Error fetching staff member', error, { source: '[staff/repository]' });
             throw new Error(error.message);
         }
 
@@ -48,7 +49,7 @@ export class StaffRepository {
             .maybeSingle();
 
         if (error) {
-            console.error('[staff/repository] Error fetching staff by user ID:', error);
+            logger.error('Error fetching staff by user ID', error, { source: '[staff/repository]' });
             throw new Error(error.message);
         }
 
@@ -80,7 +81,7 @@ export class StaffRepository {
         const { data, error } = await query;
 
         if (error) {
-            console.error('[staff/repository] Error fetching staff list:', error);
+            logger.error('Error fetching staff list', error, { source: '[staff/repository]' });
             throw new Error(error.message);
         }
 
@@ -116,7 +117,7 @@ export class StaffRepository {
             .single();
 
         if (error) {
-            console.error('[staff/repository] Error creating staff member:', error);
+            logger.error('Error creating staff member', error, { source: '[staff/repository]' });
             throw new Error(error.message);
         }
 
@@ -148,7 +149,7 @@ export class StaffRepository {
             .single();
 
         if (error) {
-            console.error('[staff/repository] Error updating staff member:', error);
+            logger.error('Error updating staff member', error, { source: '[staff/repository]' });
             throw new Error(error.message);
         }
 
@@ -170,7 +171,7 @@ export class StaffRepository {
             .single();
 
         if (error) {
-            console.error('[staff/repository] Error deactivating staff member:', error);
+            logger.error('Error deactivating staff member', error, { source: '[staff/repository]' });
             throw new Error(error.message);
         }
 
@@ -190,7 +191,7 @@ export class StaffRepository {
             .maybeSingle();
 
         if (error) {
-            console.error('[staff/repository] Error verifying PIN:', error);
+            logger.error('Error verifying PIN', error, { source: '[staff/repository]' });
             throw new Error(error.message);
         }
 
@@ -216,7 +217,7 @@ export class StaffRepository {
             .in('id', ids);
 
         if (error) {
-            console.error('[staff/repository] Error fetching staff by IDs:', error);
+            logger.error('Error fetching staff by IDs', error, { source: '[staff/repository]' });
             throw new Error(error.message);
         }
 

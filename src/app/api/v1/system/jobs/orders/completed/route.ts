@@ -14,6 +14,9 @@ import { createloleEvent } from '@/lib/events/contracts';
 import { publishEvent } from '@/lib/events/runtime';
 import { accrueLoyaltyPointsForCompletedOrder } from '@/lib/services/guestLoyaltyService';
 import { getERCAService } from '@/lib/fiscal/erca-service';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[jobs]');
 
 const OrderCompletedEventSchema = z.object({
     order_id: z.string().uuid(),
@@ -80,7 +83,7 @@ async function submitERCAForOrder(orderId: string): Promise<{
         };
     } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown ERCA error';
-        console.error(`[jobs] ERCA submission failed for order ${orderId}:`, message);
+        log.error(`ERCA submission failed for order ${orderId}`, undefined, { message });
         return { success: false, error: message };
     }
 }
@@ -144,7 +147,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
 
     await publishEvent(completionEvent).catch(err => {
-        console.error(`[jobs] Failed to publish order.completed event for ${order_id}:`, err);
+        log.error(`Failed to publish order.completed event for ${order_id}`, err);
     });
 
     return NextResponse.json({

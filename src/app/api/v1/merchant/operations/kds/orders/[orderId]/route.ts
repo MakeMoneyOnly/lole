@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 
 const UpdateKDSStatusSchema = z.object({
     status: z.enum(['acknowledged', 'preparing', 'ready']),
@@ -25,6 +26,7 @@ export async function PATCH(
     request: NextRequest,
     context: { params: Promise<{ orderId: string }> }
 ) {
+    const log = logger.child('kds/orders');
     const { orderId } = await context.params;
 
     try {
@@ -126,12 +128,12 @@ export async function PATCH(
         });
 
         if (auditError) {
-            console.warn('[PATCH /api/kds/orders/:id] audit insert failed:', auditError.message);
+            log.warn('Audit insert failed', { message: auditError.message });
         }
 
         return NextResponse.json({ data: updatedOrder }, { status: 200 });
     } catch (error) {
-        console.error('[PATCH /api/kds/orders/:id] failed:', error);
+        log.error('Request failed', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }

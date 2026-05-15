@@ -1,5 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Tables } from '@/types/database';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[happy-hour]');
 
 /**
  * Happy hour schedule type definition
@@ -52,7 +55,7 @@ export async function getActiveHappyHour(
         .limit(10);
 
     if (error || !schedules) {
-        console.error('Failed to fetch happy hour schedules:', error);
+        log.error('Failed to fetch happy hour schedules', error);
         return null;
     }
 

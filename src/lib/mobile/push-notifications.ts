@@ -1,4 +1,7 @@
 import { isCapacitorNativeRuntime } from '@/lib/mobile/capacitor';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('PushNotifications');
 
 export type PushNotificationType =
     | 'order.new'
@@ -88,7 +91,7 @@ export async function registerForPushNotifications(): Promise<{
 
         plugin.addListener('registrationError', (error: unknown) => {
             const e = error as { error: string };
-            console.error('[PushNotifications] Registration error:', e.error);
+            log.error('Registration error', undefined, { error: e.error });
         });
 
         plugin.addListener('pushNotificationReceived', (notification: unknown) => {
@@ -100,7 +103,7 @@ export async function registerForPushNotifications(): Promise<{
             permission: 'granted',
         };
     } catch (error) {
-        console.error('[PushNotifications] Registration failed:', error);
+        log.error('Registration failed', error);
         return { token: null, permission: 'denied' };
     }
 }
@@ -125,7 +128,7 @@ async function sendTokenToBackend(token: string): Promise<void> {
             }),
         });
     } catch {
-        console.error('[PushNotifications] Failed to send token to backend.');
+        log.error('Failed to send token to backend');
     }
 }
 

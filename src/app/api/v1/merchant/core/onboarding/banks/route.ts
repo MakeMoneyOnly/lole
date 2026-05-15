@@ -1,6 +1,9 @@
 import { apiError, apiSuccess } from '@/lib/api/response';
 import { createClient } from '@/lib/supabase/server';
 import { listChapaBanks, isChapaConfigured } from '@/lib/services/chapaService';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('merchant-core-onboarding/banks');
 
 export async function GET() {
     const supabase = await createClient();
@@ -15,7 +18,7 @@ export async function GET() {
 
     // Check if Chapa is configured
     if (!isChapaConfigured()) {
-        console.warn('Chapa is not configured - CHAPA_SECRET_KEY missing or invalid');
+        log.warn('Chapa is not configured', { reason: 'CHAPA_SECRET_KEY missing or invalid' });
         return apiSuccess({
             banks: [],
             directory_unavailable: true,
@@ -25,10 +28,10 @@ export async function GET() {
 
     try {
         const banks = await listChapaBanks();
-        console.warn(`Successfully fetched ${banks.length} banks from Chapa`);
+        log.info('Successfully fetched banks from Chapa', { count: banks.length });
         return apiSuccess({ banks });
     } catch (error) {
-        console.error('Failed to load settlement banks from Chapa:', error);
+        log.error('Failed to load settlement banks from Chapa', error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return apiSuccess({
             banks: [],

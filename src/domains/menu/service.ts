@@ -5,6 +5,7 @@
  */
 
 import { menuRepository } from './repository';
+import { logger } from '@/lib/logger';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -92,7 +93,7 @@ async function setItemAvailability(
 ): Promise<Record<string, unknown> | null> {
     // Repository mutation not yet wired — placeholder for when write-path lands.
     // The resolver already validates tenant isolation before calling this.
-    console.info(`[menu/service] setItemAvailability: item=${id} available=${available} (stub)`);
+    logger.info(`setItemAvailability: item=${id} available=${available} (stub)`, { source: '[menu/service]' });
     return menuRepository.getMenuItem(id);
 }
 

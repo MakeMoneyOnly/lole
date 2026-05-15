@@ -1,12 +1,15 @@
 import { z } from 'zod';
 import { apiError, apiSuccess } from '@/lib/api/response';
 import { getAuthenticatedUser, getAuthorizedRestaurantContext } from '@/lib/api/authz';
+import { logger } from '@/lib/logger';
 import { parseJsonBody, parseQuery } from '@/lib/api/validation';
 import { writeAuditLog } from '@/lib/api/audit';
 import { isIdempotencyKeyValid, resolveIdempotencyKey } from '@/lib/api/idempotency';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import type { Json } from '@/types/database';
 import { STAFF_ROLES } from '@/types/status';
+
+const log = logger.child('merchant-core-staff/schedule');
 
 const ScheduleQuerySchema = z.object({
     start_date: z
@@ -79,9 +82,7 @@ export async function GET(request: Request) {
             );
         }
 
-        console.warn(
-            `[Schedule API] Fetching for restaurant ${context.restaurantId} from ${startIso} to ${endIso}`
-        );
+        log.info('Fetching schedule data', { restaurantId: context.restaurantId, startIso, endIso });
 
         const adminClient = createServiceRoleClient();
 
@@ -111,16 +112,16 @@ export async function GET(request: Request) {
         const staffRes = results[1];
 
         if (shiftsRes.status === 'rejected') {
-            console.error('[Schedule API] Shifts query failed:', shiftsRes.reason);
+            log.error('Shifts query failed', shiftsRes.reason);
             throw new Error('Shifts query failed');
         }
         if (staffRes.status === 'rejected') {
-            console.error('[Schedule API] Staff query failed:', staffRes.reason);
+            log.error('Staff query failed', staffRes.reason);
             throw new Error('Staff query failed');
         }
 
         if (shiftsRes.value.error) {
-            console.error('[Schedule API] Shifts DB error:', shiftsRes.value.error);
+            log.error('Shifts DB error', shiftsRes.value.error);
             return apiError(
                 'Failed to fetch schedule',
                 500,
@@ -129,7 +130,7 @@ export async function GET(request: Request) {
             );
         }
         if (staffRes.value.error) {
-            console.error('[Schedule API] Staff DB error:', staffRes.value.error);
+            log.error('Staff DB error', staffRes.value.error);
             // Fallback: If view query fails, try basic staff table?
             // For now, return error to see what's wrong.
             return apiError(
@@ -177,7 +178,7 @@ export async function GET(request: Request) {
         });
     } catch (e: unknown) {
         const message = e instanceof Error ? e.message : 'Unknown error';
-        console.error('[Schedule API] Unexpected error:', e);
+        log.error('Unexpected error', e);
         return apiError('Internal Server Error', 500, 'INTERNAL_ERROR', message);
     }
 }

@@ -7,6 +7,9 @@ import {
 } from '@/lib/api/authz';
 import { parseJsonBody, parseQuery } from '@/lib/api/validation';
 import { writeAuditLog } from '@/lib/api/audit';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('merchant-operations/kds-telemetry');
 
 const ACTIVE_KDS_STATUSES = ['pending', 'confirmed', 'acknowledged', 'preparing', 'ready'] as const;
 const HEARTBEAT_ACTION = 'kds_ws_heartbeat';
@@ -231,7 +234,7 @@ export async function POST(request: Request) {
     });
 
     if (logError) {
-        console.error('[KDS Telemetry] Failed to write heartbeat log:', logError);
+        log.error('Failed to write heartbeat log', logError);
         return apiError('Failed to record telemetry heartbeat', 500, 'KDS_TELEMETRY_RECORD_FAILED');
     }
 

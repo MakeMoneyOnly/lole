@@ -1,6 +1,9 @@
 import { apiError, apiSuccess } from '@/lib/api/response';
 import { getAuthenticatedUser, getAuthorizedRestaurantContext } from '@/lib/api/authz';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('merchant-core-staff');
 
 export async function GET() {
     const auth = await getAuthenticatedUser();
@@ -19,7 +22,7 @@ export async function GET() {
     try {
         adminClient = createServiceRoleClient();
     } catch (e) {
-        console.error('Service Role Client Creation Failed:', e);
+        log.error('Service Role Client Creation Failed', e);
         // Fallback to regular client if service role fails, though data might be incomplete due to RLS
         return apiError(
             'Server configuration error: Missing Service Role Key',
@@ -72,7 +75,7 @@ export async function GET() {
             .in('user_id', userIds);
 
         if (enrichedError) {
-            console.warn('[GET /api/staff] enriched view fetch failed:', enrichedError.message);
+            log.warn('Enriched view fetch failed', { message: enrichedError.message });
         } else {
             enrichedByStaffId = new Map(
                 ((enrichedRows ?? []) as Array<Record<string, unknown>>).map(row => [

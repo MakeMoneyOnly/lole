@@ -12,6 +12,9 @@
 
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('timescaleAnalytics');
 
 /**
  * Time range options for analytics queries
@@ -139,10 +142,7 @@ export async function getHourlySalesData(
         .order('hour', { ascending: true });
 
     if (aggError) {
-        console.warn(
-            '[timescaleAnalytics] Continuous aggregate not available, falling back to hypertable',
-            aggError
-        );
+        log.warn('Continuous aggregate not available, falling back to hypertable', { error: aggError });
 
         // Fallback to hypertable
         const { data, error } = await supabase
@@ -194,10 +194,7 @@ export async function getDailySalesData(
         .order('date', { ascending: true });
 
     if (aggError) {
-        console.warn(
-            '[timescaleAnalytics] Continuous aggregate not available, falling back to hypertable',
-            aggError
-        );
+        log.warn('Continuous aggregate not available, falling back to hypertable', { error: aggError });
 
         // Fallback to hypertable
         // HIGH-013: Explicit column selection
@@ -265,10 +262,7 @@ export async function getAnalyticsOverview(
         timeseriesData = await getDailySalesData(supabase, restaurantId, range);
         useTimeseries = timeseriesData.length > 0;
     } catch (error) {
-        console.warn(
-            '[timescaleAnalytics] TimescaleDB data not available, using direct queries',
-            error
-        );
+        log.warn('TimescaleDB data not available, using direct queries', { error });
     }
 
     if (useTimeseries && timeseriesData.length > 0) {
@@ -382,7 +376,7 @@ export async function populateHourlySales(restaurantId: string, hourStart: Date)
     });
 
     if (error) {
-        console.error('[timescaleAnalytics] Failed to populate hourly sales', error);
+        log.error('Failed to populate hourly sales', error);
         throw error;
     }
 }
@@ -400,7 +394,7 @@ export async function populateDailySales(restaurantId: string, date: string): Pr
     });
 
     if (error) {
-        console.error('[timescaleAnalytics] Failed to populate daily sales', error);
+        log.error('Failed to populate daily sales', error);
         throw error;
     }
 }

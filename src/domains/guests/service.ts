@@ -2,6 +2,7 @@
 // Business logic layer - loyalty calculations, visit tracking, etc.
 import { guestsRepository, GuestRow, GuestListOptions } from './repository';
 import { getLoyaltyTier, type LoyaltyTier } from '@/lib/constants/business';
+import { logger } from '@/lib/logger';
 
 export interface CreateGuestInput {
     restaurantId: string;
@@ -45,8 +46,10 @@ export class GuestsService {
 
         // Tenant isolation check
         if (guest && expectedRestaurantId && guest.restaurant_id !== expectedRestaurantId) {
-            console.error(
-                `[guests/service] Tenant isolation violation: Attempted to access guest ${id} from restaurant ${expectedRestaurantId}`
+            logger.error(
+                `[guests/service] Tenant isolation violation: Attempted to access guest ${id} from restaurant ${expectedRestaurantId}`,
+                undefined,
+                { source: 'guests/service' }
             );
             return null;
         }

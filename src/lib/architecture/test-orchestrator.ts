@@ -15,6 +15,9 @@
 
 import { existsSync, mkdirSync, readdirSync, renameSync, statSync } from 'fs';
 import { join, relative } from 'path';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('architecture/test-orchestrator');
 
 interface TestFile {
     currentPath: string;
@@ -179,5 +182,5 @@ Next Steps:
 if (require.main === module) {
     const orchestrator = new TestOrganizationOrchestrator();
     const result = orchestrator.execute();
-    console.warn(orchestrator.generateReport(result));
+    log.info(orchestrator.generateReport(result));
 }

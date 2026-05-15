@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, type Dispatch, type SetStateAction } from 'react';
 import { toast } from 'react-hot-toast';
+import { logger } from '@/lib/logger';
 import type { StaffRole } from '@/types/status';
 
 export type StaffMember = {
@@ -84,7 +85,9 @@ export function useStaff(initialData?: StaffMember[]): UseStaffResult {
             const freshStaff = (payload?.data?.staff ?? []) as StaffMember[];
             setStaff(freshStaff);
         } catch (fetchError) {
-            console.error(fetchError);
+            logger.error('Failed to fetch staff', fetchError, {
+                source: '[features/merchant/hooks/useStaff]',
+            });
             setError(fetchError instanceof Error ? fetchError.message : 'Failed to fetch staff.');
         } finally {
             setLoading(false);

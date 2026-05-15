@@ -1,53 +1,57 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import type { OrderStatus } from '@/types/status';
 
 const {
-    mockFindByRestaurant,
-    mockCreate,
-    mockCreateItems,
-    mockUpdateStatus,
-    mockCancel,
-    mockFindById,
-    mockFindActiveByRestaurant,
-    mockFindByKDSStation,
-    mockGetItems,
-    mockGetMenuItemsByIds,
-    mockPublishEvent,
-    mockRpc,
-} = vi.hoisted(() => ({
-    mockFindByRestaurant: vi.fn(),
-    mockCreate: vi.fn(),
-    mockCreateItems: vi.fn(),
-    mockUpdateStatus: vi.fn(),
-    mockCancel: vi.fn(),
-    mockFindById: vi.fn(),
-    mockFindActiveByRestaurant: vi.fn(),
-    mockFindByKDSStation: vi.fn(),
-    mockGetItems: vi.fn(),
-    mockGetMenuItemsByIds: vi.fn(),
-    mockPublishEvent: vi.fn(),
-    mockRpc: vi.fn(),
-}));
+     mockFindByRestaurant,
+     mockCreate,
+     mockCreateItems,
+     mockUpdateStatus,
+     mockCancel,
+     mockFindById,
+     mockFindActiveByRestaurant,
+     mockFindByKDSStation,
+     mockGetItems,
+     mockGetMenuItemsByIds,
+     mockPublishEvent,
+     mockValidateModifiers,
+     mockRpc,
+ } = vi.hoisted(() => ({
+     mockFindByRestaurant: vi.fn(),
+     mockCreate: vi.fn(),
+     mockCreateItems: vi.fn(),
+     mockUpdateStatus: vi.fn(),
+     mockCancel: vi.fn(),
+     mockFindById: vi.fn(),
+     mockFindActiveByRestaurant: vi.fn(),
+     mockFindByKDSStation: vi.fn(),
+     mockGetItems: vi.fn(),
+     mockGetMenuItemsByIds: vi.fn(),
+     mockPublishEvent: vi.fn(),
+     mockValidateModifiers: vi.fn(),
+     mockRpc: vi.fn(),
+ }));
 
 vi.mock('@supabase/supabase-js', () => ({
-    createClient: vi.fn(() => ({
-        rpc: mockRpc,
-        from: vi.fn(),
-    })),
-}));
+     createClient: vi.fn(() => ({
+         rpc: mockRpc,
+         from: vi.fn(),
+     })),
+ }));
 
-vi.mock('../../repository', () => ({
-    ordersRepository: {
-        findById: mockFindById,
-        findByRestaurant: mockFindByRestaurant,
-        findActiveByRestaurant: mockFindActiveByRestaurant,
-        findByKDSStation: mockFindByKDSStation,
-        create: mockCreate,
-        createItems: mockCreateItems,
-        updateStatus: mockUpdateStatus,
-        cancel: mockCancel,
-        getItems: mockGetItems,
-    },
-}));
+ vi.mock('../../repository', () => ({
+     ordersRepository: {
+         findById: mockFindById,
+         findByRestaurant: mockFindByRestaurant,
+         findActiveByRestaurant: mockFindActiveByRestaurant,
+         findByKDSStation: mockFindByKDSStation,
+         create: mockCreate,
+         createItems: mockCreateItems,
+         updateStatus: mockUpdateStatus,
+         cancel: mockCancel,
+         getItems: mockGetItems,
+         validateModifiers: mockValidateModifiers,
+     },
+ }));
 
 vi.mock('@/lib/events/publisher', () => ({
     publishEvent: mockPublishEvent,
@@ -93,12 +97,12 @@ describe('OrdersService', () => {
         mockCreate.mockResolvedValue(mockOrder);
         mockCreateItems.mockResolvedValue([]);
         mockGetMenuItemsByIds.mockResolvedValue([]);
-        mockRpc.mockResolvedValue({
-            data: [
-                { is_valid: true, missing_groups: [], error_message: null, error_message_am: null },
-            ],
-            error: null,
-        });
+mockValidateModifiers.mockResolvedValue({
+             is_valid: true,
+             missing_groups: [],
+             error_message: null,
+             error_message_am: null,
+         });
     });
 
     afterEach(() => {
@@ -179,10 +183,7 @@ describe('OrdersService', () => {
                 staffId: 'staff-1',
             });
 
-            expect(mockRpc).toHaveBeenCalledWith('validate_required_modifiers', {
-                p_menu_item_id: 'item-1',
-                p_selected_modifier_ids: ['mod-1', 'mod-2'],
-            });
+expect(mockValidateModifiers).toHaveBeenCalledWith('item-1', ['mod-1', 'mod-2']);
         });
 
         it('passes empty selectedModifierIds for items without modifiers', async () => {
@@ -196,10 +197,7 @@ describe('OrdersService', () => {
                 staffId: 'staff-1',
             });
 
-            expect(mockRpc).toHaveBeenCalledWith('validate_required_modifiers', {
-                p_menu_item_id: 'item-1',
-                p_selected_modifier_ids: [],
-            });
+expect(mockValidateModifiers).toHaveBeenCalledWith('item-1', []);
         });
 
         it('skips modifiers without id property', async () => {
@@ -222,10 +220,7 @@ describe('OrdersService', () => {
                 staffId: 'staff-1',
             });
 
-            expect(mockRpc).toHaveBeenCalledWith('validate_required_modifiers', {
-                p_menu_item_id: 'item-1',
-                p_selected_modifier_ids: [],
-            });
+expect(mockValidateModifiers).toHaveBeenCalledWith('item-1', []);
         });
 
         it('skips modifiers with falsy id', async () => {
@@ -247,10 +242,7 @@ describe('OrdersService', () => {
                 staffId: 'staff-1',
             });
 
-            expect(mockRpc).toHaveBeenCalledWith('validate_required_modifiers', {
-                p_menu_item_id: 'item-1',
-                p_selected_modifier_ids: [],
-            });
+expect(mockValidateModifiers).toHaveBeenCalledWith('item-1', []);
         });
 
         it('skips non-object modifier values', async () => {
@@ -273,25 +265,17 @@ describe('OrdersService', () => {
                 staffId: 'staff-1',
             });
 
-            expect(mockRpc).toHaveBeenCalledWith('validate_required_modifiers', {
-                p_menu_item_id: 'item-1',
-                p_selected_modifier_ids: [],
-            });
+expect(mockValidateModifiers).toHaveBeenCalledWith('item-1', []);
         });
 
         it('throws loleGraphQLError when modifier validation fails', async () => {
             const service = await importService();
-            mockRpc.mockResolvedValue({
-                data: [
-                    {
-                        is_valid: false,
-                        missing_groups: ['spice-level'],
-                        error_message: 'Required modifiers not selected',
-                        error_message_am: 'አስፈላጊ ማስተካከያዎች',
-                    },
-                ],
-                error: null,
-            });
+mockValidateModifiers.mockResolvedValue({
+                 is_valid: false,
+                 missing_groups: ['spice-level'],
+                 error_message: 'Required modifiers not selected',
+                 error_message_am: 'አስፈላጊ ማስተካከያዎች',
+             });
 
             const error = await service
                 .createOrder({
@@ -331,17 +315,12 @@ describe('OrdersService', () => {
 
         it('uses default error message when RPC returns null error_message', async () => {
             const service = await importService();
-            mockRpc.mockResolvedValue({
-                data: [
-                    {
-                        is_valid: false,
-                        missing_groups: [],
-                        error_message: null,
-                        error_message_am: null,
-                    },
-                ],
-                error: null,
-            });
+mockValidateModifiers.mockResolvedValue({
+                 is_valid: false,
+                 missing_groups: [],
+                 error_message: null,
+                 error_message_am: null,
+             });
 
             await expect(
                 service.createOrder({
@@ -557,22 +536,16 @@ describe('OrdersService', () => {
                 staffId: 'staff-1',
             });
 
-            expect(mockRpc).toHaveBeenCalledTimes(2);
-            expect(mockRpc).toHaveBeenCalledWith('validate_required_modifiers', {
-                p_menu_item_id: 'item-1',
-                p_selected_modifier_ids: ['mod-1'],
-            });
-            expect(mockRpc).toHaveBeenCalledWith('validate_required_modifiers', {
-                p_menu_item_id: 'item-2',
-                p_selected_modifier_ids: ['mod-2'],
-            });
+expect(mockValidateModifiers).toHaveBeenCalledTimes(2);
+             expect(mockValidateModifiers).toHaveBeenCalledWith('item-1', ['mod-1']);
+             expect(mockValidateModifiers).toHaveBeenCalledWith('item-2', ['mod-2']);
         });
     });
 
     describe('validateRequiredModifiers (indirect via createOrder)', () => {
         it('passes validation when RPC returns error (graceful fallback)', async () => {
             const service = await importService();
-            mockRpc.mockResolvedValue({ data: null, error: { message: 'RPC error' } });
+            mockValidateModifiers.mockResolvedValue(null);
 
             const result = await service.createOrder({
                 restaurantId: 'rest-1',
@@ -590,7 +563,7 @@ describe('OrdersService', () => {
 
         it('passes validation when RPC returns empty data array', async () => {
             const service = await importService();
-            mockRpc.mockResolvedValue({ data: [], error: null });
+            mockValidateModifiers.mockResolvedValue(null);
 
             const result = await service.createOrder({
                 restaurantId: 'rest-1',
@@ -608,7 +581,7 @@ describe('OrdersService', () => {
 
         it('passes validation when RPC returns null data', async () => {
             const service = await importService();
-            mockRpc.mockResolvedValue({ data: null, error: null });
+            mockValidateModifiers.mockResolvedValue(null);
 
             const result = await service.createOrder({
                 restaurantId: 'rest-1',
@@ -626,7 +599,7 @@ describe('OrdersService', () => {
 
         it('passes validation when RPC throws exception (graceful fallback)', async () => {
             const service = await importService();
-            mockRpc.mockRejectedValue(new Error('Connection failed'));
+            mockValidateModifiers.mockRejectedValue(new Error('Connection failed'));
 
             const result = await service.createOrder({
                 restaurantId: 'rest-1',
@@ -644,17 +617,12 @@ describe('OrdersService', () => {
 
         it('passes validation when RPC returns valid=true', async () => {
             const service = await importService();
-            mockRpc.mockResolvedValue({
-                data: [
-                    {
-                        is_valid: true,
-                        missing_groups: [],
-                        error_message: null,
-                        error_message_am: null,
-                    },
-                ],
-                error: null,
-            });
+mockValidateModifiers.mockResolvedValue({
+                 is_valid: true,
+                 missing_groups: [],
+                 error_message: null,
+                 error_message_am: null,
+             });
 
             const result = await service.createOrder({
                 restaurantId: 'rest-1',
@@ -799,22 +767,18 @@ describe('OrdersService', () => {
         it('throws Error when status is empty string', async () => {
             const service = await importService();
 
-            const input = { id: 'order-1', status: '', staffId: 'staff-1' };
+            const input = { id: 'order-1', status: '' as OrderStatus, staffId: 'staff-1' };
             await expect(
-                service.updateOrderStatus(
-                    input as unknown as { id: string; status: string; staffId: string }
-                )
+                service.updateOrderStatus(input)
             ).rejects.toThrow('Status is required');
         });
 
         it('throws Error when status is null', async () => {
             const service = await importService();
 
-            const input = { id: 'order-1', status: null, staffId: 'staff-1' };
+            const input = { id: 'order-1', status: null as unknown as OrderStatus, staffId: 'staff-1' };
             await expect(
-                service.updateOrderStatus(
-                    input as unknown as { id: string; status: string; staffId: string }
-                )
+                service.updateOrderStatus(input)
             ).rejects.toThrow('Status is required');
         });
 

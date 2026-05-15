@@ -7,6 +7,7 @@ import {
     PaymentStatus,
     PaymentProvider,
 } from './repository';
+import { logger } from '@/lib/logger';
 
 export interface InitiatePaymentInput {
     orderId: string;
@@ -77,8 +78,10 @@ export class PaymentsService {
 
         // Tenant isolation check
         if (payment && expectedRestaurantId && payment.restaurant_id !== expectedRestaurantId) {
-            console.error(
-                `[payments/service] Tenant isolation violation: Attempted to access payment ${id} from restaurant ${expectedRestaurantId}`
+            logger.error(
+                `[payments/service] Tenant isolation violation: Attempted to access payment ${id} from restaurant ${expectedRestaurantId}`,
+                undefined,
+                { source: '[payments/service]' }
             );
             return null;
         }

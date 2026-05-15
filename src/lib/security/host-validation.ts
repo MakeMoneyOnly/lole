@@ -6,6 +6,10 @@
  * against a configured allowlist before using them.
  */
 
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[SECURITY]');
+
 /**
  * Get allowed hosts from environment configuration
  * Supports both production and development environments
@@ -218,7 +222,7 @@ function logSuspiciousHost(
     normalizedHost: string,
     allowedHosts: string[]
 ): void {
-    console.warn('[SECURITY] Suspicious host header detected', {
+    log.warn('Suspicious host header detected', {
         originalHost,
         normalizedHost,
         allowedHosts,

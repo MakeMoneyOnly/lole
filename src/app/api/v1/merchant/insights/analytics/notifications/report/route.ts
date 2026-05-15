@@ -10,6 +10,9 @@
 import { NextResponse } from 'next/server';
 import { getAuthenticatedUser, getAuthorizedRestaurantContext } from '@/lib/api/authz';
 import { getDeliveryReport, type DateRange } from '@/lib/monitoring/notification-metrics';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[analytics/notifications/report]');
 
 /**
  * Range options for date filtering
@@ -113,7 +116,7 @@ export async function GET(request: Request) {
             },
         });
     } catch (error) {
-        console.error('[analytics/notifications/report] Error fetching delivery report:', error);
+        log.error('Error fetching delivery report', error);
 
         return NextResponse.json(
             {

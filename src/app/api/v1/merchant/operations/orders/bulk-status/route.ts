@@ -4,6 +4,9 @@ import { getAuthenticatedUser } from '@/lib/api/authz';
 import { parseJsonBody } from '@/lib/api/validation';
 import { writeAuditLog } from '@/lib/api/audit';
 import { enforcePilotAccess } from '@/lib/api/pilotGate';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('orders-bulk-status');
 
 const BulkStatusSchema = z.object({
     order_ids: z.array(z.string().uuid()).min(1).max(50),
@@ -111,10 +114,7 @@ export async function POST(request: Request) {
 
     const { error: eventError } = await supabase.from('order_events').insert(eventRows);
     if (eventError) {
-        console.warn(
-            '[POST /api/orders/bulk-status] order_events insert failed:',
-            eventError.message
-        );
+        log.warn('order_events insert failed', { message: eventError.message });
     }
 
     for (const order of orders) {

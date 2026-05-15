@@ -19,7 +19,10 @@
  */
 
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { logger } from '@/lib/logger';
 import type { SupabaseClient } from '@supabase/supabase-js';
+
+const log = logger.child('[push]');
 
 // =========================================================
 // Type Definitions
@@ -441,13 +444,13 @@ async function sendWithWebPush(params: PushParams): Promise<PushResult> {
         // Since it's not in dependencies, we'll use the fetch API with VAPID authentication
         // This is a simplified implementation - in production, use the web-push library
 
-        // Note: Full VAPID signed push requires crypto operations
-        // For now, return a success for development mode
-        console.warn('[push:webpush]', {
-            endpoint,
-            title: params.title,
-            body: params.body,
-        });
+// Note: Full VAPID signed push requires crypto operations
+         // For now, return a success for development mode
+         log.warn('[push:webpush]', {
+             endpoint,
+             title: params.title,
+             body: params.body,
+         });
 
         return {
             success: true,
@@ -472,7 +475,7 @@ async function sendWithWebPush(params: PushParams): Promise<PushResult> {
  * Log push notification (development mode)
  */
 function sendWithLog(params: PushParams): PushResult {
-    console.warn('[push:log]', {
+    log.warn('[push:log]', {
         token: params.token.slice(0, 20) + '...',
         title: params.title,
         body: params.body,
@@ -531,14 +534,14 @@ export async function sendPushNotification(params: PushParams): Promise<PushResu
     switch (provider) {
         case 'fcm':
             if (!isFcmConfigured()) {
-                console.warn('[push] FCM not configured, falling back to log');
+                log.warn('FCM not configured, falling back to log');
                 return sendWithLog(params);
             }
             return sendWithFcm(params);
 
         case 'webpush':
             if (!isWebPushConfigured()) {
-                console.warn('[push] Web Push not configured, falling back to log');
+                log.warn('Web Push not configured, falling back to log');
                 return sendWithLog(params);
             }
             return sendWithWebPush(params);
@@ -645,7 +648,7 @@ export async function getGuestPushTokens(
         .eq('guest_id', guestId);
 
     if (error) {
-        console.error('[push] Failed to get guest push tokens:', error);
+        log.error('Failed to get guest push tokens', error);
         return [];
     }
 
@@ -665,8 +668,8 @@ export async function getGuestPushTokens(
 export function generateVapidKeys(): { publicKey: string; privateKey: string } {
     // This is a placeholder - in production, use the web-push library's generateVAPIDKeys()
     // or generate keys using Node's crypto module
-    console.warn(
-        '[push] VAPID key generation not implemented - use web-push library in production'
+    log.warn(
+        'VAPID key generation not implemented - use web-push library in production'
     );
 
     return {
