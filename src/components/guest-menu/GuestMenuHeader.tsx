@@ -1,25 +1,25 @@
 'use client';
 
 import React from 'react';
-import { MapPin, Bell, Inbox } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import Image from 'next/image';
 
 interface HeaderIconProps {
-    icon: React.ElementType;
+    iconSrc: string;
     onTap?: () => void;
     hasNotification?: boolean;
 }
 
-const HeaderIcon: React.FC<HeaderIconProps> = ({ icon: Icon, onTap, hasNotification }) => {
+const HeaderIcon: React.FC<HeaderIconProps> = ({ iconSrc, onTap, hasNotification }) => {
     return (
         <button
             onClick={onTap}
             className="relative flex h-[48px] w-[40px] items-center justify-center transition-all active:scale-95"
             aria-label="Header Action"
         >
-            <Icon className="h-[24px] w-[24px] text-white" strokeWidth={2} />
+            <img src={iconSrc} className="h-[24px] w-[24px]" alt="Header Icon" />
             {hasNotification && (
-                <div className="absolute right-1.5 top-2.5 h-1.5 w-1.5 rounded-full bg-[#DDF853]" />
+                <div className="absolute top-2.5 right-1.5 h-1.5 w-1.5 rounded-full bg-[#DDF853]" />
             )}
         </button>
     );
@@ -40,7 +40,7 @@ export const GuestMenuHeader: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col gap-0">
-                    <h1 className="text-[16px] font-bold text-white tracking-tight leading-tight">
+                    <h1 className="text-[16px] leading-tight font-bold tracking-tight text-white">
                         Hello Dawit Bekele
                     </h1>
                     <div className="flex items-center gap-1">
@@ -53,8 +53,8 @@ export const GuestMenuHeader: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-1">
-                <HeaderIcon icon={Inbox} />
-                <HeaderIcon icon={Bell} hasNotification />
+                <HeaderIcon iconSrc="/icons/Guest Menu/letter-line.svg?v=2" />
+                <HeaderIcon iconSrc="/icons/Guest Menu/bell-line.svg?v=2" hasNotification />
             </div>
         </header>
     );
