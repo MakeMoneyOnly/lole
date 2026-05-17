@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { FOOD_ITEMS } from '@/lib/constants';
+import { Star, Gift, Bell, Heart, ReceiptText, Tag } from 'lucide-react';
 import { isAbortError } from '@/hooks/useSafeFetch';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -85,7 +86,7 @@ export interface GuestContextPayload {
  * All data-fetching and session state for the guest menu.
  * Expose this hook to any new UI component tree via context or prop-drilling.
  */
-export function useGuestMenuData() {
+export function useGuestMenuData(): React.JSX.Element {
     const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
     const [cartOpen, setCartOpen] = useState(false);
     const [paymentReturnSuccess, setPaymentReturnSuccess] = useState(false);
@@ -100,12 +101,13 @@ export function useGuestMenuData() {
     const [guestSessionId, setGuestSessionId] = useState<string | null>(null);
     const [authState, setAuthState] = useState<'guest' | 'authenticated'>('guest');
     const [showPreMenuSplash, setShowPreMenuSplash] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
     const [_sessionSyncing, setSessionSyncing] = useState(false);
 
     const params = useParams<{ slug: string }>();
     const searchParams = useSearchParams();
 
-    const getQueryParam = (key: string) => searchParams.get(key) ?? searchParams.get(`amp;${key}`);
+    const getQueryParam = (key: string): React.JSX.Element => searchParams.get(key) ?? searchParams.get(`amp;${key}`);
     const tableNumber = getQueryParam('table');
     const signature = getQueryParam('sig');
     const expiresAt = getQueryParam('exp');
@@ -144,7 +146,7 @@ export function useGuestMenuData() {
     useEffect(() => {
         isMountedRef.current = true;
 
-        async function validateContext() {
+        async function validateContext(): Promise<void> {
             if (isOnlineOrderMode) {
                 setContextLoading(true);
                 setContextError(null);
@@ -243,7 +245,7 @@ export function useGuestMenuData() {
 
     // ── Guest session upsert ──────────────────────────────────────────────────
     useEffect(() => {
-        async function upsertGuestSession() {
+        async function upsertGuestSession(): Promise<void> {
             if (!guestContext || guestContext.is_online_order) return;
 
             setSessionSyncing(true);
@@ -298,7 +300,7 @@ export function useGuestMenuData() {
 
     // ── Menu fetch ────────────────────────────────────────────────────────────
     useEffect(() => {
-        async function fetchMenu() {
+        async function fetchMenu(): Promise<void> {
             if (!guestContext?.restaurant_id || showPreMenuSplash) {
                 setLoading(false);
                 return;
@@ -343,7 +345,7 @@ export function useGuestMenuData() {
                     return;
                 }
 
-                const getSmartImageUrl = (path: string | null) => {
+                const getSmartImageUrl = (path: string | null): React.JSX.Element => {
                     if (!path) return FALLBACK_IMAGE_URL;
                     if (path.startsWith('fab')) return path;
                     if (isAllowedRemoteImageUrl(path)) return path;
@@ -418,11 +420,15 @@ export function useGuestMenuData() {
     const filteredItems = realItems.filter(item => {
         const matchesSection = item.categories?.section === activeTab;
         if (!matchesSection) return false;
+
+        const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
+        if (!matchesSearch) return false;
+
         if (activeCategoryId === 'all') return true;
         return item.categories?.name?.toLowerCase() === activeCategoryId.toLowerCase();
     });
 
-    const handleAddToCart = (item: MenuItem, quantity = 1) => {
+    const handleAddToCart = (item: MenuItem, quantity = 1): React.JSX.Element => {
         addToCart({
             menuItemId: item.id,
             title: item.title,
@@ -449,6 +455,8 @@ export function useGuestMenuData() {
         setActiveCategoryId,
         realItems,
         filteredItems,
+        searchQuery,
+        setSearchQuery,
         guestContext,
         guestSessionId,
         authState,
@@ -469,20 +477,21 @@ export function useGuestMenuData() {
 
 import { GuestMenuHeader } from '@/components/guest-menu/GuestMenuHeader';
 import { GuestMenuSearchBar } from '@/components/guest-menu/GuestMenuSearchBar';
-import { GuestMenuBannerCarousel } from '@/components/guest-menu/GuestMenuBannerCarousel';
 import { GuestMenuCategoryChips } from '@/components/guest-menu/GuestMenuCategoryChips';
 import { GuestMenuProductGrid } from '@/components/guest-menu/GuestMenuProductCard';
-import { HorizontalPremiumProductCard } from '@/components/guest-menu/HorizontalPremiumProductCard';
 import { GuestMenuBottomNav } from '@/components/guest-menu/GuestMenuBottomNav';
 import { GuestMenuCart } from '@/components/guest-menu/GuestMenuCart';
 import { GuestMenuProfile } from '@/components/guest-menu/GuestMenuProfile';
+import { GuestMenuRecommendedCard } from '@/components/guest-menu/GuestMenuRecommendedCard';
+import { QuickActionsGrid } from '@/components/guest-menu/QuickActions';
 import { ChevronRight } from 'lucide-react';
+import Image from 'next/image';
 
 /**
  * MenuClientContent — blank canvas.
  * The old UI has been removed. Build the new design here.
  */
-export function MenuClientContent() {
+export function MenuClientContent(): React.JSX.Element {
     const data = useGuestMenuData();
     const [activeIndex, setActiveIndex] = useState(0);
 
@@ -502,7 +511,7 @@ export function MenuClientContent() {
         return (
             <div className="flex min-h-screen w-full flex-col items-center justify-center bg-white px-4 text-center">
                 <p className="text-red-500 font-medium">{data.contextError}</p>
-                <button 
+                <button
                     onClick={() => window.location.reload()}
                     className="mt-4 rounded-xl bg-black px-6 py-2 text-sm font-medium text-white"
                 >
@@ -524,16 +533,16 @@ export function MenuClientContent() {
     const categories = Array.from(new Set(data.realItems.map(item => item.categories.name)))
         .map(name => ({ id: name.toLowerCase(), name }));
 
-    const handleNavChange = (index: number) => {
+    const handleNavChange = (index: number): React.JSX.Element => {
         setActiveIndex(index);
     };
 
     // ── Screen Rendering ─────────────────────────────────────────────────────
-    const renderScreen = () => {
+    const renderScreen = (): React.JSX.Element => {
         switch (activeIndex) {
             case 3: // Cart
                 return (
-                    <GuestMenuCart 
+                    <GuestMenuCart
                         cartItems={data.cartItems}
                         onBack={() => setActiveIndex(0)}
                         onUpdateQuantity={data.handleUpdateQuantity}
@@ -541,69 +550,92 @@ export function MenuClientContent() {
                         onCheckout={() => console.log('Checkout')}
                     />
                 );
-            case 4: // Profile
+            case 2: // Profile
                 return <GuestMenuProfile onLogout={() => console.log('Logout')} />;
             case 0: // Home
             default:
                 return (
-                    <div className="mx-auto max-w-md bg-white">
-                        <GuestMenuHeader />
-                        
-                        <GuestMenuSearchBar />
+                    <div className="mx-auto max-w-md bg-white min-h-screen">
+                        {/* DARK HERO SECTION WITH ROUNDED BOTTOM */}
+                        <div className="relative z-20 overflow-hidden rounded-b-[28px] bg-[#1A1A1A] pb-4 shadow-xl shadow-black/10">
+                            {/* Background Texture Placeholder */}
+                            <div className="absolute inset-0 z-0">
+                                <Image
+                                    src="https://res.cloudinary.com/dcm6m7d81/image/upload/v1778940507/50_off_2_xl1b5b.png"
+                                    alt="Hero Image"
+                                    fill
+                                    className="object-cover"
+                                />
+                            </div>
 
-                        <GuestMenuBannerCarousel />
+                            <div className="relative z-10">
+                                <GuestMenuHeader />
 
-                        <div className="mt-3">
-                            <GuestMenuCategoryChips 
-                                categories={categories}
-                                activeCategoryId={data.activeCategoryId}
-                                onCategoryChange={data.setActiveCategoryId}
-                            />
+                                {/* HORIZONTAL TEXT FILTERS */}
+                                <div className="flex w-full items-center gap-6 overflow-x-auto px-5 py-2 no-scrollbar">
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-[14px] font-semibold text-white whitespace-nowrap">Home</span>
+                                        <div className="mt-1 h-0.5 w-full bg-white rounded-full" />
+                                    </div>
+                                    <span className="text-[14px] font-medium text-white/60 whitespace-nowrap">Burgers</span>
+                                    <span className="text-[14px] font-medium text-white/60 whitespace-nowrap">Pizza</span>
+                                    <span className="text-[14px] font-medium text-white/60 whitespace-nowrap">Sushi</span>
+                                    <span className="text-[14px] font-medium text-white/60 whitespace-nowrap">Drinks</span>
+                                    <span className="text-[14px] font-medium text-white/60 whitespace-nowrap">Desserts</span>
+                                </div>
+
+                                {/* SPACER FOR HEIGHT */}
+                                <div className="h-32" />
+
+                                {/* SEARCH BAR */}
+                                <GuestMenuSearchBar
+                                    value={data.searchQuery}
+                                    onChange={data.setSearchQuery}
+                                />
+                            </div>
                         </div>
 
-                        {/* Special Offers (Horizontal List) */}
-                        <section className="mt-8">
-                            <div className="mb-4 flex items-center justify-between px-5">
-                                <div className="flex flex-col gap-1">
-                                    <h2 className="text-[22px] font-bold text-black tracking-tight">
-                                        Special Offers
+                        {/* CONTENT SECTION (NOW FLAT TOP) */}
+                        <div className="relative z-10 bg-white pt-4 pb-32">
+                            {/* QUICK ACTIONS ROW */}
+                            <QuickActionsGrid isOnlineOrderMode={data.isOnlineOrderMode} />
+
+                            <div className="px-5">
+                                <GuestMenuCategoryChips
+                                    categories={categories}
+                                    activeCategoryId={data.activeCategoryId}
+                                    onCategoryChange={data.setActiveCategoryId}
+                                />
+                            </div>
+
+                            {/* RECOMMENDED FOR YOU */}
+                            <section className="mt-8 px-5">
+                                <div className="mb-4 flex items-center justify-between">
+                                    <h2 className="text-[20px] font-bold text-[#1A1A1A] tracking-tight">
+                                        Recommended for you
                                     </h2>
-                                    <p className="text-[13px] font-light text-black/40">
-                                        Don't miss out on our exclusive deals.
-                                    </p>
+                                    <button className="text-[14px] font-semibold text-gray-400 hover:text-gray-600 transition-colors">
+                                        See all
+                                    </button>
                                 </div>
-                                <button className="flex items-center gap-1 text-[13px] font-light text-black/40">
-                                    View All
-                                    <ChevronRight className="h-4 w-4" />
-                                </button>
-                            </div>
 
-                            <div className="no-scrollbar flex w-full gap-4 overflow-x-auto px-5">
-                                {data.filteredItems.map((item) => (
-                                    <div key={item.id} className="w-[85%] shrink-0">
-                                        <HorizontalPremiumProductCard 
-                                            item={item} 
-                                            onAddToCart={data.handleAddToCart}
-                                            onSelect={data.setSelectedItem}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
+                                <GuestMenuRecommendedCard item={data.filteredItems[0]} />
+                            </section>
 
-                        {/* More for You (Grid) */}
-                        <section className="mt-10">
-                            <div className="mb-4 px-5">
-                                <h2 className="text-[22px] font-bold text-black tracking-tight">
-                                    More for You
-                                </h2>
-                            </div>
-                            <GuestMenuProductGrid 
-                                items={data.realItems.slice(0, 8)} 
-                                onAddToCart={data.handleAddToCart}
-                                onSelect={data.setSelectedItem}
-                            />
-                        </section>
+                            {/* MORE FOR YOU (GRID) */}
+                            <section className="mt-10">
+                                <div className="mb-4 px-5 flex items-center justify-between">
+                                    <h2 className="text-[20px] font-bold text-[#1A1A1A] tracking-tight">
+                                        More for You
+                                    </h2>
+                                </div>
+                                <GuestMenuProductGrid
+                                    items={data.realItems.slice(1, 9)}
+                                    onAddToCart={data.handleAddToCart}
+                                    onSelect={data.setSelectedItem}
+                                />
+                            </section>
+                        </div>
                     </div>
                 );
         }
@@ -614,9 +646,10 @@ export function MenuClientContent() {
             {renderScreen()}
 
             {/* Cloned Bottom Navigation Bar */}
-            <GuestMenuBottomNav 
-                activeIndex={activeIndex} 
-                onIndexChange={handleNavChange} 
+            <GuestMenuBottomNav
+                activeIndex={activeIndex}
+                onIndexChange={handleNavChange}
+                isOnlineOrderMode={data.isOnlineOrderMode}
             />
         </main>
     );
