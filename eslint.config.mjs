@@ -17,6 +17,10 @@ const eslintConfig = defineConfig([
         'tests/load/**',
         'tests/performance/**',
         'public/@powersync/**',
+        // Compiled dashboard assets - minified JS that should not be linted
+        '.col/**',
+        // Cloned external code for analysis - should not be linted
+        '.scratch/**',
     ]),
     {
         plugins: {
@@ -39,8 +43,9 @@ const eslintConfig = defineConfig([
             // LOW-008: Detect unused imports to reduce bundle size
             // Note: Using @typescript-eslint/no-unused-vars which handles both unused vars and imports
             // The no-unused-imports rule is not available in ESLint 9 without additional plugins
-            // DISABLED: Requires explicit return types on ALL functions - too strict for this codebase
-            // Would require adding return types to 900+ functions across hundreds of files
+            // Task 4.3 Type Safety Enforcement: Phased rollout - currently disabled globally
+            // Phase 2.1: Core logic (src/lib, src/features, src/hooks) - enforced
+            // Phase 2.2: UI layers (src/app, src/components) - pending
             '@typescript-eslint/explicit-function-return-type': 'off',
             // MED-011: Enforce structured logging - no console statements allowed
             'no-console': 'error',
@@ -53,20 +58,34 @@ const eslintConfig = defineConfig([
             '@typescript-eslint/no-use-before-define': 'off',
         },
     },
+    // Task 4.3 Phase 2.1: Enforce explicit return types for core logic (going-forward and existing)
     {
-        files: [
-            '**/*.test.ts',
-            '**/*.test.tsx',
-            '**/__tests__/**/*',
-            'e2e/**/*',
-            'tests/**',
-            '.col/**/*',
-            'scripts/**/*',
-        ],
+        files: ['src/lib/**/*.ts', 'src/features/**/*.ts', 'src/hooks/**/*.ts'],
         rules: {
-            '@typescript-eslint/no-explicit-any': 'off',
-            '@typescript-eslint/no-unused-vars': 'off',
-            'no-console': 'off',
+            '@typescript-eslint/explicit-function-return-type': [
+                'error',
+                {
+                    allowExpressions: true,
+                    allowTypedFunctionExpressions: true,
+                    allowHigherOrderFunctions: true,
+                    allowDirectConstAssertionInArrowFunctions: true,
+                },
+            ],
+        },
+    },
+    // Task 4.3 Phase 2.2: Enforce explicit return types for UI layers
+    {
+        files: ['src/app/**/*.{ts,tsx}', 'src/components/**/*.{ts,tsx}'],
+        rules: {
+            '@typescript-eslint/explicit-function-return-type': [
+                'error',
+                {
+                    allowExpressions: true,
+                    allowTypedFunctionExpressions: true,
+                    allowHigherOrderFunctions: true,
+                    allowDirectConstAssertionInArrowFunctions: true,
+                },
+            ],
         },
     },
     {
@@ -179,6 +198,25 @@ const eslintConfig = defineConfig([
                         'SUPABASE_SERVICE_ROLE_KEY and SUPABASE_SECRET_KEY must only be used in server-side API routes and lib files. Use createServiceRoleClient() from @/lib/supabase/service-role instead.',
                 },
             ],
+        },
+    },
+    // Test files override - must come LAST to ensure test files are exempt from all rules
+    {
+        files: [
+            '**/*.test.ts',
+            '**/*.test.tsx',
+            '**/__tests__/**/*',
+            'e2e/**/*',
+            'tests/**',
+            'k6/**/*',
+            '.col/**/*',
+            'scripts/**/*',
+        ],
+        rules: {
+            '@typescript-eslint/no-explicit-any': 'off',
+            '@typescript-eslint/no-unused-vars': 'off',
+            'no-console': 'off',
+            '@typescript-eslint/explicit-function-return-type': 'off',
         },
     },
 ]);

@@ -52,7 +52,7 @@ async function main() {
                 .replace(/[^a-z0-9\s-]/g, '')
                 .trim()
                 .replace(/\s+/g, '-');
-            // eslint-disable-next-line no-console
+
             console.log(`Updating ${restaurant.name}: ${restaurant.slug} -> ${newSlug}`);
             const { error: err } = await supabase
                 .from('restaurants')
@@ -67,7 +67,7 @@ async function main() {
                 .replace(/[^a-z0-9\s-]/g, '')
                 .trim()
                 .replace(/\s+/g, '-');
-            // eslint-disable-next-line no-console
+
             console.log(`Updating ${restaurant.name}: ${restaurant.slug} -> ${newSlug}`);
             const { error: err2 } = await supabase
                 .from('restaurants')
