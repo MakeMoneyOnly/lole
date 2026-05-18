@@ -13,7 +13,7 @@ interface CanvasRevealEffectProps {
     reverse?: boolean;
 }
 
-export const CanvasRevealEffect = ({ containerClassName }: CanvasRevealEffectProps) => {
+export const CanvasRevealEffect = ({ containerClassName }: CanvasRevealEffectProps): React.JSX.Element => {
     return (
         <div className={cn('relative h-full w-full bg-transparent', containerClassName)}>
             {/* Simplified animated background using CSS */}

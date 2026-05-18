@@ -4,7 +4,7 @@ import React from 'react';
 import { Zap, Info, RefreshCw, History, ArrowUpRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export function ActiveThrottleCard() {
+export function ActiveThrottleCard(): React.JSX.Element {
     return (
         <div className="flex h-full flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-none">
             <div className="flex flex-1 flex-col gap-6 p-8">

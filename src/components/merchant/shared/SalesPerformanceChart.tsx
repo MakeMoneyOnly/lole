@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import React, { useEffect, useRef, useState } from 'react';
 
-const ChartSkeleton = () => (
+const ChartSkeleton = (): React.JSX.Element => (
     <div className="h-full w-full animate-pulse rounded-full bg-gray-50/50" />
 );
 
@@ -17,7 +17,7 @@ interface SalesPerformanceChartProps {
     averageSales: number;
 }
 
-const SalesPerformanceChart = ({ totalSales, averageSales }: SalesPerformanceChartProps) => {
+const SalesPerformanceChart = ({ totalSales, averageSales }: SalesPerformanceChartProps): React.JSX.Element => {
     const [mounted, setMounted] = useState(false);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const [chartSize, setChartSize] = useState({ width: 0, height: 0 });

@@ -29,7 +29,7 @@ const MOBILE_MENU_ITEMS = [
     { label: 'Help', href: '/merchant/help-support', icon: HelpCircle },
 ];
 
-export function MobileBottomNav() {
+export function MobileBottomNav(): React.JSX.Element {
     const pathname = usePathname();
 
     return (

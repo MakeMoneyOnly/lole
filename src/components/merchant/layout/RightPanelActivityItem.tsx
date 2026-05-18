@@ -20,7 +20,7 @@ interface ActivityItemProps {
     item: ActivityItemData;
 }
 
-export function ActivityItem({ item }: ActivityItemProps) {
+export function ActivityItem({ item }: ActivityItemProps): React.JSX.Element {
     const dotColorClass =
         item.type === 'order'
             ? 'bg-red-500 shadow-none shadow-red-200'

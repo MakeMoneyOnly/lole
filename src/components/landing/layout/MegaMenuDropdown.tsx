@@ -16,7 +16,7 @@ interface MegaMenuDropdownProps {
     isScrolled: boolean;
 }
 
-export function MegaMenuDropdown({ isOpen, isScrolled }: MegaMenuDropdownProps) {
+export function MegaMenuDropdown({ isOpen, isScrolled }: MegaMenuDropdownProps): React.JSX.Element {
     return (
         <motion.div
             initial={false}

@@ -18,7 +18,7 @@ export function ErrorFallback({
     message,
     severity = 'warning',
     className,
-}: ErrorFallbackProps) {
+}: ErrorFallbackProps): React.JSX.Element {
     const severityStyles = {
         critical: 'border-red-400 bg-red-50 text-red-800',
         warning: 'border-amber-400 bg-amber-50 text-amber-800',

@@ -129,9 +129,8 @@ const STATUS_CONFIG: Record<IntegrationStatus, { label: string; dot: string; bad
         badge: 'bg-gray-50 text-gray-400 border-gray-100',
     },
 };
-
-function DocChecklistButton({ docs }: { docs: string[] }) {
-    const handleDownload = () => {
+function DocChecklistButton(): React.JSX.Element | void {
+    const handleDownload = (): React.JSX.Element => {
         const content = `Integrations Document Checklist\nGenerated: ${new Date().toLocaleDateString('en-ET')}\n\n${docs.map((d, i) => `${i + 1}. ☐ ${d}`).join('\n')}`;
         const blob = new Blob([content], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
@@ -238,13 +237,13 @@ function IntegrationCard({
 // Main Component
 // ─────────────────────────────────────────────
 
-export function IntegrationsTab() {
+export function IntegrationsTab(): React.JSX.Element {
     const [integrations, setIntegrations] = useState<Integration[]>(INTEGRATIONS);
     const [ercaStatus, setErcaStatus] = useState<IntegrationStatus>('disconnected');
     const [ercaLastSync, setErcaLastSync] = useState<string | undefined>();
 
     useEffect(() => {
-        const fetchErcaStatus = async () => {
+        const fetchErcaStatus = async (): Promise<void> => {
             try {
                 const supabase = getSupabaseClient();
                 const {
@@ -282,8 +281,7 @@ export function IntegrationsTab() {
         };
         fetchErcaStatus();
     }, []);
-
-    function toggleIntegration(id: string) {
+function toggleIntegration(): React.JSX.Element | void {
         setIntegrations(prev =>
             prev.map(i => {
                 if (i.id !== id) return i;

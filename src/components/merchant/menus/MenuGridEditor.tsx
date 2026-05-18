@@ -44,7 +44,7 @@ export function MenuGridEditor({
     onSaveInline,
     onBulkAvailabilityUpdate,
     onBulkPriceUpdate,
-}: MenuGridEditorProps) {
+}: MenuGridEditorProps): React.JSX.Element {
     const [editingItemId, setEditingItemId] = useState<string | null>(null);
     const [formState, setFormState] = useState<FormState | null>(null);
     const [fieldError, setFieldError] = useState<string | null>(null);
@@ -72,7 +72,7 @@ export function MenuGridEditor({
         setSelectedIds([]);
     }, [category.id]);
 
-    const startInlineEdit = (item: MenuItemSummary) => {
+    const startInlineEdit = (item: MenuItemSummary): React.JSX.Element => {
         if (readOnly) return;
         setEditingItemId(item.id);
         setFieldError(null);
@@ -84,7 +84,7 @@ export function MenuGridEditor({
         });
     };
 
-    const cancelInlineEdit = () => {
+    const cancelInlineEdit = (): React.JSX.Element => {
         if (isSaving) return;
         setEditingItemId(null);
         setFormState(null);
@@ -128,7 +128,7 @@ export function MenuGridEditor({
         };
     };
 
-    const saveInlineEdit = async () => {
+    const saveInlineEdit = async (): Promise<void> => {
         if (!editingItem || !formState) return;
 
         const payload = validateInlineForm();
@@ -148,13 +148,13 @@ export function MenuGridEditor({
         }
     };
 
-    const toggleSelection = (itemId: string) => {
+    const toggleSelection = (itemId: string): React.JSX.Element => {
         setSelectedIds(previous =>
             previous.includes(itemId) ? previous.filter(id => id !== itemId) : [...previous, itemId]
         );
     };
 
-    const runBulkAvailabilityUpdate = async (isAvailable: boolean) => {
+    const runBulkAvailabilityUpdate = async (isAvailable: boolean): Promise<void> => {
         if (selectedIds.length === 0) return;
         try {
             setIsBulkSaving(true);
@@ -206,7 +206,7 @@ export function MenuGridEditor({
 
     const previewResult = useMemo(() => computeBulkPriceUpdates(), [computeBulkPriceUpdates]);
 
-    const applyBulkPriceUpdates = async () => {
+    const applyBulkPriceUpdates = async (): Promise<void> => {
         const result = computeBulkPriceUpdates();
         if (result.error) {
             setBulkPriceError(result.error);

@@ -10,7 +10,7 @@ const HOURS = ['11a', '12p', '1p', '2p', '3p', '4p', '5p', '6p', '7p', '8p', '9p
 // Mock data: 0 (low) to 1 (high)
 const DATA = Array.from({ length: 7 }, () => Array.from({ length: 12 }, () => Math.random()));
 
-export function BusyHoursHeatmap() {
+export function BusyHoursHeatmap(): React.JSX.Element {
     return (
         <div className="rounded-3xl border border-gray-100 bg-white p-8 shadow-none">
             <div className="mb-8 flex items-center justify-between">

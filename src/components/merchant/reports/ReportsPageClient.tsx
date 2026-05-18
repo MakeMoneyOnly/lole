@@ -42,7 +42,7 @@ const TABS = [
     { id: 'export', label: 'Export Center', icon: Download },
 ];
 
-export function ReportsPageClient() {
+export function ReportsPageClient(): React.JSX.Element {
     const [activeTab, setActiveTab] = useState('sales');
     const [dateRangeType, setDateRangeType] = useState('today_vs_last_week');
     const [customRange, setCustomRange] = useState({

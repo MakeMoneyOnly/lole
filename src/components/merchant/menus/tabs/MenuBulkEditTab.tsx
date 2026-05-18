@@ -17,7 +17,7 @@ interface Category {
     items?: MenuBulkItem[];
 }
 
-export function MenuBulkEditTab({ initialData }: { initialData?: unknown }) {
+export function MenuBulkEditTab({ initialData }: { initialData?: unknown }): React.JSX.Element {
     const categories = ((initialData as Record<string, unknown>)?.categories || []) as Category[];
     const allItems = categories.flatMap(cat =>
         (cat.items || []).map(item => ({ ...item, categoryName: cat.name }))

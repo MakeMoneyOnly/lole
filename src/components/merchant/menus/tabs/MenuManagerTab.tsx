@@ -43,7 +43,7 @@ const mockCategory: CategoryWithItems = {
     ],
 };
 
-export function MenuManagerTab({ initialData }: { initialData?: unknown }) {
+export function MenuManagerTab({ initialData }: { initialData?: unknown }): React.JSX.Element {
     const categories = ((initialData as Record<string, unknown>)?.categories || [
         mockCategory,
     ]) as CategoryWithItems[];

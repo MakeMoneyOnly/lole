@@ -8,7 +8,7 @@ interface ActivityStreamProps {
     loading: boolean;
 }
 
-export function ActivityStream({ activities, loading }: ActivityStreamProps) {
+export function ActivityStream({ activities, loading }: ActivityStreamProps): React.JSX.Element {
     return (
         <div className="no-scrollbar relative flex-1 space-y-8 overflow-y-auto pr-2 pb-4">
             {/* Vertical Line */}

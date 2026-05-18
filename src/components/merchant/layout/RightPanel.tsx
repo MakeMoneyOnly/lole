@@ -6,18 +6,18 @@ import { toast } from 'react-hot-toast';
 import { ProfileSection } from './RightPanelProfile';
 import { LoleChatbot } from '@/components/merchant/shared/LoleChatbot';
 
-export function RightPanel() {
+export function RightPanel(): React.JSX.Element {
     const { loading, restaurantName, restaurantHandle } = useMerchantActivity();
 
-    const handleNotificationClick = () => {
+    const handleNotificationClick = (): React.JSX.Element => {
         toast('No new notifications', { icon: '🔔' });
     };
 
-    const handleMessageClick = () => {
+    const handleMessageClick = (): React.JSX.Element => {
         toast('No new messages', { icon: '💬' });
     };
 
-    const handleMoreClick = () => {
+    const handleMoreClick = (): React.JSX.Element => {
         toast('Settings menu', { icon: '⚙️' });
     };
 

@@ -3,7 +3,7 @@
 import React from 'react';
 import { Truck, FileText } from 'lucide-react';
 
-export function ConnectionsView() {
+export function ConnectionsView(): React.JSX.Element {
     return (
         <div className="animate-in fade-in slide-in-from-bottom-2 space-y-8 duration-500">
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">

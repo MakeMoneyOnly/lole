@@ -3,7 +3,7 @@
 import React from 'react';
 import { Clock, History, Plus, MoreHorizontal, AlertCircle, CheckCircle2 } from 'lucide-react';
 
-export function HoursView() {
+export function HoursView(): React.JSX.Element {
     return (
         <div className="animate-in fade-in slide-in-from-bottom-2 space-y-8 pb-12 duration-500">
             <div className="flex flex-col gap-8 rounded-3xl border border-gray-100 bg-white p-8 shadow-none">

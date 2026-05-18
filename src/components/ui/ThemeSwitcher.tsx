@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { Theme } from '@/components/ui/theme';
 
-export const ThemeSwitcher = () => {
+export const ThemeSwitcher = (): React.JSX.Element | null => {
     const pathname = usePathname();
 
     // Only show on landing page

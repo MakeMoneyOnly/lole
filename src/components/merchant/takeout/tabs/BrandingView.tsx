@@ -4,7 +4,7 @@ import React from 'react';
 import { Palette, Plus, ShoppingBag, CheckCircle2, Truck, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export function BrandingView() {
+export function BrandingView(): React.JSX.Element {
     return (
         <div className="animate-in fade-in slide-in-from-bottom-2 space-y-8 pb-12 duration-500">
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">

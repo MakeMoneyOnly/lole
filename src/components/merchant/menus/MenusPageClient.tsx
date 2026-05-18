@@ -17,7 +17,7 @@ const TABS = [
     { id: 'publish', label: 'Publish Changes', icon: UploadCloud, badge: 3 },
 ];
 
-export function MenusPageClient({ initialData }: { initialData?: unknown }) {
+export function MenusPageClient({ initialData }: { initialData?: unknown }): React.JSX.Element {
     const [activeTab, setActiveTab] = useState('manager');
 
     return (

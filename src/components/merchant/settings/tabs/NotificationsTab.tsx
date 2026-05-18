@@ -3,7 +3,7 @@
 import React from 'react';
 import { Smartphone, Mail } from 'lucide-react';
 
-export function NotificationsTab() {
+export function NotificationsTab(): React.JSX.Element {
     return (
         <div className="animate-in fade-in slide-in-from-bottom-2 space-y-8 pb-12 duration-500">
             <div className="flex items-center justify-between">

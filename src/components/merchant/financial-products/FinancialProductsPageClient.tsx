@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-export function FinancialProductsPageClient() {
+export function FinancialProductsPageClient(): React.JSX.Element {
     return (
         <div className="flex flex-col gap-6 p-8">
             <h1 className="text-2xl font-bold">Financial Products</h1>

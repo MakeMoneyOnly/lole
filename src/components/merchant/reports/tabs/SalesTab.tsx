@@ -45,7 +45,7 @@ const RAW_SALES_DATA = [
     { id: 12, item: 'Firfir', cat: 'Food', qty: 35, gross: 4200, net: 3652, tax: 548 },
 ];
 
-export function SalesTab() {
+export function SalesTab(): React.JSX.Element {
     // Data Grid States
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(
         null
@@ -77,7 +77,7 @@ export function SalesTab() {
         currentPage * itemsPerPage
     );
 
-    const handleSort = (key: string) => {
+    const handleSort = (key: string): React.JSX.Element => {
         let direction: 'asc' | 'desc' = 'asc';
         if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
             direction = 'desc';
@@ -85,7 +85,7 @@ export function SalesTab() {
         setSortConfig({ key, direction });
     };
 
-    const toggleActionMenu = (id: number) => {
+    const toggleActionMenu = (id: number): React.JSX.Element => {
         setActionMenuOpenId(actionMenuOpenId === id ? null : id);
     };
 

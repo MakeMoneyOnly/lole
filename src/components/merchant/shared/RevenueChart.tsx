@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import React, { useEffect, useRef, useState } from 'react';
 
 // Chart skeleton loader for better UX during lazy loading
-const ChartSkeleton = () => (
+const ChartSkeleton = (): React.JSX.Element => (
     <div className="h-[300px] w-full animate-pulse rounded-2xl bg-gray-50/50" />
 );
 
@@ -25,7 +25,7 @@ interface RevenueChartProps {
     data?: ChartPoint[];
 }
 
-const RevenueChart = ({ data = [] }: RevenueChartProps) => {
+const RevenueChart = ({ data = [] }: RevenueChartProps): React.JSX.Element => {
     const [mounted, setMounted] = useState(false);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const [chartSize, setChartSize] = useState({ width: 0, height: 0 });

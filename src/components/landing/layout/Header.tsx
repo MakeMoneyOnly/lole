@@ -15,7 +15,7 @@ interface HeaderProps {
     setIsFeaturesOpen: (open: boolean) => void;
 }
 
-export function Header({ isScrolled, isFeaturesOpen, setIsFeaturesOpen }: HeaderProps) {
+export function Header({ isScrolled, isFeaturesOpen, setIsFeaturesOpen }: HeaderProps): React.JSX.Element {
     return (
         <div
             className={`fixed top-0 right-0 left-0 z-50 flex w-full justify-center transition-all duration-500 ease-in-out ${

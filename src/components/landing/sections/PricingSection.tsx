@@ -75,7 +75,7 @@ interface PricingSectionProps {
     setBillPlan: (plan: 'monthly' | 'annually') => void;
 }
 
-export function PricingSection({ billPlan, setBillPlan }: PricingSectionProps) {
+export function PricingSection({ billPlan, setBillPlan }: PricingSectionProps): React.JSX.Element {
     return (
         <div className="relative z-10 box-border w-full px-4 pt-8 md:px-10 md:pt-12 lg:px-20">
             <div className="w-full">

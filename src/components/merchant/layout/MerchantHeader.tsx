@@ -5,7 +5,7 @@ import { Bell, Plus, Zap } from 'lucide-react';
 import Image from 'next/image';
 import { LocationSwitcher } from '@/components/merchant/shared/LocationSwitcher';
 
-export function MerchantHeader() {
+export function MerchantHeader(): React.JSX.Element {
     return (
         <header className="sticky top-0 z-40 flex h-[88px] w-full items-center justify-between border-b border-[#F1F1F1] bg-white px-6 lg:px-10">
             {/* 1. Location Switcher (Replaced Search) */}

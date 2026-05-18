@@ -7,7 +7,7 @@ interface FaqSectionProps {
     setOpenFaq: (idx: number | null) => void;
 }
 
-export function FaqSection({ openFaq, setOpenFaq }: FaqSectionProps) {
+export function FaqSection({ openFaq, setOpenFaq }: FaqSectionProps): React.JSX.Element {
     const questions = [
         'How is Lole different from other POS systems?',
         'What type of businesses can benefit from Lole?',

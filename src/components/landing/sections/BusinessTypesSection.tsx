@@ -46,7 +46,7 @@ interface BusinessTypesSectionProps {
     onScroll: (direction: 'left' | 'right') => void;
 }
 
-export function BusinessTypesSection({ scrollRef, onScroll }: BusinessTypesSectionProps) {
+export function BusinessTypesSection({ scrollRef, onScroll }: BusinessTypesSectionProps): React.JSX.Element {
     return (
         <section className="w-full overflow-hidden bg-[#17120B] px-4 py-12 md:px-10 lg:px-20">
             <div className="w-full">

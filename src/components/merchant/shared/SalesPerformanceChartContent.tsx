@@ -16,7 +16,7 @@ const SalesPerformanceChartContent = ({
     data,
     width,
     height,
-}: SalesPerformanceChartContentProps) => {
+}: SalesPerformanceChartContentProps): React.JSX.Element => {
     // We create gauge segments.
     // Total Sales arc
     const totalSalesData = [

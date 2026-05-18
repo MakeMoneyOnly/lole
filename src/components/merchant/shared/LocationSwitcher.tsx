@@ -12,7 +12,7 @@ const locations = [
     { id: '5', name: 'Cafe Lucia', branch: 'CMC' },
 ];
 
-export function LocationSwitcher() {
+export function LocationSwitcher(): React.JSX.Element {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState(locations[2]); // Default to Kazanchis for demo
 

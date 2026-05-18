@@ -16,8 +16,7 @@ const EMPTY_STATUS: PrinterSpoolerStatus = {
     printers: [],
     queue: [],
 };
-
-function statusTone(state: string) {
+function statusTone(): React.JSX.Element | void {
     switch (state) {
         case 'healthy':
             return 'bg-green-50 text-green-700';
@@ -30,13 +29,13 @@ function statusTone(state: string) {
     }
 }
 
-export function DevicesTab() {
+export function DevicesTab(): React.JSX.Element {
     const [spooler, setSpooler] = useState<PrinterSpoolerStatus>(EMPTY_STATUS);
 
     useEffect(() => {
         let cancelled = false;
 
-        const load = async () => {
+        const load = async (): Promise<void> => {
             const next = await readPrinterSpoolerStatus();
             if (!cancelled) {
                 setSpooler(next);

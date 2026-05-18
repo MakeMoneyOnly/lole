@@ -13,7 +13,7 @@ import { MerchantHeader } from './MerchantHeader';
  * Inner shell — must be a child of SidebarProvider so it can
  * read isCollapsed and adjust the main content margin.
  */
-function DashboardShell({ children }: { children: React.ReactNode }) {
+function DashboardShell({ children }: { children: React.ReactNode }): React.JSX.Element {
     const { isCollapsed: _isCollapsed } = useSidebar();
 
     return (
@@ -51,7 +51,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
     );
 }
 
-export function DashboardLayoutClient({ children }: { children: React.ReactNode }) {
+export function DashboardLayoutClient({ children }: { children: React.ReactNode }): React.JSX.Element {
     // Lock scroll for dashboard experience
     React.useLayoutEffect(() => {
         const html = document.documentElement;

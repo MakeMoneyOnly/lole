@@ -7,7 +7,7 @@ interface BroadcastInputProps {
     onKeyDown: (e: React.KeyboardEvent) => void;
 }
 
-export function BroadcastInput({ value, onChange, onBroadcast, onKeyDown }: BroadcastInputProps) {
+export function BroadcastInput({ value, onChange, onBroadcast, onKeyDown }: BroadcastInputProps): React.JSX.Element {
     return (
         <div className="relative mt-auto bg-white pt-6">
             <div className="group relative">

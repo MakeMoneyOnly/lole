@@ -5,7 +5,7 @@ import { Settings, Zap, AlertCircle, CheckCircle2, Activity } from 'lucide-react
 import { cn } from '@/lib/utils';
 import { ModernSelect } from '../../shared/ModernSelect';
 
-export function StrategiesView() {
+export function StrategiesView(): React.JSX.Element {
     return (
         <div className="animate-in fade-in slide-in-from-bottom-2 space-y-8 pb-12 duration-500">
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">

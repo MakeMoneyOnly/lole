@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Instagram, Facebook, Linkedin, Youtube, Globe, ChevronDown } from 'lucide-react';
 
-export function Footer() {
+export function Footer(): React.JSX.Element {
     return (
         <div className="w-full p-3 md:p-4">
             <footer className="relative flex min-h-[400px] w-full flex-col justify-between overflow-hidden rounded-[1.5rem] bg-gradient-to-r from-[#170B05] via-[#481A05] to-[#E34105] px-8 pt-[60px] pb-[62px] md:rounded-4xl md:px-12 md:pt-[80px] md:pb-[78px] lg:px-16 lg:pt-[75px] lg:pb-[94px]">

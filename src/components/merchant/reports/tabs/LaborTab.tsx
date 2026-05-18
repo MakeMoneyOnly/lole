@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { ModernSelect } from '../../shared/ModernSelect';
 
-export function LaborTab() {
+export function LaborTab(): React.JSX.Element {
     return (
         <div className="animate-in fade-in slide-in-from-bottom-2 space-y-8 pb-12 duration-500">
             {/* Labor Summary */}

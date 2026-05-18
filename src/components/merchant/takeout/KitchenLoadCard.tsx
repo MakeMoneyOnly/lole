@@ -4,7 +4,7 @@ import React from 'react';
 import { Activity, Info, History, ArrowUpRight } from 'lucide-react';
 import SalesPerformanceChart from '@/components/merchant/shared/SalesPerformanceChart';
 
-export function KitchenLoadCard() {
+export function KitchenLoadCard(): React.JSX.Element {
     return (
         <div className="flex h-full flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-none">
             <div className="flex flex-1 flex-col gap-6 p-8">

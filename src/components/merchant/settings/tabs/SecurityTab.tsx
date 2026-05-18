@@ -6,11 +6,11 @@ import { getSupabaseClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
 
-export function SecurityTab() {
+export function SecurityTab(): React.JSX.Element {
     const router = useRouter();
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-    const handleLogout = async () => {
+    const handleLogout = async (): Promise<void> => {
         try {
             setIsLoggingOut(true);
             const supabase = getSupabaseClient();

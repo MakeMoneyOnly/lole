@@ -5,7 +5,7 @@ import { Calendar, Layout, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ModernSelect } from '../shared/ModernSelect';
 
-export function ReportsFilters() {
+export function ReportsFilters(): React.JSX.Element {
     return (
         <div className="mb-8 flex flex-wrap items-center gap-4 rounded-3xl border border-gray-100 bg-gray-50/30 p-4">
             {/* Date Range Picker Placeholder */}

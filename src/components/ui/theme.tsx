@@ -18,7 +18,7 @@ export function Theme({
     themes = ['light', 'dark', 'system'],
     showLabel = false,
     className,
-}: ThemeProps) {
+}: ThemeProps): React.JSX.Element {
     const { theme, setTheme } = useTheme();
     const [mounted, setMounted] = React.useState(false);
     const [isOpen, setIsOpen] = React.useState(false);

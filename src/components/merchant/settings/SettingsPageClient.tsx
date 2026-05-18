@@ -38,7 +38,7 @@ const TABS = [
     { id: 'modules', label: 'Plan & Modules', icon: Smartphone },
 ];
 
-export function SettingsPageClient() {
+export function SettingsPageClient(): React.JSX.Element {
     const [activeTab, setActiveTab] = useState('business');
 
     return (

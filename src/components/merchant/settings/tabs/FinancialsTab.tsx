@@ -5,7 +5,7 @@ import { Landmark, Calculator, Calendar, ArrowUpRight, TrendingUp } from 'lucide
 import { cn } from '@/lib/utils';
 import { ModernSelect } from '../../shared/ModernSelect';
 
-export function FinancialsTab() {
+export function FinancialsTab(): React.JSX.Element {
     return (
         <div className="animate-in fade-in slide-in-from-bottom-2 space-y-8 pb-12 duration-500">
             <div className="flex items-center justify-between">

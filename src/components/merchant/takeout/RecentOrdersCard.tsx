@@ -3,7 +3,7 @@
 import React from 'react';
 import { ShoppingBag, Info } from 'lucide-react';
 
-export function RecentOrdersCard() {
+export function RecentOrdersCard(): React.JSX.Element {
     return (
         <div className="overflow-hidden rounded-3xl border border-gray-100 bg-white p-8 shadow-none">
             <div className="mb-6 flex items-center justify-between">

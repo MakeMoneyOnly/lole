@@ -10,7 +10,7 @@ type CommandItem = {
     run: () => void;
 };
 
-export function CommandBarShell() {
+export function CommandBarShell(): React.JSX.Element {
     const router = useRouter();
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState('');
@@ -61,7 +61,7 @@ export function CommandBarShell() {
     );
 
     useEffect(() => {
-        const onKeyDown = (event: KeyboardEvent) => {
+        const onKeyDown = (event: KeyboardEvent): void => {
             if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
                 event.preventDefault();
                 setOpen(value => !value);

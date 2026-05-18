@@ -36,7 +36,7 @@ export function ModernSelect({
     const selectedOption = options.find(o => o.value === currentValue);
 
     useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
+        const handleClickOutside = (event: MouseEvent): void => {
             if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
             }
@@ -45,7 +45,7 @@ export function ModernSelect({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleSelect = (val: string) => {
+    const handleSelect = (val: string): void => {
         setInternalValue(val);
         setIsOpen(false);
         onChange?.(val);

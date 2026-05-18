@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
-export function HeroSection() {
+export function HeroSection(): React.JSX.Element {
     return (
         <div className="box-border h-svh w-full p-3 md:p-4">
             {/* Hero Card */}

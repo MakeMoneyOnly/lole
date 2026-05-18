@@ -52,7 +52,7 @@ const Pagination = React.forwardRef<HTMLDivElement, PaginationProps>(
         ref
     ) => {
         // Generate page numbers to display
-        const getPageNumbers = () => {
+        const getPageNumbers = (): (number | string)[] => {
             const pages: (number | string)[] = [];
             const totalNumbers = siblingCount * 2 + 3; // siblings + current + first/last + separators
             const _totalDots = 3;
@@ -92,13 +92,13 @@ const Pagination = React.forwardRef<HTMLDivElement, PaginationProps>(
 
         const pageNumbers = getPageNumbers();
 
-        const handlePrevious = () => {
+        const handlePrevious = (): void => {
             if (currentPage > 1) {
                 onPageChange(currentPage - 1);
             }
         };
 
-        const handleNext = () => {
+        const handleNext = (): void => {
             if (currentPage < totalPages) {
                 onPageChange(currentPage + 1);
             }

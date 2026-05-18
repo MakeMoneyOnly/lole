@@ -41,7 +41,7 @@ const TABS = [
 // Main Component
 // ─────────────────────────────────────────────
 
-export function FOHPageClient() {
+export function FOHPageClient(): React.JSX.Element {
     const [activeTab, setActiveTab] = useState('dashboard');
     const qrActive = true;
 
@@ -147,7 +147,7 @@ export function FOHPageClient() {
 // View Components
 // ─────────────────────────────────────────────
 
-function FOHDashboardView() {
+function FOHDashboardView(): React.JSX.Element {
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
@@ -377,7 +377,7 @@ function FOHDashboardView() {
     );
 }
 
-function FloorPlanView() {
+function FloorPlanView(): React.JSX.Element {
     return (
         <div className="space-y-8 pb-12">
             <div className="flex items-center justify-between">
@@ -454,7 +454,7 @@ function FloorPlanView() {
     );
 }
 
-function OrderScreenView() {
+function OrderScreenView(): React.JSX.Element {
     return (
         <div className="space-y-8 pb-12">
             <div className="rounded-3xl border border-gray-100 bg-white p-8 shadow-none">
@@ -527,7 +527,7 @@ function OrderScreenView() {
     );
 }
 
-function MobileDiningView() {
+function MobileDiningView(): React.JSX.Element {
     return (
         <div className="space-y-8 pb-12">
             <div className="rounded-3xl border border-gray-100 bg-white p-8 shadow-none">
@@ -583,7 +583,7 @@ function MobileDiningView() {
     );
 }
 
-function RevenueCentersView() {
+function RevenueCentersView(): React.JSX.Element {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -666,7 +666,7 @@ function RevenueCentersView() {
     );
 }
 
-function MessagingView() {
+function MessagingView(): React.JSX.Element {
     return (
         <div className="space-y-8 pb-12">
             <div className="rounded-3xl border border-gray-100 bg-white p-8 shadow-none">

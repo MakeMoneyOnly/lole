@@ -4,7 +4,7 @@ import React from 'react';
 import { Plus, MapPin, Phone, Building, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export function LocationsTab() {
+export function LocationsTab(): React.JSX.Element {
     return (
         <div className="animate-in fade-in slide-in-from-bottom-2 space-y-8 pb-12 duration-500">
             <div className="flex items-center justify-between">

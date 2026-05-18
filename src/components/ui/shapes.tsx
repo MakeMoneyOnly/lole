@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 
-export function PriceBurst({ className }: { className?: string }) {
+export function PriceBurst({ className }: { className?: string }): React.JSX.Element {
     return (
         <svg
             viewBox="0 0 100 100"
@@ -17,7 +17,7 @@ export function PriceBurst({ className }: { className?: string }) {
     );
 }
 
-export function ScallopBg({ className, active }: { className?: string; active?: boolean }) {
+export function ScallopBg({ className, active }: { className?: string; active?: boolean }): React.JSX.Element {
     return (
         <div className={cn('relative h-full w-full', className)}>
             {/* This approximates the scallop shape using CSS mask or SVG. 

@@ -47,8 +47,7 @@ const PROVIDERS: Array<'beu' | 'deliver_addis' | 'zmall' | 'esoora' | 'custom_lo
     'custom_local',
 ];
 const DASHBOARD_LOCALE = 'en-ET';
-
-function toLabel(value: string) {
+function toLabel(value: string): string {
     return value.replace(/_/g, ' ').replace(/\b\w/g, match => match.toUpperCase());
 }
 
@@ -69,7 +68,7 @@ function CustomSelect({
     const ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
+        function handleClickOutside(event: MouseEvent): void {
             if (ref.current && !ref.current.contains(event.target as Node)) {
                 setOpen(false);
             }

@@ -62,7 +62,7 @@ ModalContent.displayName = DialogPrimitive.Content.displayName;
 
 type ModalHeaderProps = React.HTMLAttributes<HTMLDivElement>;
 
-const ModalHeader = ({ className, ...props }: ModalHeaderProps) => (
+const ModalHeader = ({ className, ...props }: ModalHeaderProps): React.JSX.Element => (
     <div
         className={cn('flex flex-col space-y-1.5 text-center sm:text-left', className)}
         {...props}
@@ -72,7 +72,7 @@ ModalHeader.displayName = 'ModalHeader';
 
 type ModalFooterProps = React.HTMLAttributes<HTMLDivElement>;
 
-const ModalFooter = ({ className, ...props }: ModalFooterProps) => (
+const ModalFooter = ({ className, ...props }: ModalFooterProps): React.JSX.Element => (
     <div
         className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)}
         {...props}

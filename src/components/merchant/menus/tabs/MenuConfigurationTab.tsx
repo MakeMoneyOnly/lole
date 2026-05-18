@@ -3,7 +3,7 @@
 import React from 'react';
 import { Clock, RefreshCw } from 'lucide-react';
 
-export function MenuConfigurationTab() {
+export function MenuConfigurationTab(): React.JSX.Element {
     return (
         <div className="flex max-w-6xl gap-8">
             {/* Left Column: Forms */}

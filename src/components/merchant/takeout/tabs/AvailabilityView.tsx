@@ -5,7 +5,7 @@ import { MapPin, CheckCircle2, Zap, PauseCircle, Clock, Truck } from 'lucide-rea
 import { ModernSelect } from '../../shared/ModernSelect';
 import { DeliveryZoneBuilder } from '../DeliveryZoneBuilder';
 
-export function AvailabilityView() {
+export function AvailabilityView(): React.JSX.Element {
     return (
         <div className="space-y-8 pb-12">
             {/* 1. Core Service Toggles & Mapping */}

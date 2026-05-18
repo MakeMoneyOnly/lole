@@ -33,10 +33,10 @@ export function ContemporaryCalendar({
     const [from, setFrom] = useState<Date | null>(initialFrom || null);
     const [to, setTo] = useState<Date | null>(initialTo || null);
 
-    const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
-    const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+    const nextMonth = (): void => setCurrentMonth(addMonths(currentMonth, 1));
+    const prevMonth = (): void => setCurrentMonth(subMonths(currentMonth, 1));
 
-    const handleDateClick = (day: Date) => {
+    const handleDateClick = (day: Date): void => {
         if (!from || (from && to)) {
             setFrom(day);
             setTo(null);
@@ -51,7 +51,7 @@ export function ContemporaryCalendar({
         }
     };
 
-    const renderHeader = () => {
+    const renderHeader = (): React.JSX.Element => {
         return (
             <div className="flex items-center justify-between px-2 pt-2">
                 <button
@@ -73,7 +73,7 @@ export function ContemporaryCalendar({
         );
     };
 
-    const renderDays = () => {
+    const renderDays = (): React.JSX.Element => {
         const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
         return (
             <div className="mb-2 grid grid-cols-7 border-b border-gray-50">
@@ -89,7 +89,7 @@ export function ContemporaryCalendar({
         );
     };
 
-    const renderCells = () => {
+    const renderCells = (): React.JSX.Element => {
         const monthStart = startOfMonth(currentMonth);
         const monthEnd = endOfMonth(monthStart);
         const startDate = startOfWeek(monthStart);

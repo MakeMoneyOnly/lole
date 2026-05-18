@@ -3,7 +3,7 @@
 import React from 'react';
 import { Plus, Search, Edit2, Trash2 } from 'lucide-react';
 
-export function ModifierGroupsTab() {
+export function ModifierGroupsTab(): React.JSX.Element {
     return (
         <div className="flex max-w-5xl flex-col gap-6">
             <div className="flex items-center justify-between">

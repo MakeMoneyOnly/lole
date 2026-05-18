@@ -6,14 +6,7 @@ import { SendIcon, LoaderIcon, BarChart3, ShoppingBag, Users, Zap } from 'lucide
 import { motion, AnimatePresence } from 'framer-motion';
 
 // ─── Auto-resize textarea hook ───────────────────────────────────────────────
-
-function useAutoResizeTextarea({
-    minHeight,
-    maxHeight,
-}: {
-    minHeight: number;
-    maxHeight?: number;
-}) {
+function useAutoResizeTextarea(): React.JSX.Element | void {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const adjustHeight = useCallback(
@@ -62,7 +55,7 @@ ChatTextarea.displayName = 'ChatTextarea';
 
 // ─── Typing dots ─────────────────────────────────────────────────────────────
 
-function TypingDots() {
+function TypingDots(): React.JSX.Element {
     return (
         <div className="flex items-center gap-0.5">
             {[0, 1, 2].map(i => (
@@ -147,7 +140,7 @@ function getMockReply(input: string): string {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function LoleChatbot() {
+export function LoleChatbot(): React.JSX.Element {
     const [messages, setMessages] = useState<Message[]>([
         {
             id: '0',
@@ -207,7 +200,7 @@ export function LoleChatbot() {
         [isTyping, adjustHeight]
     );
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>): React.JSX.Element => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage(value);

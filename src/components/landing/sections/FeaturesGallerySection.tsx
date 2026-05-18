@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
-export function FeaturesGallerySection() {
+export function FeaturesGallerySection(): React.JSX.Element {
     return (
         <div className="w-full py-16 md:py-24">
             <div className="mb-12 box-border w-full px-4 md:mb-16 md:px-10 lg:px-20">

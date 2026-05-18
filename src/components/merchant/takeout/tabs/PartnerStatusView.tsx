@@ -4,7 +4,7 @@ import React from 'react';
 import { Kanban, Zap, ShoppingBag, Settings2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export function PartnerStatusView() {
+export function PartnerStatusView(): React.JSX.Element {
     return (
         <div className="animate-in fade-in slide-in-from-bottom-2 space-y-8 pb-12 duration-500">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">

@@ -5,7 +5,7 @@ import { Building2, FileText, MapPin, BadgeCheck } from 'lucide-react';
 
 import { ModernSelect } from '../../shared/ModernSelect';
 
-export function BusinessInfoTab() {
+export function BusinessInfoTab(): React.JSX.Element {
     return (
         <div className="animate-in fade-in slide-in-from-bottom-2 space-y-8 pb-12 duration-500">
             <div className="flex items-center justify-between">

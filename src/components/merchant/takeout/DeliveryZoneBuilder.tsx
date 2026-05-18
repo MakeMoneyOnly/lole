@@ -6,7 +6,7 @@ import { GoogleMap, useJsApiLoader, DrawingManager } from '@react-google-maps/ap
 
 const MAP_LIBRARIES: ('drawing' | 'geometry' | 'places' | 'visualization')[] = ['drawing'];
 
-export function DeliveryZoneBuilder() {
+export function DeliveryZoneBuilder(): React.JSX.Element {
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script-drawing',
         googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',

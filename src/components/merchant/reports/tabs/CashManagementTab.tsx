@@ -3,7 +3,7 @@
 import React from 'react';
 import { Wallet, Banknote, Printer, FileText, Info } from 'lucide-react';
 
-export function CashManagementTab() {
+export function CashManagementTab(): React.JSX.Element {
     return (
         <div className="animate-in fade-in slide-in-from-bottom-2 space-y-8 pb-12 duration-500">
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2">

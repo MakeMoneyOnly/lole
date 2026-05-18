@@ -15,7 +15,7 @@ const TABS = [
     { id: 'tips', label: 'Tips', icon: Banknote },
 ];
 
-export function EmployeesPageClient() {
+export function EmployeesPageClient(): React.JSX.Element {
     const [activeTab, setActiveTab] = useState('team');
 
     const titles: Record<string, { title: string; desc: string }> = {

@@ -4,7 +4,7 @@ import React from 'react';
 import { Download, ListFilter, PieChart, Info, ArrowRight } from 'lucide-react';
 import { ModernSelect } from '../../shared/ModernSelect';
 
-export function PaymentsTab() {
+export function PaymentsTab(): React.JSX.Element {
     return (
         <div className="animate-in fade-in slide-in-from-bottom-2 space-y-8 pb-12 duration-500">
             {/* Payment Method Breakdown */}

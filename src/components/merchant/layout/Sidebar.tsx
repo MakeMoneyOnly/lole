@@ -27,8 +27,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useSidebar } from '@/context/SidebarContext';
 import { motion, AnimatePresence } from 'framer-motion';
-
-function SidebarTooltip({ label, children }: { label: string; children: React.ReactNode }) {
+function SidebarTooltip(): React.JSX.Element | void {
     const [isVisible, setIsVisible] = React.useState(false);
     const [coords, setCoords] = React.useState({ top: 0, left: 0 });
     const triggerRef = React.useRef<HTMLDivElement>(null);
@@ -37,7 +36,7 @@ function SidebarTooltip({ label, children }: { label: string; children: React.Re
     // Early return if not collapsed
     if (!isCollapsed) return <>{children}</>;
 
-    const handleMouseEnter = () => {
+    const handleMouseEnter = (): React.JSX.Element => {
         if (triggerRef.current) {
             const rect = triggerRef.current.getBoundingClientRect();
             // Position the tooltip at the center-right of the trigger
@@ -128,7 +127,7 @@ const BOTTOM_LINKS = [
     { href: '/merchant/settings', icon: Settings, label: 'Settings' },
 ];
 
-export function Sidebar() {
+export function Sidebar(): React.JSX.Element {
     const pathname = usePathname();
     const { isCollapsed } = useSidebar();
 

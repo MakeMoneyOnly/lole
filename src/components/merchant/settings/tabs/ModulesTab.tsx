@@ -95,7 +95,7 @@ const MODULES = [
     },
 ];
 
-export function ModulesTab() {
+export function ModulesTab(): React.JSX.Element {
     return (
         <div className="animate-in fade-in slide-in-from-bottom-2 space-y-8 pb-12 duration-500">
             <div className="flex items-center justify-between">

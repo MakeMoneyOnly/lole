@@ -48,7 +48,8 @@ export const GuestMenuBottomNav: React.FC<{
     activeIndex: number;
     onIndexChange: (index: number) => void;
     isOnlineOrderMode?: boolean;
-}> = ({ activeIndex, onIndexChange, isOnlineOrderMode: _isOnlineOrderMode }) => {
+    cartCount?: number;
+}> = ({ activeIndex, onIndexChange, isOnlineOrderMode: _isOnlineOrderMode, cartCount = 0 }) => {
     return (
         <div className="fixed right-0 bottom-3 left-0 z-50 flex justify-center px-6">
             <div className="flex h-[66px] w-full max-w-[420px] items-center justify-between rounded-[24px] border border-white/5 bg-[#000000] px-[8px] shadow-2xl shadow-black/60 backdrop-blur-md">
@@ -83,11 +84,21 @@ export const GuestMenuBottomNav: React.FC<{
                                         : 'w-[46px] text-white/50 hover:text-white/90'
                                 )}
                             >
-                                <img
-                                    src={isActive ? tab.iconFill : tab.iconLine}
-                                    alt={tab.label}
-                                    className="h-[22px] w-[22px]"
-                                />
+                                <div className="relative">
+                                    <img
+                                        src={isActive ? tab.iconFill : tab.iconLine}
+                                        alt={tab.label}
+                                        className="h-[22px] w-[22px]"
+                                    />
+                                    {tab.id === 3 && cartCount > 0 && (
+                                        <span className={cn(
+                                            "absolute -top-2 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold shadow-sm border border-black transition-all",
+                                            isActive ? "bg-[#000000] text-[#DDF853] border-white/20" : "bg-[#DDF853] text-[#000000]"
+                                        )}>
+                                            {cartCount}
+                                        </span>
+                                    )}
+                                </div>
                                 {isActive && (
                                     <span className="font-inter text-[13px] font-normal tracking-tight whitespace-nowrap select-none">
                                         {tab.label}

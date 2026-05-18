@@ -4,16 +4,16 @@ import React, { useState } from 'react';
 import { Download, Mail, FileSpreadsheet, CalendarClock, Plus, Trash2, Info } from 'lucide-react';
 import { ModernSelect } from '../../shared/ModernSelect';
 
-export function ExportTab() {
+export function ExportTab(): React.JSX.Element {
     const [emails, setEmails] = useState(['']);
 
-    const addEmail = () => setEmails([...emails, '']);
-    const updateEmail = (index: number, value: string) => {
+    const addEmail = (): React.JSX.Element => setEmails([...emails, '']);
+    const updateEmail = (index: number, value: string): React.JSX.Element => {
         const newEmails = [...emails];
         newEmails[index] = value;
         setEmails(newEmails);
     };
-    const removeEmail = (index: number) => {
+    const removeEmail = (index: number): React.JSX.Element => {
         if (emails.length === 1) {
             setEmails(['']);
             return;

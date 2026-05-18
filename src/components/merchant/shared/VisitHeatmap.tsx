@@ -7,7 +7,7 @@ interface VisitHeatmapProps {
     columns?: number;
 }
 
-const VisitHeatmap = ({ columns = 19 }: VisitHeatmapProps) => {
+const VisitHeatmap = ({ columns = 19 }: VisitHeatmapProps): React.JSX.Element => {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     // Generate data for 20 columns starting from 7AM
@@ -15,7 +15,7 @@ const VisitHeatmap = ({ columns = 19 }: VisitHeatmapProps) => {
     const endHour = 23; // 11 PM
     const totalHours = endHour - startHour;
 
-    const generateIntensities = (day: string) => {
+    const generateIntensities = (day: string): React.JSX.Element => {
         return Array.from({ length: columns }, (_, i) => {
             const progress = i / (columns - 1);
             const hour = startHour + progress * totalHours;

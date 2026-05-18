@@ -18,7 +18,7 @@ interface RevenueChartContentProps {
 
 // This component is lazy-loaded via Next.js dynamic import
 // to reduce the initial bundle size by ~300KB (recharts library)
-const RevenueChartContent = ({ data, width, height }: RevenueChartContentProps) => {
+const RevenueChartContent = ({ data, width, height }: RevenueChartContentProps): React.JSX.Element => {
     return (
         <AreaChart
             width={width}

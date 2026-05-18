@@ -79,12 +79,12 @@ export function HelpSupportPageClient({
         }
     }, []);
 
-    const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSearch = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
         event.preventDefault();
         await loadArticles(query);
     };
 
-    const handleTicketSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    const handleTicketSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
         event.preventDefault();
         const trimmedSubject = subject.trim();
         const trimmedDescription = description.trim();

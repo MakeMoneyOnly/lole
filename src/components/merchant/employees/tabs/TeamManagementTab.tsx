@@ -5,7 +5,7 @@ import { Users, Search, Plus, Edit2, Lock, Wallet, Image as ImageIcon } from 'lu
 import { cn } from '@/lib/utils';
 import { ModernSelect } from '../../shared/ModernSelect';
 
-export function TeamManagementTab() {
+export function TeamManagementTab(): React.JSX.Element {
     const [isAdding, setIsAdding] = useState(false);
 
     if (isAdding) {

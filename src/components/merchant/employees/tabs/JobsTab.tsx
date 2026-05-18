@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Briefcase, Plus, Edit2, Shield } from 'lucide-react';
 import { ModernSelect } from '../../shared/ModernSelect';
 
-export function JobsTab() {
+export function JobsTab(): React.JSX.Element {
     const [isAdding, setIsAdding] = useState(false);
 
     if (isAdding) {

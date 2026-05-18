@@ -42,7 +42,7 @@ const TABS = [
 // Main Component
 // ─────────────────────────────────────────────
 
-export function TakeoutPageClient() {
+export function TakeoutPageClient(): React.JSX.Element {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [isOnline, setIsOnline] = useState(true);
 

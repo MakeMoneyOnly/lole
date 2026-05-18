@@ -19,7 +19,7 @@ export function ProfileSection({
     onNotificationClick,
     onMessageClick,
     onMoreClick,
-}: ProfileSectionProps) {
+}: ProfileSectionProps): React.JSX.Element {
     return (
         <div className="group relative mb-0 rounded-[2.5rem] bg-[#F8F9FA] p-8 text-center transition-shadow hover:shadow-none">
             {/* Avatar */}

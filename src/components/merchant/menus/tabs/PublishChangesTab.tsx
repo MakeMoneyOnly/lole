@@ -3,7 +3,7 @@
 import React from 'react';
 import { UploadCloud, CheckCircle2, AlertCircle } from 'lucide-react';
 
-export function PublishChangesTab() {
+export function PublishChangesTab(): React.JSX.Element {
     return (
         <div className="flex max-w-4xl flex-col gap-8">
             {/* Header Banner */}
