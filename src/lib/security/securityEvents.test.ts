@@ -11,8 +11,7 @@ import {
     logInvalidSignatureAttempt,
 } from './securityEvents';
 import { createClient } from '@/lib/supabase/server';
-
-function makeDb(overrides: Record<string, unknown> = {}) {
+function makeDb(overrides: Record<string, unknown> = {}): any {
     const base = {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),

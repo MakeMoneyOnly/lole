@@ -12,7 +12,7 @@ export function useFiscalReplay(enabled: boolean = true) {
     useEffect(() => {
         if (!enabled) return;
 
-        const handleOnline = async () => {
+        const handleOnline = async (): Promise<void> => {
             if (replayInProgress.current) return;
             replayInProgress.current = true;
 

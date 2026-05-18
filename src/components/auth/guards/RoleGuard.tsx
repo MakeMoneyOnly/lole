@@ -13,7 +13,7 @@ interface RoleGuardProps {
     fallback?: React.ReactNode;
 }
 
-export function RoleGuard(props: RoleGuardProps) {
+export function RoleGuard(props: RoleGuardProps): React.JSX.Element | null {
     const [isE2EBypass, setIsE2EBypass] = useState(false);
 
     useEffect(() => {
@@ -32,8 +32,7 @@ export function RoleGuard(props: RoleGuardProps) {
 
     return <RoleGuardWithAuth {...props} />;
 }
-
-function RoleGuardWithAuth({ children, allowedRoles, restaurantId, fallback }: RoleGuardProps) {
+function RoleGuardWithAuth({ restaurantId, allowedRoles, children, fallback }: RoleGuardProps): React.JSX.Element | null {
     const { role, user, loading } = useRole(restaurantId ?? null);
     const router = useRouter();
 

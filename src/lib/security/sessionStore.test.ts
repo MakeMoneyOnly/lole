@@ -11,7 +11,7 @@ import { MemorySessionStore, type SessionData } from './sessionStore';
 // Note: Redis tests can be added when RedisSessionStore needs to be tested
 const mockRedisData = new Map<string, string>();
 
-const _createMockRedis = () => ({
+const _createMockRedis = (): any => ({
     data: mockRedisData,
     get: vi.fn(async (key: string) => {
         const value = mockRedisData.get(key);
