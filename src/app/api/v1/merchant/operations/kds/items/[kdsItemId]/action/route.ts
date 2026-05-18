@@ -23,7 +23,7 @@ const ALLOWED_TRANSITIONS: Record<string, string[]> = {
 };
 
 const RECALL_OVERRIDE_ROLES = new Set(['owner', 'admin', 'manager']);
-function toKdsStatus(): React.JSX.Element | void {
+function toKdsStatus(action: 'start' | 'hold' | 'ready' | 'recall'): string {
     if (action === 'start') return 'in_progress';
     if (action === 'hold') return 'on_hold';
     if (action === 'ready') return 'ready';

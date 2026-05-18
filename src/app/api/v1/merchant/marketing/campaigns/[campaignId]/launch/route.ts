@@ -26,7 +26,12 @@ const LaunchCampaignSchema = z.object({
     limit: z.coerce.number().int().min(1).max(2000).optional().default(500),
     dry_run: z.boolean().optional().default(false),
 });
-function normalizeSegmentRules(): React.JSX.Element | void {
+function normalizeSegmentRules(ruleJson: unknown): {
+    tags_any: string[];
+    vip_only: boolean;
+    minimum_visits: number;
+    language: string | null;
+} {
     if (!ruleJson || typeof ruleJson !== 'object') {
         return {
             tags_any: [] as string[],
@@ -40,9 +45,9 @@ function normalizeSegmentRules(): React.JSX.Element | void {
     return {
         tags_any: Array.isArray(candidate.tags_any)
             ? candidate.tags_any
-                  .filter(item => typeof item === 'string')
-                  .map(item => item.trim())
-                  .filter(Boolean)
+                   .filter(item => typeof item === 'string')
+                   .map(item => item.trim())
+                   .filter(Boolean)
             : [],
         vip_only: candidate.vip_only === true,
         minimum_visits:
