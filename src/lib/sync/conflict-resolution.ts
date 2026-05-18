@@ -128,10 +128,12 @@ const EXCLUDED_FIELDS: Record<string, string[]> = {
 function getRule(entityType: string): DomainRule {
     return ENTITY_RULES[entityType] ?? { defaultStrategy: 'last_write_wins' };
 }
-
-function timestamps(clientData: { last_modified: string }, serverData: { last_modified: string }) {
-    const clientTime = new Date(clientData.last_modified).getTime();
-    const serverTime = new Date(serverData.last_modified).getTime();
+function timestamps(
+    clientData: Record<string, unknown>,
+    serverData: Record<string, unknown>
+): { clientTime: number; serverTime: number } {
+    const clientTime = new Date(clientData.last_modified as string).getTime();
+    const serverTime = new Date(serverData.last_modified as string).getTime();
     return { clientTime, serverTime };
 }
 

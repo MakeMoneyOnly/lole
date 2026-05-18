@@ -372,12 +372,12 @@ export function timeSync<T>(name: string, fn: () => T): T {
 export function usePerformanceTracking(componentName: string) {
     const monitor = getPerformanceMonitor();
 
-    const trackRender = () => {
+    const trackRender = (): React.JSX.Element => {
         const stopTimer = monitor.startTimer(`render_${componentName}`);
         return stopTimer;
     };
 
-    const trackEffect = (effectName: string) => {
+    const trackEffect = (effectName: string): React.JSX.Element => {
         return monitor.startTimer(`effect_${componentName}_${effectName}`);
     };
 

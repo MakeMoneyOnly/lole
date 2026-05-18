@@ -247,7 +247,7 @@ export async function getDeviceContext(request: Request): Promise<GetDeviceConte
     }
 
     const admin = createServiceRoleClient();
-    const fetchEnterpriseDevice = () =>
+    const fetchEnterpriseDevice = (): React.JSX.Element =>
         admin
             .from('hardware_devices')
             .select(

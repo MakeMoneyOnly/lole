@@ -131,7 +131,7 @@ export function useRole(restaurantId: string | null): UseRoleResult {
         };
     }, [restaurantId, supabase]);
 
-    const requireRole = (allowedRoles: StaffRole[], redirectUrl = '/login') => {
+    const requireRole = (allowedRoles: StaffRole[], redirectUrl = '/login'): React.JSX.Element => {
         if (loading) return; // Don't redirect while loading
         if (!role || !allowedRoles.includes(role)) {
             router.push(redirectUrl);

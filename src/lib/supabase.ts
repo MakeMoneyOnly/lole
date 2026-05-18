@@ -1,4 +1,5 @@
 import { createBrowserClient } from '@supabase/ssr';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { logger } from '@/lib/logger';
 
 const log = logger.child('supabase:browser');
@@ -17,7 +18,7 @@ function isMockClientAllowed(): boolean {
     return true;
 }
 
-export const createClient = () => {
+export const createClient = (): SupabaseClient => {
     // Get and clean environment variables (remove any surrounding quotes)
     let url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
     let key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '';

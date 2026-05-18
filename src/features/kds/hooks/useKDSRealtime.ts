@@ -497,7 +497,7 @@ export function useKDSRealtime({
         let mqttClient: ReturnType<typeof createLanMqttClient> | null = null;
         let cancelled = false;
 
-        const bootstrapLocalGateway = async () => {
+        const bootstrapLocalGateway = async (): Promise<void> => {
             const session = await getStoredDeviceSession();
             if (
                 cancelled ||

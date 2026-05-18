@@ -14,7 +14,7 @@ import { format } from 'date-fns';
 import { useRole } from '@/features/auth/hooks/useRole';
 import type { UnifiedKDSOrder } from '@/app/api/v1/merchant/operations/kds/queue/route';
 import { useSearchParams } from 'next/navigation';
-import Link from 'next/link'; // TODO: use for fullscreen navigation
+import _Link from 'next/link';
 import { useKDSRealtime } from '@/features/kds/hooks/useKDSRealtime';
 import { readKdsQueue, readKdsSettings } from '@/features/kds/lib/read-adapter';
 import {
@@ -58,7 +58,7 @@ type StationBoardProps = {
 
 const COURSE_SEQUENCE: CourseType[] = ['appetizer', 'main', 'dessert', 'beverage', 'side'];
 
-function courseLabel(_course: CourseType | null | undefined): string {
+function _courseLabel(_course: CourseType | null | undefined): string {
     if (!_course) return 'Appetizer';
     if (_course === 'main') return 'Main';
     return _course.charAt(0).toUpperCase() + _course.slice(1);
@@ -87,21 +87,19 @@ function allowedActions(status: string): KdsItemAction[] {
             return [];
     }
 }
-
-function statusLabel(status: string) {
+function statusLabel(status: string): string {
     if (status === 'in_progress') return 'In Progress';
     if (status === 'on_hold') return 'On Hold';
     if (status === 'recalled') return 'On Hold';
     return status.replace('_', ' ').replace(/\b\w/g, ch => ch.toUpperCase());
 }
-
-function actionLabel(action: KdsItemAction) {
+function actionLabel(action: KdsItemAction): string {
     if (action === 'start') return 'Start';
     if (action === 'hold') return 'Hold';
     return 'Ready';
 }
 
-function getModifierStyle(_modifier: string): string {
+function _getModifierStyle(_modifier: string): string {
     const lower = _modifier.toLowerCase();
     const exclusionPattern = /\b(no|without|hold|minus|remove|skip)\b/;
     const additionPattern = /\b(extra|add|with|plus|double)\b/;
@@ -254,7 +252,7 @@ function isQuietHours(policy: AlertPolicy, now = new Date()): boolean {
     return currentMinutes >= start || currentMinutes < end;
 }
 
-function playAlertTone() {
+function playAlertTone(): void {
     if (typeof window === 'undefined') return;
     const Context =
         window.AudioContext ||
@@ -335,8 +333,8 @@ export function StationBoard({
         // Use new adapter for queue count
         getOfflineKdsQueueCount().then(count => setQueuedActionCount(count));
 
-        const onOnline = () => setIsOnline(true);
-        const onOffline = () => setIsOnline(false);
+        const onOnline = (): void => setIsOnline(true);
+        const onOffline = (): void => setIsOnline(false);
         window.addEventListener('online', onOnline);
         window.addEventListener('offline', onOffline);
         return () => {
@@ -593,40 +591,37 @@ export function StationBoard({
                 setActionKey(null);
             }
         },
-        [applyOptimisticItemStatus, fetchQueue, handlePrintTicket, isOnline, printPolicy.mode]
+        [applyOptimisticItemStatus, handlePrintTicket, isOnline, printPolicy.mode]
     );
 
-    const _handleAdvanceCourse = useCallback(
-        async (order: UnifiedKDSOrder) => {
-            if (order.fireMode !== 'manual') return;
-            const next = nextCourse(order.currentCourse as CourseType | null | undefined);
-            if (!next) return;
+    const _handleAdvanceCourse = useCallback(async (order: UnifiedKDSOrder) => {
+        if (order.fireMode !== 'manual') return;
+        const next = nextCourse(order.currentCourse as CourseType | null | undefined);
+        if (!next) return;
 
-            setAdvancingCourseOrderId(order.id);
-            try {
-                const result = await submitOrderCourseFireUpdate({
-                    orderId: order.id,
-                    fireMode: 'manual',
-                    currentCourse: next,
-                });
-                if (!result.ok) {
-                    setError(result.error ?? 'Failed to advance course');
-                    return;
-                }
-                setError(null);
-                setOrders(current =>
-                    current.map(currentOrder =>
-                        currentOrder.id === order.id
-                            ? { ...currentOrder, currentCourse: next }
-                            : currentOrder
-                    )
-                );
-            } finally {
-                setAdvancingCourseOrderId(null);
+        setAdvancingCourseOrderId(order.id);
+        try {
+            const result = await submitOrderCourseFireUpdate({
+                orderId: order.id,
+                fireMode: 'manual',
+                currentCourse: next,
+            });
+            if (!result.ok) {
+                setError(result.error ?? 'Failed to advance course');
+                return;
             }
-        },
-        [fetchQueue]
-    );
+            setError(null);
+            setOrders(current =>
+                current.map(currentOrder =>
+                    currentOrder.id === order.id
+                        ? { ...currentOrder, currentCourse: next }
+                        : currentOrder
+                )
+            );
+        } finally {
+            setAdvancingCourseOrderId(null);
+        }
+    }, []);
 
     useEffect(() => {
         if (actionableItems.length === 0) {
@@ -668,7 +663,7 @@ export function StationBoard({
     );
 
     useEffect(() => {
-        const handler = (event: KeyboardEvent) => {
+        const handler = (event: KeyboardEvent): void => {
             const target = event.target as HTMLElement | null;
             const tag = target?.tagName?.toLowerCase();
             if (
@@ -768,7 +763,7 @@ export function StationBoard({
 
     useEffect(() => {
         if (!restaurantId) return;
-        const sendHeartbeat = async () => {
+        const sendHeartbeat = async (): Promise<void> => {
             const payload = {
                 station,
                 realtime_connected: realtimeConnected,

@@ -1,7 +1,8 @@
 import { createBrowserClient } from '@supabase/ssr';
 import type { Database } from '@/types/database';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
-export function createClient() {
+export function createClient(): SupabaseClient<Database> {
     // Sanitize env vars — Vercel CLI can store values as '"value" \r\n'
     const cleanEnvVar = (val: string | undefined): string => {
         if (!val) return '';
@@ -28,9 +29,9 @@ export function createClient() {
 }
 
 // Singleton for client-side usage
-let browserClient: ReturnType<typeof createBrowserClient<Database>> | null = null;
+let browserClient: SupabaseClient<Database> | null = null;
 
-export function getSupabaseClient() {
+export function getSupabaseClient(): SupabaseClient<Database> {
     if (!browserClient) {
         browserClient = createClient();
     }

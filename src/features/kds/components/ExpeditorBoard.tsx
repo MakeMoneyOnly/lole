@@ -135,8 +135,7 @@ function normalizePrintPolicy(input: unknown): PrintPolicy {
                 : DEFAULT_PRINT_POLICY.base_backoff_ms,
     };
 }
-
-function buildReadiness(order: UnifiedKDSOrder) {
+function buildReadiness(order: UnifiedKDSOrder): ConsolidatedOrder['readiness'] {
     const items = order.items ?? [];
     const byStation: Record<string, { total: number; ready: number }> = {};
     let ready = 0;
@@ -160,7 +159,7 @@ function buildReadiness(order: UnifiedKDSOrder) {
     };
 }
 
-export function ExpeditorBoard() {
+export function ExpeditorBoard(): React.JSX.Element {
     const searchParams = useSearchParams();
     const queryRestaurantId = searchParams.get('restaurantId');
     const {
@@ -264,56 +263,50 @@ export function ExpeditorBoard() {
         }));
     }, [orders]);
 
-    const handleFinalHandoff = useCallback(
-        async (orderId: string) => {
-            setHandoffOrderId(orderId);
-            try {
-                const result = await submitFinalKdsHandoff({ orderId });
-                if (!result.ok) {
-                    setError(result.error ?? 'Failed to mark order served');
-                    return;
-                }
-
-                setOrders(current => current.filter(order => order.id !== orderId));
-                setError(null);
-            } finally {
-                setHandoffOrderId(null);
+    const handleFinalHandoff = useCallback(async (orderId: string) => {
+        setHandoffOrderId(orderId);
+        try {
+            const result = await submitFinalKdsHandoff({ orderId });
+            if (!result.ok) {
+                setError(result.error ?? 'Failed to mark order served');
+                return;
             }
-        },
-        [fetchQueue]
-    );
 
-    const handleAdvanceCourse = useCallback(
-        async (order: UnifiedKDSOrder) => {
-            if (order.fireMode !== 'manual') return;
-            const next = nextCourse(order.currentCourse as CourseType | null | undefined);
-            if (!next) return;
+            setOrders(current => current.filter(order => order.id !== orderId));
+            setError(null);
+        } finally {
+            setHandoffOrderId(null);
+        }
+    }, []);
 
-            setAdvancingCourseOrderId(order.id);
-            try {
-                const result = await submitOrderCourseFireUpdate({
-                    orderId: order.id,
-                    fireMode: 'manual',
-                    currentCourse: next,
-                });
-                if (!result.ok) {
-                    setError(result.error ?? 'Failed to advance course');
-                    return;
-                }
-                setError(null);
-                setOrders(current =>
-                    current.map(currentOrder =>
-                        currentOrder.id === order.id
-                            ? { ...currentOrder, currentCourse: next }
-                            : currentOrder
-                    )
-                );
-            } finally {
-                setAdvancingCourseOrderId(null);
+    const handleAdvanceCourse = useCallback(async (order: UnifiedKDSOrder) => {
+        if (order.fireMode !== 'manual') return;
+        const next = nextCourse(order.currentCourse as CourseType | null | undefined);
+        if (!next) return;
+
+        setAdvancingCourseOrderId(order.id);
+        try {
+            const result = await submitOrderCourseFireUpdate({
+                orderId: order.id,
+                fireMode: 'manual',
+                currentCourse: next,
+            });
+            if (!result.ok) {
+                setError(result.error ?? 'Failed to advance course');
+                return;
             }
-        },
-        [fetchQueue]
-    );
+            setError(null);
+            setOrders(current =>
+                current.map(currentOrder =>
+                    currentOrder.id === order.id
+                        ? { ...currentOrder, currentCourse: next }
+                        : currentOrder
+                )
+            );
+        } finally {
+            setAdvancingCourseOrderId(null);
+        }
+    }, []);
 
     const handleSaveArchiveMinutes = useCallback(async () => {
         if (!canFinalizeHandoff) {
@@ -406,7 +399,7 @@ export function ExpeditorBoard() {
     );
 
     useEffect(() => {
-        const onKeyDown = (event: KeyboardEvent) => {
+        const onKeyDown = (event: KeyboardEvent): void => {
             const target = event.target as HTMLElement | null;
             const tag = target?.tagName?.toLowerCase();
             if (

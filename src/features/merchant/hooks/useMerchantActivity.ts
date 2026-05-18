@@ -7,7 +7,7 @@ import { ActivityItem, ActivityType } from '../types';
 
 export type { ActivityType, ActivityItem };
 
-export function useMerchantActivity() {
+export function useMerchantActivity(): React.JSX.Element {
     const [activities, setActivities] = useState<ActivityItem[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -28,7 +28,7 @@ export function useMerchantActivity() {
     useEffect(() => {
         let mounted = true;
 
-        async function fetchData() {
+        async function fetchData(): Promise<void> {
             try {
                 if (!mounted) return;
                 setLoading(true);
@@ -96,7 +96,7 @@ export function useMerchantActivity() {
         };
     }, []);
 
-    const broadcastMessage = async (message: string) => {
+    const broadcastMessage = async (message: string): Promise<void> => {
         const newActivity: ActivityItem = {
             id: `broadcast-${Date.now()}`,
             type: 'staff',
@@ -113,7 +113,7 @@ export function useMerchantActivity() {
         return true;
     };
 
-    const refresh = async () => {
+    const refresh = async (): Promise<void> => {
         setLoading(true);
         try {
             const response = await fetch('/api/v1/merchant/core/activity');

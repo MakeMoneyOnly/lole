@@ -1,33 +1,19 @@
 import { describe, it, expect, vi } from 'vitest';
 import { listActiveDiscountsForRestaurant, getDiscountById, prepareOrderDiscount } from './service';
 
-// Create a mock supabase builder
-function _createMockQueryBuilder(result: unknown) {
-    const builder: Record<string, unknown> = {};
-    const methods = ['select', 'eq', 'order', 'in', 'gte', 'maybeSingle', 'insert'];
-    for (const m of methods) {
-        builder[m] = vi.fn().mockReturnValue(builder);
-    }
-    // Terminal methods
-    (builder.maybeSingle as ReturnType<typeof vi.fn>).mockResolvedValue(result);
-    return builder;
-}
-
-function makeSupabase(overrides: Record<string, unknown> = {}) {
-    const defaultQueryBuilder = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        in: vi.fn().mockReturnThis(),
-        gte: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockReturnThis(),
-        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-    };
-
+function makeSupabase(): any {
     return {
-        from: vi.fn().mockReturnValue({ ...defaultQueryBuilder, ...overrides }),
+        from: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            in: vi.fn().mockReturnThis(),
+            gte: vi.fn().mockReturnThis(),
+            order: vi.fn().mockReturnThis(),
+            limit: vi.fn().mockReturnThis(),
+            maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        }),
         auth: { getUser: vi.fn() },
-    } as any;
+    };
 }
 
 const baseDiscount = {

@@ -103,7 +103,7 @@ export async function createClient() {
         // Helper to create chainable mock methods.
         // NOTE: data is the list-level result; maybeSingle returns null (no row found)
         // unless overridden by a table-specific mock below.
-        const createChainableMock = (data: unknown, singleData: unknown = null) => ({
+        const createChainableMock = (data: unknown, singleData: unknown = null): any => ({
             data,
             error: null,
             eq: function () {

@@ -6,7 +6,7 @@ export const StaffInviteEmail = ({
     inviteUrl: string;
     restaurantName: string;
     role: string;
-}) => `
+}): string => `
 <!DOCTYPE html>
 <html>
 <head>

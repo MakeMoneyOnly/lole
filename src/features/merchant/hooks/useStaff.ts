@@ -103,7 +103,7 @@ export function useStaff(initialData?: StaffMember[]): UseStaffResult {
         email: string | null;
         role: StaffRole;
         label?: string | null;
-    }) => {
+    }): Promise<void> => {
         try {
             setInviteLoading(true);
             const response = await fetch('/api/v1/merchant/core/staff/invite', {
@@ -130,7 +130,7 @@ export function useStaff(initialData?: StaffMember[]): UseStaffResult {
         }
     };
 
-    const handleRoleUpdate = async (staffId: string, role: StaffRole) => {
+    const handleRoleUpdate = async (staffId: string, role: StaffRole): Promise<void> => {
         try {
             const response = await fetch(`/api/v1/merchant/core/staff/${staffId}/role`, {
                 method: 'PATCH',
@@ -153,7 +153,7 @@ export function useStaff(initialData?: StaffMember[]): UseStaffResult {
         }
     };
 
-    const handleActiveToggle = async (member: StaffMember) => {
+    const handleActiveToggle = async (member: StaffMember): Promise<void> => {
         try {
             const nextValue = member.is_active === false;
             setActiveUpdatingId(member.id);
@@ -193,7 +193,7 @@ export function useStaff(initialData?: StaffMember[]): UseStaffResult {
         role: StaffRole;
         pin_code: string;
         assigned_zones?: string[];
-    }) => {
+    }): Promise<void> => {
         try {
             setLoading(true);
             const response = await fetch('/api/v1/merchant/core/staff/add-pin', {

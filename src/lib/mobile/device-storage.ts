@@ -90,15 +90,13 @@ function readBrowserStorage<T>(key: string): T | null {
         return null;
     }
 }
-
-function writeBrowserStorage(key: string, value: unknown) {
+function writeBrowserStorage(key: string, value: unknown): void {
     if (typeof window === 'undefined') return;
     const serialized = JSON.stringify(value);
     window.localStorage.setItem(key, serialized);
     window.sessionStorage.setItem(key, serialized);
 }
-
-function removeBrowserStorage(key: string) {
+function removeBrowserStorage(key: string): void {
     if (typeof window === 'undefined') return;
     window.localStorage.removeItem(key);
     window.sessionStorage.removeItem(key);

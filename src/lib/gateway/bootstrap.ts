@@ -76,7 +76,7 @@ export function createGatewayBootstrapPayload(
     return {
         discovery: buildGatewayDiscoveryRecord(config),
         health,
-        session: issueGatewaySessionToken({
+        session: {
             deviceId: input.deviceId,
             restaurantId: input.restaurantId,
             locationId: input.locationId,
@@ -90,7 +90,7 @@ export function createGatewayBootstrapPayload(
                 ...staffOutagePolicy,
                 issuedAt: issuedAt.toISOString(),
             },
-        }),
+        },
         endpoints: {
             health: `http://${input.gatewayHost}:${input.healthPort}/health`,
             bootstrap: `http://${input.gatewayHost}:${input.healthPort}/bootstrap`,

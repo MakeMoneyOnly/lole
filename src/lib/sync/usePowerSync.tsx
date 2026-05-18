@@ -77,7 +77,7 @@ export function PowerSyncProvider({ children }: { children: ReactNode }) {
 
     // Initialize PowerSync on mount
     useEffect(() => {
-        async function init() {
+        async function init(): Promise<void> {
             try {
                 const database = await initPowerSync();
                 setDb(database);
@@ -108,14 +108,14 @@ export function PowerSyncProvider({ children }: { children: ReactNode }) {
 
     // Listen for online/offline events
     useEffect(() => {
-        const handleOnline = () => {
+        const handleOnline = (): void => {
             setIsOnline(true);
             // Trigger sync when coming back online
             triggerSync();
             setBootstrapStatus(getPowerSyncBootstrapStatus());
         };
 
-        const handleOffline = () => {
+        const handleOffline = (): void => {
             setIsOnline(false);
             setBootstrapStatus(getPowerSyncBootstrapStatus());
         };
@@ -136,7 +136,7 @@ export function PowerSyncProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         if (!isInitialized) return;
 
-        const updateStatus = async () => {
+        const updateStatus = async (): Promise<void> => {
             try {
                 const worker = getSyncWorker();
                 const status = await worker.getStatus();
@@ -201,7 +201,7 @@ export function PowerSyncProvider({ children }: { children: ReactNode }) {
 /**
  * Hook to access PowerSync context
  */
-export function usePowerSync() {
+export function usePowerSync(): PowerSyncContextValue {
     const context = useContext(PowerSyncContext);
 
     if (!context) {
@@ -214,7 +214,7 @@ export function usePowerSync() {
 /**
  * Hook to check if we're in offline mode
  */
-export function useOfflineMode() {
+export function useOfflineMode(): boolean {
     const { operatingMode } = usePowerSync();
     return operatingMode === 'offline-local' || operatingMode === 'degraded';
 }
@@ -222,7 +222,15 @@ export function useOfflineMode() {
 /**
  * Hook to get sync status
  */
-export function useSyncStatus() {
+export function useSyncStatus(): {
+    isSyncing: boolean;
+    isOnline: boolean;
+    lastSyncAt: Date | null;
+    pendingCount: number;
+    operatingMode: StoreOperatingMode;
+    bootstrapStatus: PowerSyncBootstrapStatus;
+    sync: () => Promise<void>;
+} {
     const { isSyncing, isOnline, lastSyncAt, pendingCount, sync, operatingMode, bootstrapStatus } =
         usePowerSync();
     return {

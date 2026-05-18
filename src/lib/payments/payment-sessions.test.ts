@@ -11,8 +11,7 @@ import {
     PAYMENT_SESSION_INTENTS,
     PAYMENT_SESSION_STATUSES,
 } from './payment-sessions';
-
-function makeSession(overrides = {}) {
+function makeSession(overrides: Record<string, unknown> = {}): Record<string, unknown> {
     return {
         id: 'ps-1',
         restaurant_id: 'rest-1',
@@ -37,8 +36,7 @@ function makeSession(overrides = {}) {
         ...overrides,
     };
 }
-
-function makeDb(fromOverrides: Record<string, unknown> = {}) {
+function makeDb(fromOverrides: Record<string, unknown> = {}): any {
     const base = {
         select: vi.fn().mockReturnThis(),
         insert: vi.fn().mockReturnThis(),

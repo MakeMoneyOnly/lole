@@ -255,7 +255,7 @@ const isDirectRun =
 if (isDirectRun) {
     void startStandaloneGatewayServer()
         .then(({ broker, close }) => {
-            const shutdown = async () => {
+            const shutdown = async (): Promise<void> => {
                 logger.info('[Gateway] Shutting down...');
                 await close();
                 process.exit(0);

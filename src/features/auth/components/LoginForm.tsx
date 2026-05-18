@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 
-export const LoginForm = () => {
+export const LoginForm = (): React.JSX.Element => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -18,7 +18,7 @@ export const LoginForm = () => {
     const supabase = createClient();
     const router = useRouter();
 
-    const handleLogin = async (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
         setLoading(true);
         setError(null);

@@ -105,8 +105,7 @@ function signBridgeBody(
 async function sleep(ms: number) {
     await new Promise(resolve => setTimeout(resolve, ms));
 }
-
-function computeBackoffMs(base: number, attempt: number) {
+function computeBackoffMs(base: number, attempt: number): number {
     const exponent = Math.max(0, attempt - 1);
     const expDelay = base * 2 ** exponent;
     const jitter = Math.floor(Math.random() * Math.max(50, base));

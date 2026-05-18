@@ -22,7 +22,7 @@ export function useDeviceHeartbeat({
 
         let cancelled = false;
 
-        const sendHeartbeat = async () => {
+        const sendHeartbeat = async (): Promise<void> => {
             if (cancelled) {
                 return;
             }
@@ -66,7 +66,7 @@ export function useDeviceHeartbeat({
             void sendHeartbeat();
         }, intervalMs);
 
-        const onVisibilityChange = () => {
+        const onVisibilityChange = (): React.JSX.Element => {
             void sendHeartbeat();
         };
 

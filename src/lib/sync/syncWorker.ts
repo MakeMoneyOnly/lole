@@ -56,7 +56,7 @@ let endpointHealthCache: Record<string, boolean> = {};
  * Validate configured sync endpoints via HEAD request.
  * Skips tables with unreachable endpoints in subsequent sync cycles.
  */
-async function validateSyncEndpoints(): Promise<void> {
+async function validateSyncEndpoints() {
     const health: Record<string, boolean> = {};
 
     await Promise.all(
@@ -568,7 +568,7 @@ export function createSyncWorker(config: Partial<SyncWorkerConfig> = {}): SyncWo
     /**
      * Start the sync worker
      */
-    function start() {
+function start(): void {
         if (isRunning) return;
 
         isRunning = true;
@@ -583,7 +583,7 @@ export function createSyncWorker(config: Partial<SyncWorkerConfig> = {}): SyncWo
     /**
      * Stop the sync worker
      */
-    function stop() {
+function stop(): void {
         if (!isRunning) return;
 
         if (intervalId) {

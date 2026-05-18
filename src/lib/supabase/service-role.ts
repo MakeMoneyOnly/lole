@@ -162,7 +162,7 @@ function summarizeArgs(args: unknown[]): string {
     }
 }
 
-export function createServiceRoleClient() {
+export function createServiceRoleClient(): SupabaseClient {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     // Use the new Secret Key (sb_secret_...)
     const supabaseKey = process.env.SUPABASE_SECRET_KEY;

@@ -77,7 +77,7 @@ export function useDevices(initialData?: HardwareDevice[]) {
         location_id?: string;
         assigned_zones?: string[];
         metadata?: HardwareDeviceMetadata;
-    }) => {
+    }): Promise<void> => {
         try {
             const response = await fetch('/api/v1/merchant/devices/provision', {
                 method: 'POST',

@@ -12,6 +12,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { generateHmacSecret, signPayload, verifySignature } from '@/lib/security/hmac';
 import { logger } from '@/lib/logger';
 
@@ -51,7 +52,7 @@ const TOKEN_PREFIX = 'session_';
  * Create a Supabase admin client for server-side operations
  * Uses service role key to bypass RLS for internal operations
  */
-function getSupabaseAdmin() {
+function getSupabaseAdmin(): SupabaseClient {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SECRET_KEY;
 

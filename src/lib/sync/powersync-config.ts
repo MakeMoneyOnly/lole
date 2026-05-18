@@ -492,22 +492,19 @@ export interface PowerSyncConfig {
 }
 
 type QueryContext = Pick<Transaction, 'execute' | 'getAll' | 'getOptional'> | WebPowerSyncDatabase;
-
-function textColumns(names: string[]) {
+function textColumns(names: string[]): Record<string, typeof column.text> {
     return Object.fromEntries(names.map(name => [name, column.text])) as Record<
         string,
         typeof column.text
     >;
 }
-
-function integerColumns(names: string[]) {
+function integerColumns(names: string[]): Record<string, typeof column.integer> {
     return Object.fromEntries(names.map(name => [name, column.integer])) as Record<
         string,
         typeof column.integer
     >;
 }
-
-function realColumns(names: string[]) {
+function realColumns(names: string[]): Record<string, typeof column.real> {
     return Object.fromEntries(names.map(name => [name, column.real])) as Record<
         string,
         typeof column.real

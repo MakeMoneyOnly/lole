@@ -78,15 +78,19 @@ export interface ProcessPrintQueueOptions {
 const DEFAULT_ROUTE_KEY = 'default';
 const DEFAULT_DRIVER_KIND: PrinterDriverKind = 'network';
 const DEFAULT_MAX_ATTEMPTS = 3;
-
-function getPrinterCommandContext(restaurantId: string) {
+function getPrinterCommandContext(restaurantId: string): {
+    restaurantId: string;
+    locationId: string;
+    deviceId: string;
+    actor: { actorId: string; actorType: 'device' };
+} {
     return {
         restaurantId,
         locationId: process.env.NEXT_PUBLIC_LOCATION_ID ?? 'default-location',
         deviceId: process.env.NEXT_PUBLIC_DEVICE_ID ?? 'printer-device',
         actor: {
             actorId: process.env.NEXT_PUBLIC_DEVICE_ID ?? 'printer-device',
-            actorType: 'device' as const,
+            actorType: 'device',
         },
     };
 }
