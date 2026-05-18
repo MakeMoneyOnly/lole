@@ -26,7 +26,7 @@ function verifySharedSecret(headerValue: string | null, expectedSecret: string):
         return expectedSecret === headerValue;
     }
 }
-function mapGuestOrderStatusToInternalStatus(): React.JSX.Element | void {
+function mapGuestOrderStatusToInternalStatus(guestOrderStatus: string): string {
     if (guestOrderStatus === 'IN_PREPARATION') return 'preparing';
     if (guestOrderStatus === 'READY_FOR_PICKUP') return 'ready';
     if (guestOrderStatus === 'CLOSED') return 'served';

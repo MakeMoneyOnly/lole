@@ -18,7 +18,7 @@ const ALLOWED_TRANSITIONS: Record<string, string[]> = {
     in_progress: ['completed'],
     completed: [],
 };
-function canTransition(): React.JSX.Element | void {
+function canTransition(currentStatus: string, nextStatus: string): boolean {
     if (!currentStatus) {
         return false;
     }

@@ -35,7 +35,7 @@ const ALLOWED_TRANSITIONS: Record<string, string[]> = {
     completed: [],
     cancelled: [],
 };
-function canTransition(): React.JSX.Element | void {
+function canTransition(current: string, next: string): boolean {
     if (!current) return false;
     return (ALLOWED_TRANSITIONS[current] || []).includes(next);
 }

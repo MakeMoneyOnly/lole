@@ -26,7 +26,7 @@ const KdsHeartbeatSchema = z.object({
     queue_size: z.number().int().min(0).max(500).optional(),
     breached_tickets: z.number().int().min(0).max(500).optional(),
 });
-function percentile(): React.JSX.Element | void {
+function percentile(values: number[], p: number): number {
     if (values.length === 0) return 0;
     const sorted = [...values].sort((a, b) => a - b);
     const index = Math.ceil((p / 100) * sorted.length) - 1;
