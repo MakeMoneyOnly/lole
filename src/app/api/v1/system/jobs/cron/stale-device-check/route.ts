@@ -46,7 +46,7 @@ function validateCronSecret(request: NextRequest): boolean {
  * - critical_threshold: Minutes before critical alert (default: 60)
  * - business_hours_only: Only alert during business hours (default: true)
  */
-export async function POST(request: NextRequest) {
+export async function POST(request:  NextRequest): Promise<Response> {
     const startTime = Date.now();
 
     // Validate cron secret
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
  *
  * Health check endpoint for the cron job.
  */
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest): Promise<Response> {
     // Allow GET for health checks without auth
     return NextResponse.json({
         status: 'healthy',
@@ -134,3 +134,11 @@ export async function GET(_request: NextRequest) {
         timestamp: new Date().toISOString(),
     });
 }
+
+
+
+
+
+
+
+

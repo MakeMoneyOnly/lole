@@ -330,7 +330,7 @@ async function autoArchiveReadyOrders(params: {
     return orderIds.length;
 }
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
 
     let restaurantId: string | null = null;
@@ -497,8 +497,8 @@ export async function GET(request: Request) {
     for (const rawOrder of (dineInOrders ?? []) as Array<Record<string, unknown>>) {
         const orderId = String(rawOrder.id ?? '');
         if (!orderId) continue;
-        if ((kdsItemsByOrder.get(orderId)?.length ?? 0) > 0) continue;
-        if ((orderItemsByOrder.get(orderId)?.length ?? 0) > 0) continue;
+        if (((kdsItemsByOrder.get(orderId))?.length ?? 0) > 0) continue;
+        if (((orderItemsByOrder.get(orderId))?.length ?? 0) > 0) continue;
 
         const fallbackItems = Array.isArray(rawOrder.items)
             ? (rawOrder.items as Array<Record<string, unknown>>)
@@ -772,3 +772,11 @@ export async function GET(request: Request) {
         },
     });
 }
+
+
+
+
+
+
+
+

@@ -22,14 +22,14 @@ const mockUserId = '87654321-4321-4321-4321-210987654321';
  * This pattern uses self-referential functions to support unlimited chaining
  */
 function createSupabaseChainMock(overrides?: {
-    maybeSingle?: ReturnType<typeof vi.fn>;
-    data?: unknown;
-    error?: unknown;
-}) {
+    data?: any;
+    error?: any;
+    maybeSingle?: any;
+}): Record<string, ReturnType<typeof vi.fn>> {
     const chain: Record<string, ReturnType<typeof vi.fn>> = {};
 
     // Self-referential function that returns the chain for unlimited chaining
-    const selfReturning = () => vi.fn(() => chain);
+    const selfReturning = (): ReturnType<typeof vi.fn> => vi.fn(() => chain);
 
     // Terminal method that resolves with data
     chain.maybeSingle =
@@ -54,9 +54,7 @@ function createSupabaseChainMock(overrides?: {
 /**
  * Creates a mock Supabase service role client
  */
-function createMockServiceRoleClient(
-    tableMocks?: Record<string, ReturnType<typeof createSupabaseChainMock>>
-) {
+function createMockServiceRoleClient(tableMocks?: Record<string, any>): object {
     return {
         from: vi.fn((table: string) => {
             if (tableMocks?.[table]) {

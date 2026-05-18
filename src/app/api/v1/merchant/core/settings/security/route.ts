@@ -10,7 +10,7 @@ const SecuritySettingsSchema = z.object({
     alert_on_suspicious_login: z.boolean().optional(),
 });
 
-export async function GET() {
+export async function GET(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -46,7 +46,7 @@ export async function GET() {
     return apiSuccess(security);
 }
 
-export async function PATCH(request: Request) {
+export async function PATCH(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -103,3 +103,11 @@ export async function PATCH(request: Request) {
 
     return apiSuccess(nextSecurity);
 }
+
+
+
+
+
+
+
+

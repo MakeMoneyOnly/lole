@@ -15,7 +15,7 @@ const ParamsSchema = z.object({
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
-): Promise<NextResponse> {
+): Promise<Response> {
     const { id: restaurantId } = ParamsSchema.parse(await params);
     const admin = createServiceRoleClient();
 
@@ -59,7 +59,7 @@ export async function GET(
     ).length;
 
     const lastSuccess = submissions.find(s => s.status === 'success');
-    const consecutiveFailures = (() => {
+    const consecutiveFailures = ((): React.JSX.Element => {
         let count = 0;
         for (const s of submissions) {
             if (s.status === 'failed') count++;

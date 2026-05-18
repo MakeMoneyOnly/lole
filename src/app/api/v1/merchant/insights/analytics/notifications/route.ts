@@ -84,7 +84,7 @@ function _getDateRange(url: URL): DateRange {
  * - range: 'today' | 'week' | 'month' (default: 'week')
  * - channel: 'sms' | 'push' | 'email' (optional filter)
  */
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
     // Authenticate user
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
@@ -151,3 +151,11 @@ export async function GET(request: Request) {
         );
     }
 }
+
+
+
+
+
+
+
+

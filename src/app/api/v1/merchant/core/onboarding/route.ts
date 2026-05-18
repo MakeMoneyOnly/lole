@@ -33,12 +33,13 @@ function slugify(name: string): string {
         .trim()
         .replace(/\s+/g, '-');
 }
+type PayoutStatus = 'active' | 'pending_review' | 'verification_required';
 
 function normalizePayoutStatus(params: {
-    subaccountId?: string | null;
-    providerStatus?: string | null;
-    providerMessage?: string | null;
-}) {
+    subaccountId?: string;
+    providerStatus?: string;
+    providerMessage?: string;
+}): PayoutStatus {
     const subaccountId = String(params.subaccountId ?? '').trim();
     const providerStatus = String(params.providerStatus ?? '')
         .trim()
@@ -68,7 +69,7 @@ function normalizePayoutStatus(params: {
     return 'verification_required';
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest): Promise<Response> {
     const supabase = await createClient();
 
     const {

@@ -93,7 +93,7 @@ const ExternalOrderSchema = z
 
 type ValidatedExternalOrder = z.infer<typeof ExternalOrderSchema>;
 
-function createDeliveryAggregatorService() {
+function createDeliveryAggregatorService(): React.JSX.Element {
     return new AggregatorService({
         publishLocalEvent: async event => {
             const gateway = getStoreGatewayService();
@@ -113,7 +113,7 @@ function createDeliveryAggregatorService() {
     });
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<Response> {
     // HIGH-002: Apply rate limiting for webhook endpoint
     const rateLimitResponse = await redisRateLimiters.mutation(request as NextRequest);
     if (rateLimitResponse) {
@@ -294,7 +294,7 @@ export async function POST(request: NextRequest) {
     }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<Response> {
     try {
         const { searchParams } = new URL(request.url);
         const restaurantId = searchParams.get('restaurantId');
@@ -342,3 +342,11 @@ export async function GET(request: NextRequest) {
         );
     }
 }
+
+
+
+
+
+
+
+

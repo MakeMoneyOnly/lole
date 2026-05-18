@@ -11,7 +11,7 @@ import { createAuditedServiceRoleClient } from '@/lib/supabase/service-role';
 import { logger } from '@/lib/logger';
 import { apiSuccess, apiError } from '@/lib/api/response';
 
-export async function POST(request: NextRequest) {
+export async function POST(request:  NextRequest): Promise<Response> {
     const startTime = Date.now();
 
     try {
@@ -160,6 +160,14 @@ export async function POST(request: NextRequest) {
 }
 
 // Only allow POST requests
-export async function GET() {
+export async function GET(request: Request) {
     return apiError('Method not allowed', 405, 'METHOD_NOT_ALLOWED');
 }
+
+
+
+
+
+
+
+

@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/server';
  * Public endpoint that returns basic restaurant info for online ordering.
  * No authentication or QR validation required — this powers the storefront link.
  */
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<Response> {
     const slug = request.nextUrl.searchParams.get('slug');
 
     if (!slug || slug.trim().length === 0) {

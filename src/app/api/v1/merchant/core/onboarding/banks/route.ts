@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger';
 
 const log = logger.child('merchant-core-onboarding/banks');
 
-export async function GET() {
+export async function GET(request: Request): Promise<Response> {
     const supabase = await createClient();
     const {
         data: { user },
@@ -40,3 +40,11 @@ export async function GET() {
         });
     }
 }
+
+
+
+
+
+
+
+

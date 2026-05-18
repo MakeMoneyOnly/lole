@@ -26,7 +26,7 @@ const TrackQuerySchema = z.object({
     table: z.string().min(1).max(64),
 });
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<Response> {
     const url = request.nextUrl;
 
     const parsed = TrackQuerySchema.safeParse({
@@ -120,3 +120,11 @@ export async function GET(request: NextRequest) {
         items: kdsItems ?? [],
     });
 }
+
+
+
+
+
+
+
+

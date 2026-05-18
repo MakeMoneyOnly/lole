@@ -6,7 +6,7 @@ import { logger } from '@/lib/logger';
 
 const log = logger.child('merchant-core-activity');
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
     try {
         log.info('Starting merchant activity fetch...');
         const supabase = await createClient();
@@ -141,3 +141,11 @@ export async function GET(request: Request) {
         );
     }
 }
+
+
+
+
+
+
+
+

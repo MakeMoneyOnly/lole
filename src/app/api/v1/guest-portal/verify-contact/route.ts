@@ -30,7 +30,7 @@ const VerifyContactSchema = z.object({
  * POST /api/v1/guest-portal/verify-contact
  * Send verification code to guest's contact
  */
-export async function POST(request: Request) {
+export async function POST(request:  Request): Promise<Response> {
     try {
         const body = await request.json();
         const parsed = SendVerificationSchema.safeParse(body);
@@ -178,7 +178,7 @@ export async function POST(request: Request) {
  * PATCH /api/v1/guest-portal/verify-contact
  * Verify the code entered by guest
  */
-export async function PATCH(request: Request) {
+export async function PATCH(request: Request): Promise<Response> {
     try {
         const body = await request.json();
         const parsed = VerifyContactSchema.safeParse(body);
@@ -284,3 +284,11 @@ export async function PATCH(request: Request) {
         return apiError('Internal server error', 500, 'INTERNAL_ERROR');
     }
 }
+
+
+
+
+
+
+
+

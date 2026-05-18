@@ -29,7 +29,7 @@ const ListServiceRequestsQuerySchema = z.object({
     offset: z.coerce.number().int().nonnegative().optional().default(0),
 });
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
     });
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<Response> {
     try {
         const body = await request.json();
         const parsed = CreateServiceRequestSchema.safeParse(body);
@@ -166,3 +166,11 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
+
+
+
+
+
+
+
+

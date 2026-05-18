@@ -26,8 +26,7 @@ const KdsHeartbeatSchema = z.object({
     queue_size: z.number().int().min(0).max(500).optional(),
     breached_tickets: z.number().int().min(0).max(500).optional(),
 });
-
-function percentile(values: number[], p: number) {
+function percentile(): React.JSX.Element | void {
     if (values.length === 0) return 0;
     const sorted = [...values].sort((a, b) => a - b);
     const index = Math.ceil((p / 100) * sorted.length) - 1;
@@ -40,7 +39,7 @@ function asObject(value: unknown): Record<string, unknown> | null {
     return value as Record<string, unknown>;
 }
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -185,7 +184,7 @@ export async function GET(request: Request) {
     });
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -243,3 +242,11 @@ export async function POST(request: Request) {
         restaurant_id: restaurantId,
     });
 }
+
+
+
+
+
+
+
+

@@ -22,15 +22,14 @@ const ALLOWED_TRANSITIONS: Record<string, string[]> = {
     completed: [],
     cancelled: [],
 };
-
-function canTransition(current: string | null, next: string) {
+function canTransition(): React.JSX.Element | void {
     if (!current) {
         return false;
     }
     return (ALLOWED_TRANSITIONS[current] || []).includes(next);
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -136,3 +135,11 @@ export async function POST(request: Request) {
         order_ids: parsed.data.order_ids,
     });
 }
+
+
+
+
+
+
+
+

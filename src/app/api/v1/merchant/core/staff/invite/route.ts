@@ -17,7 +17,7 @@ const InviteStaffSchema = z.object({
     label: z.string().trim().min(2).max(120).optional().nullable(),
 });
 
-export async function POST(request: Request) {
+export async function POST(request:  Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -132,3 +132,11 @@ export async function POST(request: Request) {
         201
     );
 }
+
+
+
+
+
+
+
+

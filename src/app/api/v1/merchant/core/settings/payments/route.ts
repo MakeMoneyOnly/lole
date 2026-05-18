@@ -49,8 +49,7 @@ const PAYMENT_SETTINGS_SELECT = [
     'platform_fee_percentage',
     'hosted_checkout_fee_percentage',
 ].join(', ');
-
-function resolveHostedCheckoutFeePercentage(restaurant: RestaurantPaymentRecord) {
+function resolveHostedCheckoutFeePercentage(restaurant: RestaurantPaymentRecord): number {
     if (typeof restaurant.hosted_checkout_fee_percentage === 'number') {
         return restaurant.hosted_checkout_fee_percentage;
     }
@@ -61,12 +60,11 @@ function resolveHostedCheckoutFeePercentage(restaurant: RestaurantPaymentRecord)
 
     return HOSTED_CHECKOUT_FEE_PERCENTAGE;
 }
-
 function normalizePayoutStatus(params: {
-    subaccountId?: string | null;
-    providerStatus?: string | null;
-    providerMessage?: string | null;
-}) {
+    subaccountId?: string;
+    providerStatus?: string;
+    providerMessage?: string;
+}): string {
     const subaccountId = String(params.subaccountId ?? '').trim();
     const providerStatus = String(params.providerStatus ?? '')
         .trim()
@@ -119,8 +117,7 @@ function normalizePayoutStatus(params: {
     log.debug('normalizePayoutStatus: returning not_configured');
     return 'not_configured';
 }
-
-function serializePaymentSettings(restaurant: RestaurantPaymentRecord) {
+function serializePaymentSettings(restaurant: RestaurantPaymentRecord): object {
     const status = String(restaurant.chapa_subaccount_status ?? '').trim() || 'not_configured';
 
     return {
@@ -138,7 +135,7 @@ function serializePaymentSettings(restaurant: RestaurantPaymentRecord) {
     };
 }
 
-export async function GET() {
+export async function GET(_request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -167,7 +164,7 @@ export async function GET() {
     return apiSuccess(serializePaymentSettings(data as unknown as RestaurantPaymentRecord));
 }
 
-export async function PATCH(request: Request) {
+export async function PATCH(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;

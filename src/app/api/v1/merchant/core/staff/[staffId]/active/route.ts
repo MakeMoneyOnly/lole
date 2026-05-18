@@ -8,7 +8,7 @@ const UpdateStaffActiveSchema = z.object({
     is_active: z.boolean(),
 });
 
-export async function PATCH(request: Request, context: { params: Promise<{ staffId: string }> }) {
+export async function PATCH(request: Request, context: { params: Promise<{ staffId: string }> }): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;

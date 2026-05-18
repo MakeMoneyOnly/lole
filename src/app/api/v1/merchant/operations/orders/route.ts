@@ -201,7 +201,7 @@ async function resolveRestaurantIdForUser(userId: string) {
     return { restaurantId: agencyUser?.restaurant_ids?.[0] ?? null };
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<Response> {
     const startedAt = Date.now();
     let responseStatus = 500;
     let restaurantIdForMetrics: string | null = null;
@@ -313,7 +313,7 @@ export async function GET(request: NextRequest) {
     }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request:  NextRequest): Promise<Response> {
     // Apply rate limiting for order creation
     const rateLimitResponse = await redisRateLimiters.orderCreate(request);
     if (rateLimitResponse) {
@@ -566,3 +566,11 @@ export async function POST(request: NextRequest) {
         return apiError('Internal server error', 500, 'INTERNAL_ERROR');
     }
 }
+
+
+
+
+
+
+
+

@@ -33,7 +33,7 @@ const AddToWaitlistSchema = z.object({
  * GET /api/waitlist
  * List waitlist entries for a restaurant
  */
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -80,7 +80,7 @@ export async function GET(request: Request) {
  * POST /api/waitlist
  * Add a guest to the waitlist
  */
-export async function POST(request: Request) {
+export async function POST(request:  Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -139,3 +139,11 @@ export async function POST(request: Request) {
         );
     }
 }
+
+
+
+
+
+
+
+

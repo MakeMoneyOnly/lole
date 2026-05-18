@@ -630,7 +630,7 @@ async function processSyncOperation(
  * POST /api/v1/system/sync
  * Process a batch of sync operations from client
  */
-export async function POST(request: NextRequest) {
+export async function POST(request:  NextRequest): Promise<Response> {
     const startTime = Date.now();
 
     // Authenticate request
@@ -706,7 +706,7 @@ export async function POST(request: NextRequest) {
  * GET /api/v1/system/sync
  * Get sync status and pending changes since last sync
  */
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<Response> {
     const startTime = Date.now();
 
     // Authenticate request
@@ -809,3 +809,11 @@ export async function GET(request: NextRequest) {
         serverTime: new Date().toISOString(),
     });
 }
+
+
+
+
+
+
+
+

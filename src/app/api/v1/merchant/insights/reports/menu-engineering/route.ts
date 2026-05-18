@@ -22,7 +22,7 @@ const QuerySchema = z.object({
  * - category_id: Filter by menu category (optional)
  * - format: 'json' or 'csv' (default: json)
  */
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -114,3 +114,11 @@ export async function GET(request: Request) {
         );
     }
 }
+
+
+
+
+
+
+
+

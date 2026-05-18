@@ -15,7 +15,7 @@ function isAuthorized(request: NextRequest): boolean {
     return request.headers.get('x-lole-job-key') === configuredKey;
 }
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
+export async function POST(request:  NextRequest): Promise<Response> {
     if (!isAuthorized(request)) {
         return NextResponse.json(
             { error: { code: 'UNAUTHORIZED_JOB', message: 'Job request is not authorized' } },
@@ -92,3 +92,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         },
     });
 }
+
+
+
+
+
+
+
+

@@ -6,13 +6,13 @@ import {
 } from '@/lib/payments/webhooks';
 import { apiSuccess, apiError } from '@/lib/api/response';
 
-export async function GET() {
+export async function GET(request: Request): Promise<Response> {
     // Chapa browser redirects may still hit old callback expectations.
     // We acknowledge the request but only POST deliveries trigger state changes.
     return apiSuccess({ received: true, ignored: true });
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request:  NextRequest): Promise<Response> {
     try {
         const rawBody = await request.text();
         const signature = request.headers.get('x-chapa-signature');
@@ -38,3 +38,11 @@ export async function POST(request: NextRequest) {
         );
     }
 }
+
+
+
+
+
+
+
+

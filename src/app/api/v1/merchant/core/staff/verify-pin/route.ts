@@ -11,7 +11,7 @@ const VerifyPinSchema = z.object({
     pin: z.string().length(4), // Assume a 4-digit numeric PIN
 });
 
-export async function POST(request: Request) {
+export async function POST(request:  Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -71,3 +71,11 @@ export async function POST(request: Request) {
         200
     );
 }
+
+
+
+
+
+
+
+

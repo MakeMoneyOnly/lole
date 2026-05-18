@@ -6,7 +6,7 @@ import { writeAuditLog } from '@/lib/api/audit';
 export async function DELETE(
     _request: Request,
     { params }: { params: Promise<{ staffId: string }> }
-) {
+): Promise<Response> {
     const { staffId } = await params;
 
     const auth = await getAuthenticatedUser();

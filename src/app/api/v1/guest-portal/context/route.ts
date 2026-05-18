@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { resolveGuestContext } from '@/lib/security/guestContext';
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<Response> {
     const slug = request.nextUrl.searchParams.get('slug');
     const table = request.nextUrl.searchParams.get('table');
     const sig = request.nextUrl.searchParams.get('sig');
@@ -29,3 +29,11 @@ export async function GET(request: NextRequest) {
         { status: 200 }
     );
 }
+
+
+
+
+
+
+
+

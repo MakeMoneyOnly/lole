@@ -16,7 +16,7 @@ import type { Database } from '@/types/database';
 
 const log = logger.child('merchant-insights/reports/scheduled');
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<Response> {
     try {
         const cookieStore = await cookies();
 
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
     }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<Response> {
     try {
         const cookieStore = await cookies();
 
@@ -220,3 +220,11 @@ export async function POST(request: NextRequest) {
         );
     }
 }
+
+
+
+
+
+
+
+

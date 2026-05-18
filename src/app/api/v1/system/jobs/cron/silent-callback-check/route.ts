@@ -19,7 +19,7 @@ const log = logger.child('silent-callback-check');
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export async function GET(request: NextRequest): Promise<Response> {
     // Verify cron secret for security
     const authHeader = request.headers.get('authorization');
     const providedSecret = authHeader?.replace('Bearer ', '');
@@ -74,6 +74,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 }
 
 // Also support POST for QStash calls
-export async function POST(request: NextRequest): Promise<NextResponse> {
+export async function POST(request:  NextRequest): Promise<NextResponse> {
     return GET(request);
 }
+
+
+
+
+
+
+
+

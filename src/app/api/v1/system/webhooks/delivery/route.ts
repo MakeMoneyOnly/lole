@@ -81,7 +81,7 @@ const PROVIDER_CONFIGS = {
 
 type Provider = keyof typeof PROVIDER_CONFIGS;
 
-function createDeliveryAggregatorService() {
+function createDeliveryAggregatorService(): React.JSX.Element {
     return new AggregatorService({
         publishLocalEvent: async event => {
             const gateway = getStoreGatewayService();
@@ -136,7 +136,7 @@ function generateProviderOrderId(provider: Provider): string {
     return `${prefix}-${timestamp}-${random}`;
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request:  NextRequest): Promise<Response> {
     const startTime = Date.now();
 
     // Extract headers
@@ -392,3 +392,11 @@ export async function POST(request: NextRequest) {
         201
     );
 }
+
+
+
+
+
+
+
+

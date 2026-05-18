@@ -3,7 +3,7 @@ import { getAuthenticatedUser, getAuthorizedRestaurantContext } from '@/lib/api/
 import { generateSignedQRCode } from '@/lib/security/hmac';
 import { getRequestOrigin } from '@/lib/api/requestOrigin';
 
-export async function POST(request: Request, context: { params: Promise<{ tableId: string }> }) {
+export async function POST(request: Request, context: { params: Promise<{ tableId: string }> }): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;

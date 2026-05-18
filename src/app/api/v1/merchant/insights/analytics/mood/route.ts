@@ -1,7 +1,7 @@
 import { apiError, apiSuccess } from '@/lib/api/response';
 import { getAuthenticatedUser, getAuthorizedRestaurantContext } from '@/lib/api/authz';
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -34,3 +34,11 @@ export async function POST(request: Request) {
 
     return apiSuccess({ success: true });
 }
+
+
+
+
+
+
+
+

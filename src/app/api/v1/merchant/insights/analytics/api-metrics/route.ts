@@ -1,7 +1,6 @@
 import { apiError, apiSuccess } from '@/lib/api/response';
 import { getAuthenticatedUser, getAuthorizedRestaurantContext } from '@/lib/api/authz';
 import { API_METRIC_ACTION } from '@/lib/api/metrics';
-import type { Json } from '@/types/database';
 
 type RangeOption = 'today' | 'week' | 'month';
 
@@ -12,14 +11,22 @@ type EndpointSloTarget = {
 };
 
 const SLO_TARGETS: EndpointSloTarget[] = [
-    { endpoint: '/api/v1/merchant/insights/analytics/overview', p95_latency_ms: 500, error_rate_percent: 1 },
+    {
+        endpoint: '/api/v1/merchant/insights/analytics/overview',
+        p95_latency_ms: 500,
+        error_rate_percent: 1,
+    },
     { endpoint: '/api/v1/merchant/operations/orders', p95_latency_ms: 400, error_rate_percent: 1 },
-    { endpoint: '/api/v1/merchant/operations/orders/:id/status', p95_latency_ms: 300, error_rate_percent: 0.5 },
+    {
+        endpoint: '/api/v1/merchant/operations/orders/:id/status',
+        p95_latency_ms: 300,
+        error_rate_percent: 0.5,
+    },
 ];
-
-function getRangeStart(range: string | null) {
+function getRangeStart(rangeParam: string | null): { range: RangeOption; sinceIso: string } {
     const now = new Date();
-    const normalized: RangeOption = range === 'today' || range === 'month' ? range : 'week';
+    const normalized: RangeOption =
+        rangeParam === 'today' || rangeParam === 'month' ? rangeParam : 'week';
 
     if (normalized === 'today') {
         const d = new Date(now);
@@ -37,31 +44,28 @@ function getRangeStart(range: string | null) {
     d.setDate(now.getDate() - 7);
     return { range: normalized, sinceIso: d.toISOString() };
 }
-
-function percentile(values: number[], p: number) {
+function percentile(values: number[], p: number): number {
     if (values.length === 0) return 0;
     const sorted = [...values].sort((a, b) => a - b);
     const index = Math.ceil((p / 100) * sorted.length) - 1;
     const safeIndex = Math.max(0, Math.min(sorted.length - 1, index));
     return sorted[safeIndex];
 }
-
-function formatBucket(dateIso: string, range: RangeOption) {
+function formatBucket(dateIso: string, rangeParam: RangeOption): string {
     const d = new Date(dateIso);
-    if (range === 'today') {
+    if (rangeParam === 'today') {
         return `${String(d.getHours()).padStart(2, '0')}:00`;
     }
     return d.toISOString().slice(0, 10);
 }
-
-function asMetricMetadata(value: Json | null) {
+function asMetricMetadata(value: unknown): Record<string, unknown> | null {
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
         return null;
     }
     return value as Record<string, unknown>;
 }
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;

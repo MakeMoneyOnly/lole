@@ -4,7 +4,7 @@ import { listActiveDiscountsForRestaurant } from '@/lib/discounts/service';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get('slug');
 
@@ -50,3 +50,11 @@ export async function GET(request: Request) {
         );
     }
 }
+
+
+
+
+
+
+
+

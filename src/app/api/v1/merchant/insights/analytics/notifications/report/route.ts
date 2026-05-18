@@ -80,7 +80,7 @@ function getDateRange(url: URL): DateRange {
  * - startDate: ISO date string (required if range=custom)
  * - endDate: ISO date string (required if range=custom)
  */
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
     // Authenticate user
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
@@ -131,3 +131,11 @@ export async function GET(request: Request) {
         );
     }
 }
+
+
+
+
+
+
+
+

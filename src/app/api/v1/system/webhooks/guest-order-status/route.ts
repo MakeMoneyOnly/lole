@@ -26,15 +26,14 @@ function verifySharedSecret(headerValue: string | null, expectedSecret: string):
         return expectedSecret === headerValue;
     }
 }
-
-function mapGuestOrderStatusToInternalStatus(guestOrderStatus: string) {
+function mapGuestOrderStatusToInternalStatus(): React.JSX.Element | void {
     if (guestOrderStatus === 'IN_PREPARATION') return 'preparing';
     if (guestOrderStatus === 'READY_FOR_PICKUP') return 'ready';
     if (guestOrderStatus === 'CLOSED') return 'served';
     return 'cancelled';
 }
 
-export async function POST(request: Request) {
+export async function POST(request:  Request): Promise<Response> {
     const configuredSecret = process.env.GUEST_ORDER_STATUS_WEBHOOK_SECRET;
     if (configuredSecret) {
         const headerSecret =
@@ -154,3 +153,11 @@ export async function POST(request: Request) {
         status: mappedStatus,
     });
 }
+
+
+
+
+
+
+
+

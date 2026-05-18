@@ -15,7 +15,7 @@ const CreateTableSchema = z.object({
     zone: z.string().trim().max(50).optional().nullable(),
 });
 
-export async function GET() {
+export async function GET(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -42,7 +42,7 @@ export async function GET() {
     return apiSuccess({ tables: data ?? [] });
 }
 
-export async function POST(request: Request) {
+export async function POST(request:  Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -99,3 +99,11 @@ export async function POST(request: Request) {
 
     return apiSuccess(data, 201);
 }
+
+
+
+
+
+
+
+

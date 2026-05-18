@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { logger } from '@/lib/logger';
 import { getCacheHeaders, CACHE_PRESETS } from '@/lib/api/cache';
 
-export async function GET() {
+export async function GET(request: Request): Promise<Response> {
     try {
         const validatedItems = z.array(FoodItemSchema).safeParse(FOOD_ITEMS);
 
@@ -30,7 +30,7 @@ const PostSchema = z.object({
     category: z.string(),
 });
 
-export async function POST(request: Request) {
+export async function POST(request:  Request): Promise<Response> {
     try {
         const body = await request.json();
         const validated = PostSchema.safeParse(body);
@@ -46,3 +46,11 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
     }
 }
+
+
+
+
+
+
+
+

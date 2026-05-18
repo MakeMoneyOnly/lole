@@ -31,8 +31,11 @@ const ShiftCreateSchema = z.object({
     station: z.string().trim().max(80).optional().nullable(),
     notes: z.string().trim().max(400).optional().nullable(),
 });
-
-function normalizeWindow(input: { start_date?: string; end_date?: string }) {
+function normalizeWindow(input: { start_date?: string; end_date?: string }): {
+    startIso: string;
+    endIso: string;
+    daySpan: number;
+} {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
@@ -48,12 +51,11 @@ function normalizeWindow(input: { start_date?: string; end_date?: string }) {
         daySpan,
     };
 }
-
-function overlaps(aStart: string, aEnd: string, bStart: string, bEnd: string) {
+function overlaps(aStart: string, aEnd: string, bStart: string, bEnd: string): boolean {
     return aStart < bEnd && bStart < aEnd;
 }
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
     try {
         const auth = await getAuthenticatedUser();
         if (!auth.ok) {
@@ -82,7 +84,11 @@ export async function GET(request: Request) {
             );
         }
 
-        log.info('Fetching schedule data', { restaurantId: context.restaurantId, startIso, endIso });
+        log.info('Fetching schedule data', {
+            restaurantId: context.restaurantId,
+            startIso,
+            endIso,
+        });
 
         const adminClient = createServiceRoleClient();
 
@@ -183,7 +189,7 @@ export async function GET(request: Request) {
     }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;

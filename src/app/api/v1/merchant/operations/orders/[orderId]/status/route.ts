@@ -35,8 +35,7 @@ const ALLOWED_TRANSITIONS: Record<string, string[]> = {
     completed: [],
     cancelled: [],
 };
-
-function canTransition(current: string | null, next: string) {
+function canTransition(): React.JSX.Element | void {
     if (!current) return false;
     return (ALLOWED_TRANSITIONS[current] || []).includes(next);
 }
@@ -189,7 +188,7 @@ export async function PATCH(
         responseStatus = 200;
         const response = apiSuccess(updatedOrder);
 
-        const smsPromise = (async () => {
+        const smsPromise = (async (): React.JSX.Element => {
             if (!updatedOrder?.customer_phone) return;
             const { data: restaurantSettings } = await supabase
                 .from('restaurants')

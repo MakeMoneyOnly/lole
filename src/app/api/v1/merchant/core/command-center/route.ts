@@ -19,23 +19,21 @@ type AttentionItem = {
     created_at: string | null;
     table_number: string | null;
 };
-
-function isInFlightStatus(status: string | null) {
+function isInFlightStatus(status: string | null | undefined): boolean {
     return ['pending', 'acknowledged', 'preparing', 'ready'].includes(status ?? '');
 }
-
-function resolveSince(range: string | null) {
+function resolveSince(rangeParam: string | null): { range: string; sinceIso: string } {
     const now = new Date();
     const fallbackRange = 'today';
 
-    if (range === 'week') {
+    if (rangeParam === 'week') {
         return {
             range: 'week',
             sinceIso: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString(),
         };
     }
 
-    if (range === 'month') {
+    if (rangeParam === 'month') {
         return {
             range: 'month',
             sinceIso: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString(),
@@ -72,8 +70,7 @@ function resolvePreviousRange(range: string | null): { sinceIso: string; untilIs
     const since = new Date(startOfToday.getTime() - 24 * 60 * 60 * 1000);
     return { sinceIso: since.toISOString(), untilIso: until.toISOString() };
 }
-
-function resolvePriority(item: AttentionItem) {
+function resolvePriority(item: AttentionItem): number {
     if (item.type === 'alert') {
         if (item.severity === 'critical') return 400;
         if (item.severity === 'high') return 350;
@@ -87,7 +84,7 @@ function resolvePriority(item: AttentionItem) {
     return 120;
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<Response> {
     const startedAt = Date.now();
     let responseStatus = 500;
     let restaurantIdForMetrics: string | null = null;

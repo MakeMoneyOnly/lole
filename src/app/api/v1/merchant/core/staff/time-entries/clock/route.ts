@@ -15,7 +15,7 @@ const ClockActionSchema = z.object({
     note: z.string().trim().max(240).optional(),
 });
 
-export async function POST(request: Request) {
+export async function POST(request:  Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -196,3 +196,11 @@ export async function POST(request: Request) {
         idempotency_key: idempotencyKey,
     });
 }
+
+
+
+
+
+
+
+

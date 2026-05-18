@@ -16,7 +16,7 @@ const UpsertGuestSessionSchema = z.object({
     skip_selected: z.boolean().optional().default(false),
 });
 
-export async function POST(request: NextRequest) {
+export async function POST(request:  NextRequest): Promise<Response> {
     try {
         const body = await request.json();
         const parsed = UpsertGuestSessionSchema.safeParse(body);
@@ -135,3 +135,11 @@ export async function POST(request: NextRequest) {
         );
     }
 }
+
+
+
+
+
+
+
+

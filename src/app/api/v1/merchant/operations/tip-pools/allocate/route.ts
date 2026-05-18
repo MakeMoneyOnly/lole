@@ -13,7 +13,7 @@ const AllocateTipSchema = z.object({
     total_bill_amount: z.number().int().min(0).optional(),
 });
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -135,3 +135,11 @@ export async function POST(request: Request) {
 
     return apiSuccess({ allocation }, 201);
 }
+
+
+
+
+
+
+
+

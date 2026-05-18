@@ -36,7 +36,7 @@ async function parseJsonBody(request: NextRequest) {
     }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<Response> {
     const parsed = await parseJsonBody(request);
     if (!parsed.success) {
         return apiError(parsed.error, 400, 'INVALID_JSON');
@@ -185,3 +185,11 @@ export async function POST(request: NextRequest) {
         201
     );
 }
+
+
+
+
+
+
+
+

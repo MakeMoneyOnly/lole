@@ -27,7 +27,7 @@ const RESTAURANT_COORDINATES: Record<string, { lat: number; lng: number }> = {
     default: { lat: 9.0, lng: 38.75 },
 };
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<Response> {
     const { searchParams } = new URL(request.url);
 
     const params = {
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
     });
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<Response> {
     const body = await request.json();
 
     const parseResult = z
@@ -110,3 +110,11 @@ export async function POST(request: NextRequest) {
         delivery_area,
     });
 }
+
+
+
+
+
+
+
+

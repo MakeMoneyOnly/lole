@@ -67,7 +67,7 @@ async function cleanupOldNotifications(olderThanDays: number = 7): Promise<numbe
  * - limit: Max notifications to process (default: 50)
  * - cleanup_days: Days to keep sent/cancelled notifications (default: 7)
  */
-export async function POST(request: NextRequest) {
+export async function POST(request:  NextRequest): Promise<Response> {
     const startTime = Date.now();
 
     // Validate cron secret
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
  * Health check endpoint for the cron job.
  * Returns queue statistics.
  */
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest): Promise<Response> {
     try {
         // Get queue stats
         const stats = await getQueueStats();
@@ -177,3 +177,11 @@ export async function GET(_request: NextRequest) {
         );
     }
 }
+
+
+
+
+
+
+
+
