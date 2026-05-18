@@ -18,7 +18,7 @@ import VisitHeatmap from '@/components/merchant/shared/VisitHeatmap';
 import SalesPerformanceChart from '@/components/merchant/shared/SalesPerformanceChart';
 import { createClient } from '@/lib/supabase/server';
 
-export default async function DashboardPage() {
+export default async function DashboardPage(): Promise<React.JSX.Element> {
     const supabase = await createClient();
     const {
         data: { user },
@@ -486,3 +486,4 @@ export default async function DashboardPage() {
         </div>
     );
 }
+

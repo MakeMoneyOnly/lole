@@ -7,13 +7,13 @@ import { useEffect } from 'react';
  * This prevents stale service workers from interfering with fetch requests
  * and causing "Failed to fetch" errors during development.
  */
-export function ServiceWorkerCleanup() {
+export function ServiceWorkerCleanup(): React.JSX.Element {
     useEffect(() => {
         // Only run in development and in browser
         if (process.env.NODE_ENV !== 'development') return;
         if (typeof window === 'undefined' || !navigator.serviceWorker) return;
 
-        const cleanupServiceWorkers = async () => {
+        const cleanupServiceWorkers = async (): Promise<void> => {
             try {
                 const registrations = await navigator.serviceWorker.getRegistrations();
 

@@ -24,7 +24,7 @@ const ARTICLES = [
     },
 ];
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -42,3 +42,11 @@ export async function GET(request: Request) {
 
     return apiSuccess({ articles: filtered });
 }
+
+
+
+
+
+
+
+

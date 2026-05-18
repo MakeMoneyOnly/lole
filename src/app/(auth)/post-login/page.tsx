@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase';
 import { Skeleton } from '@/components/ui/Skeleton';
 
-export default function PostLoginPage() {
+export default function PostLoginPage(): React.JSX.Element {
     const router = useRouter();
     const supabase = useMemo(() => createClient(), []);
     const [message, setMessage] = useState('Finalizing your session...');
@@ -13,7 +13,7 @@ export default function PostLoginPage() {
     useEffect(() => {
         let cancelled = false;
 
-        async function finalize() {
+        async function finalize(): Promise<void> {
             try {
                 const {
                     data: { user },
@@ -88,3 +88,6 @@ export default function PostLoginPage() {
         </main>
     );
 }
+
+
+

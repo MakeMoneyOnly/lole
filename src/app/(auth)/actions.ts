@@ -25,7 +25,7 @@ const signupSchema = z.object({
         .transform(value => (value ? value : undefined)),
 });
 
-export async function login(prevState: unknown, formData: FormData) {
+export async function login(prevState: unknown, formData: FormData): Promise<{ error: string | null; message?: string }> {
     // CSRF Protection - verify origin before processing
     await verifyOrigin();
 
@@ -62,7 +62,7 @@ export async function login(prevState: unknown, formData: FormData) {
     redirect('/auth/post-login');
 }
 
-export async function signup(prevState: unknown, formData: FormData) {
+export async function signup(prevState: unknown, formData: FormData): Promise<{ error: string | null; message?: string }> {
     // CSRF Protection - verify origin before processing
     await verifyOrigin();
 
@@ -110,7 +110,7 @@ export async function signup(prevState: unknown, formData: FormData) {
     return { error: null, message: 'Account created. Check your email to confirm sign-up.' };
 }
 
-export async function logout() {
+export async function logout(): Promise<never> {
     // CSRF Protection - verify origin before processing
     await verifyOrigin();
 
@@ -119,3 +119,4 @@ export async function logout() {
     revalidatePath('/', 'layout');
     redirect('/');
 }
+

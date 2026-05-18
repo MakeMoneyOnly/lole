@@ -5,7 +5,7 @@ import { DashboardLayoutClient } from '@/components/merchant/layout/DashboardLay
 // Force dynamic rendering to prevent build-time errors
 export const dynamic = 'force-dynamic';
 
-function SkipLink() {
+function SkipLink(): React.JSX.Element {
     return (
         <a
             href="#main-content"
@@ -18,7 +18,7 @@ function SkipLink() {
 
 import { OfflineIndicator } from '@/components/providers/OfflineIndicator';
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
     return (
         <div
             className="font-inter flex h-screen w-full flex-col overflow-hidden bg-white"
@@ -35,3 +35,4 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
     );
 }
+

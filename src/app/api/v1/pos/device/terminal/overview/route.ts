@@ -5,7 +5,7 @@ import { createServiceRoleClient } from '@/lib/supabase/service-role';
 
 const ACTIVE_ORDER_STATUSES = ['pending', 'acknowledged', 'preparing', 'ready', 'served'];
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
     const ctx = await getScopedDeviceContext(request, ['terminal']);
     if (!ctx.ok) return ctx.response;
 
@@ -96,3 +96,11 @@ export async function GET(request: Request) {
         orders,
     });
 }
+
+
+
+
+
+
+
+

@@ -19,10 +19,18 @@ const handler = createSubgraphHandler({
     resolvers: menuResolvers,
 });
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
     return handler(request);
 }
 
-export async function POST(request: Request) {
+export async function POST(request:  Request): Promise<Response> {
     return handler(request);
 }
+
+
+
+
+
+
+
+

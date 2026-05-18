@@ -16,8 +16,7 @@ function getAuthErrorMessage(error: unknown): string {
     }
     return 'Unable to sign in. Please try again.';
 }
-
-export default function LoginPage() {
+    export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -27,7 +26,7 @@ export default function LoginPage() {
     const router = useRouter();
     const supabase = useMemo(() => createClient(), []);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
         setLoading(true);
         setError(null);
@@ -289,3 +288,4 @@ export default function LoginPage() {
         </main>
     );
 }
+

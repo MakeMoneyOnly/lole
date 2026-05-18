@@ -46,7 +46,7 @@ type RestaurantData = Database['public']['Tables']['restaurants']['Row'];
 type CategoryData = Database['public']['Tables']['categories']['Row'];
 type MenuItemData = Database['public']['Tables']['menu_items']['Row'];
 
-export default function WaiterPosPage() {
+export default function WaiterPosPage(): React.JSX.Element {
     const router = useRouter();
     const managedDevice = useManagedDeviceSession({
         route: '/waiter',
@@ -64,7 +64,7 @@ export default function WaiterPosPage() {
     const headerDropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
+function handleClickOutside(): React.JSX.Element | void {
             if (
                 headerDropdownRef.current &&
                 !headerDropdownRef.current.contains(event.target as Node)
@@ -144,7 +144,7 @@ export default function WaiterPosPage() {
         const restaurantId = managedDevice.session?.restaurant_id;
         if (!restaurantId) return;
 
-        async function fetchData() {
+        async function fetchData(): Promise<void> {
             setIsLoadingRestaurant(true);
             setIsLoadingMenu(true);
             try {
@@ -823,3 +823,6 @@ export default function WaiterPosPage() {
         </div>
     );
 }
+
+
+

@@ -55,7 +55,7 @@ const DAYS_OF_WEEK = [
     { key: 'sunday', label: 'Sunday', labelAm: 'እሑድ' },
 ];
 
-function RestaurantInfoContent() {
+function RestaurantInfoContent(): React.JSX.Element {
     const params = useParams<{ slug: string }>();
     const searchParams = useSearchParams();
     const slug = params.slug;
@@ -69,7 +69,7 @@ function RestaurantInfoContent() {
     const supabase = createClient();
 
     useEffect(() => {
-        async function fetchRestaurant() {
+        async function fetchRestaurant(): Promise<void> {
             if (!slug) return;
 
             setLoading(true);
@@ -142,7 +142,7 @@ function RestaurantInfoContent() {
         );
     }
 
-    const formatTime = (time: string) => {
+    function formatTime(time: string): string {
         try {
             const [hours, minutes] = time.split(':');
             const hour = parseInt(hours, 10);
@@ -152,7 +152,7 @@ function RestaurantInfoContent() {
         } catch {
             return time;
         }
-    };
+    }
 
     return (
         <div className="bg-surface-0 pb-safe min-h-screen">
@@ -389,7 +389,7 @@ function RestaurantInfoContent() {
     );
 }
 
-export default function RestaurantInfoClient() {
+export default function RestaurantInfoClient(): React.JSX.Element {
     return (
         <Suspense
             fallback={

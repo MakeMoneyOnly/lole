@@ -6,3 +6,4 @@ export default async function MenusPage() {
     const data = await getMenuPageData();
     return <MenusPageClient initialData={data} />;
 }
+

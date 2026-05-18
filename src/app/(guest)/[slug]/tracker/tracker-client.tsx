@@ -90,7 +90,7 @@ const STATUS_CONFIG: Record<
     },
 };
 
-function PauseCircleIcon({ size }: { size: number }) {
+function PauseCircleIcon({ size }: { size: number }): React.JSX.Element {
     return (
         <svg
             width={size}
@@ -109,7 +109,7 @@ function PauseCircleIcon({ size }: { size: number }) {
 
 // ── Tracker Content ────────────────────────────────────────────────────────────
 
-function TrackerContent() {
+function TrackerContent(): React.JSX.Element {
     const params = useParams<{ slug: string }>();
     const searchParams = useSearchParams();
     const slug = params.slug;
@@ -131,7 +131,7 @@ function TrackerContent() {
 
     // Fetch initial data
     useEffect(() => {
-        async function fetchOrderData() {
+        async function fetchOrderData(): Promise<void> {
             if (!orderId || !tableNumber || !signature || !expiresAt) {
                 setError('Incomplete tracking parameters');
                 setLoading(false);
@@ -398,7 +398,7 @@ function TrackerContent() {
     );
 }
 
-export default function TrackerClient() {
+export default function TrackerClient(): React.JSX.Element {
     return (
         <Suspense
             fallback={

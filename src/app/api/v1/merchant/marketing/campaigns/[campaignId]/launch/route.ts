@@ -26,8 +26,7 @@ const LaunchCampaignSchema = z.object({
     limit: z.coerce.number().int().min(1).max(2000).optional().default(500),
     dry_run: z.boolean().optional().default(false),
 });
-
-function normalizeSegmentRules(ruleJson: unknown) {
+function normalizeSegmentRules(): React.JSX.Element | void {
     if (!ruleJson || typeof ruleJson !== 'object') {
         return {
             tags_any: [] as string[],

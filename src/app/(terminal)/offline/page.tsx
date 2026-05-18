@@ -12,6 +12,9 @@ export const metadata: Metadata = {
  * Displayed when the user is offline and tries to access a non-cached page.
  * Part of PWA offline-first implementation.
  */
-export default function OfflinePage() {
+export default function OfflinePage(): React.JSX.Element {
     return <OfflineContent />;
 }
+
+
+

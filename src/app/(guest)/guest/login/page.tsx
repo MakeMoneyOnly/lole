@@ -22,7 +22,7 @@ function getAuthErrorMessage(error: unknown): string {
     return 'Unable to sign in. Please try again.';
 }
 
-function LoginContent() {
+function LoginContent(): React.JSX.Element {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -33,7 +33,7 @@ function LoginContent() {
     const supabase = useMemo(() => createClient(), []);
     const nextPath = sanitizeNextPath(searchParams.get('next'));
 
-    const handleSubmit = async (event: React.FormEvent) => {
+    const handleSubmit = async (event: React.FormEvent): Promise<void> => {
         event.preventDefault();
         setLoading(true);
         setError(null);
@@ -201,10 +201,13 @@ function LoginContent() {
 
 import { Suspense } from 'react';
 
-export default function GuestLoginPage() {
+export default function GuestLoginPage(): React.JSX.Element {
     return (
         <Suspense fallback={null}>
             <LoginContent />
         </Suspense>
     );
 }
+
+
+

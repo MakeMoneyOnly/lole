@@ -23,7 +23,7 @@ const AlertRulePatchSchema = z
 export async function PATCH(
     request: Request,
     routeContext: { params: Promise<{ ruleId: string }> }
-) {
+): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;

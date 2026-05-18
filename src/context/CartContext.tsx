@@ -44,7 +44,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const { trigger } = useHaptic();
 
     useEffect(() => {
-        async function load() {
+        async function load(): Promise<void> {
             const psItems = await cartRepository.loadCartFromPowerSync();
             if (psItems.length > 0) {
                 setItems(psItems);
@@ -65,26 +65,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         cartRepository.syncCartToPowerSync(items);
     }, [items]);
 
-    const addToCart = (newItem: Omit<CartItem, 'uniqueId'>) => {
+    const addToCart = (newItem: Omit<CartItem, 'uniqueId'>): React.JSX.Element => {
         trigger('success');
         setItems(prev => cartService.addItem(prev, newItem));
     };
 
-    const removeFromCart = (uniqueId: string) => {
+    const removeFromCart = (uniqueId: string): React.JSX.Element => {
         trigger('medium');
         setItems(prev => cartService.removeItem(prev, uniqueId));
     };
 
-    const updateQuantity = (uniqueId: string, delta: number) => {
+    const updateQuantity = (uniqueId: string, delta: number): React.JSX.Element => {
         trigger('soft');
         setItems(prev => cartService.updateQuantity(prev, uniqueId, delta));
     };
 
-    const updateInstructions = (uniqueId: string, instructions: string) => {
+    const updateInstructions = (uniqueId: string, instructions: string): React.JSX.Element => {
         setItems(prev => cartService.updateInstructions(prev, uniqueId, instructions));
     };
 
-    const clearCart = () => {
+    const clearCart = (): React.JSX.Element => {
         setItems([]);
         localStorage.removeItem(STORAGE_KEY);
         cartRepository.clearCartFromPowerSync();
@@ -110,7 +110,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     );
 }
 
-export function useCart() {
+export function useCart(): CartContextType {
     const context = useContext(CartContext);
     if (!context) {
         throw new Error('useCart must be used within a CartProvider');

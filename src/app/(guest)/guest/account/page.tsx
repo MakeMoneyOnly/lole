@@ -20,7 +20,7 @@ function _sanitizeNextPath(rawNext: string | null): string {
     return rawNext.startsWith('/') ? rawNext : '/';
 }
 
-function AccountContent() {
+function AccountContent(): React.JSX.Element {
     const router = useRouter();
     const supabase = useMemo(() => createClient(), []);
 
@@ -40,7 +40,7 @@ function AccountContent() {
     const [verificationSuccess, setVerificationSuccess] = useState(false);
 
     useEffect(() => {
-        async function fetchGuestProfile() {
+        async function fetchGuestProfile(): Promise<void> {
             const {
                 data: { user },
             } = await supabase.auth.getUser();
@@ -93,7 +93,7 @@ function AccountContent() {
         fetchGuestProfile();
     }, [supabase, router]);
 
-    const handleSavePhone = async () => {
+    const handleSavePhone = async (): Promise<void> => {
         if (!guest) return;
 
         setSavingPhone(true);
@@ -115,7 +115,7 @@ function AccountContent() {
         }
     };
 
-    const handleSendVerification = async () => {
+    const handleSendVerification = async (): Promise<void> => {
         if (!guest || (!guest.phone && !phone.trim())) {
             setVerificationError('Please add a phone number first');
             return;
@@ -148,7 +148,7 @@ function AccountContent() {
         }
     };
 
-    const handleVerifyCode = async () => {
+    const handleVerifyCode = async (): Promise<void> => {
         if (!guest || !verificationCode.trim()) return;
 
         setVerifying(true);
@@ -398,7 +398,7 @@ function AccountContent() {
     );
 }
 
-export default function GuestAccountPage() {
+export default function GuestAccountPage(): React.JSX.Element {
     return (
         <Suspense
             fallback={
@@ -411,3 +411,6 @@ export default function GuestAccountPage() {
         </Suspense>
     );
 }
+
+
+

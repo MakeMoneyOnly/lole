@@ -6,7 +6,7 @@
  * Blank canvas. The old design has been removed.
  * Build the new Online Ordering UI here.
  */
-export default function MenuPage() {
+export default function MenuPage(): React.JSX.Element {
     return (
         <main className="flex min-h-screen w-full items-center justify-center bg-[var(--background)]">
             {/*
@@ -20,3 +20,6 @@ export default function MenuPage() {
         </main>
     );
 }
+
+
+

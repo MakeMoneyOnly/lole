@@ -7,7 +7,7 @@ import { ServiceWorkerCleanup } from '@/components/providers/ServiceWorkerCleanu
 import { SkipLink } from '@/components/ui/SkipLink';
 import { Toaster } from 'react-hot-toast';
 
-export function ClientProviders({ children }: { children: React.ReactNode }) {
+export function ClientProviders({ children }: { children: React.ReactNode }): React.JSX.Element {
     return (
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
             <ServiceWorkerCleanup />

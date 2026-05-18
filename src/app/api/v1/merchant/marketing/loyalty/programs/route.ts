@@ -16,7 +16,7 @@ const CreateProgramSchema = z.object({
     status: z.enum(['draft', 'active', 'paused', 'archived']).optional(),
 });
 
-export async function GET() {
+export async function GET(request: Request) {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -53,7 +53,7 @@ export async function GET() {
     return apiSuccess({ programs: data ?? [] });
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -126,3 +126,11 @@ export async function POST(request: Request) {
 
     return apiSuccess({ program: data, idempotency_key: idempotencyKey }, 201);
 }
+
+
+
+
+
+
+
+

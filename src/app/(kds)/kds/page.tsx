@@ -17,7 +17,7 @@ const STATION_CONFIG: Record<StationView, { title: string; accentClassName: stri
     coffee: { title: 'Coffee Display', accentClassName: 'bg-amber-100 text-amber-800' },
 };
 
-function KdsPageContent() {
+function KdsPageContent(): React.JSX.Element {
     const searchParams = useSearchParams();
     const router = useRouter();
     const queryRestaurantId = searchParams.get('restaurantId');
@@ -114,7 +114,7 @@ function KdsPageContent() {
     );
 }
 
-export default function KdsPage() {
+export default function KdsPage(): React.JSX.Element {
     return (
         <div className="font-inter min-h-screen bg-[#F7F5F2] tracking-[-0.04em]">
             <Suspense
@@ -134,3 +134,6 @@ export default function KdsPage() {
         </div>
     );
 }
+
+
+

@@ -38,7 +38,7 @@ type PairResponse = {
     boot_path?: string | null;
 };
 
-export default function DeviceSetupPage() {
+export default function DeviceSetupPage(): React.JSX.Element {
     const router = useRouter();
     const params = useParams();
     const searchParams = useSearchParams();
@@ -100,7 +100,7 @@ export default function DeviceSetupPage() {
         return slug.replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
     }, [restaurantName, slug]);
 
-    const pairDevice = async (rawCode: string) => {
+    const pairDevice = async (rawCode: string): Promise<void> => {
         const normalizedCode = normalizePairingCode(rawCode).slice(0, DEVICE_PAIRING_CODE_LENGTH);
         if (normalizedCode.length !== DEVICE_PAIRING_CODE_LENGTH) {
             return;
@@ -180,7 +180,7 @@ export default function DeviceSetupPage() {
         }
     };
 
-    const handlePair = async (event: React.FormEvent) => {
+    const handlePair = async (event: React.FormEvent): Promise<void> => {
         event.preventDefault();
         await pairDevice(pairingCode);
     };

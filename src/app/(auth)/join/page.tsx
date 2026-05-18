@@ -8,7 +8,7 @@ import { Loader2, Tablet } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { provisionDevice } from './actions';
 
-function DeviceProvisioningContent() {
+function DeviceProvisioningContent(): React.JSX.Element {
     const searchParams = useSearchParams();
     const [loading, setLoading] = useState(false);
 
@@ -35,7 +35,7 @@ function DeviceProvisioningContent() {
         // For now, we'll infer role from params if available or fetch via server action check
     }, [code]);
 
-    const handleSetup = async (e: React.FormEvent) => {
+    const handleSetup = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
         setLoading(true);
 
@@ -151,7 +151,7 @@ function DeviceProvisioningContent() {
     );
 }
 
-export default function DeviceProvisioningPage() {
+export default function DeviceProvisioningPage(): React.JSX.Element {
     return (
         <Suspense
             fallback={
@@ -164,3 +164,6 @@ export default function DeviceProvisioningPage() {
         </Suspense>
     );
 }
+
+
+

@@ -2,7 +2,7 @@
 
 import { StationBoard } from '@/features/kds/components/StationBoard';
 
-export default function BarPage() {
+export default function BarPage(): React.JSX.Element {
     return (
         <StationBoard
             station="bar"
@@ -11,3 +11,6 @@ export default function BarPage() {
         />
     );
 }
+
+
+

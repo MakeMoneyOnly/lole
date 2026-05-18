@@ -23,7 +23,7 @@ function generatePairingCode(length = DEVICE_PAIRING_CODE_LENGTH): string {
 export async function DELETE(
     _request: Request,
     { params }: { params: Promise<{ deviceId: string }> }
-) {
+): Promise<Response> {
     const { deviceId } = await params;
 
     const auth = await getAuthenticatedUser();
@@ -74,7 +74,7 @@ export async function DELETE(
 export async function PATCH(
     request: Request,
     { params }: { params: Promise<{ deviceId: string }> }
-) {
+): Promise<Response> {
     const { deviceId } = await params;
     const auth = await getAuthenticatedUser();
     if (!auth.ok) return auth.response;

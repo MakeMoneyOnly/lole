@@ -8,7 +8,7 @@ import { logger } from '@/lib/logger';
 
 const log = logger.child('auth:invite');
 
-export async function acceptInvite(code: string) {
+export async function acceptInvite(code: string): Promise<{ error?: string; success?: boolean }> {
     // CSRF Protection - verify origin before processing
     await verifyOrigin();
 
@@ -88,3 +88,4 @@ export async function acceptInvite(code: string) {
     revalidatePath('/', 'layout');
     return { success: true };
 }
+

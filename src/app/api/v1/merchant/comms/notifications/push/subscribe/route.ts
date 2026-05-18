@@ -64,7 +64,7 @@ const VapidKeyQuerySchema = z.object({
 // POST /subscribe - Register push subscription
 // =========================================================
 
-export async function POST(request: NextRequest) {
+export async function POST(request:  NextRequest): Promise<Response> {
     try {
         // Parse request body
         const parseResult = await parseJsonBody(request, SubscribeRequestSchema);
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
 // DELETE /subscribe - Unsubscribe from push notifications
 // =========================================================
 
-export async function DELETE(request: NextRequest) {
+export async function DELETE(request: NextRequest): Promise<Response> {
     try {
         // Parse request body
         const parseResult = await parseJsonBody(request, UnsubscribeRequestSchema);
@@ -171,7 +171,7 @@ export async function DELETE(request: NextRequest) {
 // GET /subscribe - Get VAPID public key
 // =========================================================
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<Response> {
     try {
         const url = new URL(request.url);
         const restaurantId = url.searchParams.get('restaurantId') || undefined;
@@ -207,3 +207,11 @@ export async function GET(request: NextRequest) {
         );
     }
 }
+
+
+
+
+
+
+
+

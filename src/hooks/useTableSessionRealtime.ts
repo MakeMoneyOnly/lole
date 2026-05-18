@@ -37,7 +37,7 @@ export function useTableSessionRealtime(input: {
         let active = true;
         let client: ReturnType<typeof createLanMqttClient> | null = null;
 
-        const start = async () => {
+        const start = async (): Promise<void> => {
             const session = await getStoredDeviceSession();
             if (!active || !session?.gateway || session.gateway_bootstrap_status !== 'ready') {
                 return;

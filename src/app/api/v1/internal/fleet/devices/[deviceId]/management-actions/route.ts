@@ -16,7 +16,7 @@ const InternalFleetActionSchema = z.object({
 export async function POST(
     request: Request,
     { params }: { params: Promise<{ deviceId: string }> }
-) {
+): Promise<Response> {
     const { deviceId } = await params;
 
     const auth = await getAuthenticatedUser();

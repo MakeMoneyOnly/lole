@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-export default function DashboardNotFound() {
+export default function DashboardNotFound(): React.JSX.Element {
     return (
         <div className="flex flex-1 flex-col items-center justify-center px-4 text-center">
             <h1 className="text-brand-primary mb-2 text-5xl font-bold">404</h1>
@@ -17,3 +17,6 @@ export default function DashboardNotFound() {
         </div>
     );
 }
+
+
+

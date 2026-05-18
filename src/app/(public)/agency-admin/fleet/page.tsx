@@ -13,7 +13,7 @@ function readRecord(value: unknown): Record<string, unknown> {
     return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};
 }
 
-export default async function AgencyFleetPage() {
+export default async function AgencyFleetPage(): Promise<React.ReactElement> {
     const auth = await requireAdminOrManager();
     const access = await getAgencyFleetAccess(auth.user.id);
 
@@ -124,3 +124,4 @@ export default async function AgencyFleetPage() {
 
     return <FleetManagementPageClient devices={fleetDevices} actions={fleetActions} />;
 }
+

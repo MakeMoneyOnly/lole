@@ -15,7 +15,7 @@ const EnsureOpenSessionSchema = z.object({
     notes: z.string().trim().max(300).optional(),
 });
 
-export async function POST(request: Request) {
+export async function POST(request:  Request): Promise<Response> {
     const ctx = await getDeviceContext(request);
     if (!ctx.ok) return ctx.response;
 
@@ -127,3 +127,11 @@ export async function POST(request: Request) {
         created: true,
     });
 }
+
+
+
+
+
+
+
+

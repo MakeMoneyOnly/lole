@@ -8,7 +8,7 @@ import { apiError, apiSuccess } from '@/lib/api/response';
 import { getDeviceContext } from '@/lib/api/authz';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
     const ctx = await getDeviceContext(request);
     if (!ctx.ok) return ctx.response;
 
@@ -28,3 +28,11 @@ export async function GET(request: Request) {
 
     return apiSuccess({ tables: data ?? [] });
 }
+
+
+
+
+
+
+
+

@@ -75,7 +75,7 @@ import { NextRequest } from 'next/server';
 
 const ACTIVE_STATUSES = ['pending', 'acknowledged', 'preparing', 'ready', 'served'];
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
     const ctx = await getDeviceContext(request);
     if (!ctx.ok) return ctx.response;
 
@@ -132,7 +132,7 @@ const PlaceOrderSchema = z.object({
     staff_name: z.string().optional().nullable(),
 });
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<Response> {
     // Rate limiting for order creation
     const nextRequest = request as NextRequest;
     const { fingerprint, ipAddress, userAgent } = getClientIdentifier(nextRequest);
@@ -227,7 +227,7 @@ export async function POST(request: Request) {
         price: item.unit_price,
         notes: item.notes ?? null,
         status: 'pending',
-        course: item.course ?? menuCourseMap.get(item.menu_item_id) ?? 'main',
+        course: item.course ?? menuCourseMap.get(String(item.menu_item_id)) ?? 'main',
     }));
 
     let discountRuntime;
@@ -288,7 +288,7 @@ export async function POST(request: Request) {
         price: item.unit_price,
         notes: item.notes ?? null,
         status: 'pending',
-        course: item.course ?? menuCourseMap.get(item.menu_item_id) ?? 'main',
+        course: item.course ?? menuCourseMap.get(String(item.menu_item_id)) ?? 'main',
     }));
 
     const { error: itemsError } = await admin.from('order_items').insert(orderItems);
@@ -364,3 +364,11 @@ export async function POST(request: Request) {
 
     return apiSuccess({ order }, 201);
 }
+
+
+
+
+
+
+
+

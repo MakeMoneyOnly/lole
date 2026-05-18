@@ -38,7 +38,7 @@ const defaultOnlineOrderingSettings = {
     throttle_limit_per_15m: 40,
 };
 
-export async function GET() {
+export async function GET(request: Request) {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -75,7 +75,7 @@ export async function GET() {
     });
 }
 
-export async function PATCH(request: Request) {
+export async function PATCH(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -153,3 +153,11 @@ export async function PATCH(request: Request) {
 
     return apiSuccess(nextOnlineOrdering);
 }
+
+
+
+
+
+
+
+

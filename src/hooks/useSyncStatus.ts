@@ -206,13 +206,13 @@ export function useSyncStatus(options?: {
 
     // Listen for online/offline events
     useEffect(() => {
-        const handleOnline = () => {
+        const handleOnline = (): React.JSX.Element => {
             setStatus(prev => ({ ...prev, isOnline: true }));
             // Trigger sync when coming back online
             triggerSync();
         };
 
-        const handleOffline = () => {
+        const handleOffline = (): React.JSX.Element => {
             setStatus(prev => ({ ...prev, isOnline: false }));
         };
 
@@ -246,7 +246,7 @@ export function useOnlineStatus(): {
     const [pendingCount, setPendingCount] = useState(0);
 
     useEffect(() => {
-        const updateStatus = async () => {
+        const updateStatus = async (): Promise<void> => {
             const queueStatus = await getSyncQueueStatus();
             setPendingCount(queueStatus.pending);
         };
@@ -254,12 +254,12 @@ export function useOnlineStatus(): {
         updateStatus();
         const intervalId = setInterval(updateStatus, 10000);
 
-        const handleOnline = () => {
+        const handleOnline = (): React.JSX.Element => {
             setIsOnline(true);
             updateStatus();
         };
 
-        const handleOffline = () => {
+        const handleOffline = (): React.JSX.Element => {
             setIsOnline(false);
         };
 

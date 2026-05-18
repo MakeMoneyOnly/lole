@@ -5,13 +5,13 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'react-hot-toast';
 
-export default function OnboardingPage() {
+export default function OnboardingPage(): React.JSX.Element {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [name, setName] = useState('');
 
     useEffect(() => {
-        const fetchUser = async () => {
+        const fetchUser = async (): Promise<void> => {
             setLoading(true);
             const supabase = createClient();
             const {
@@ -46,7 +46,7 @@ export default function OnboardingPage() {
         fetchUser();
     }, [router]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
         setLoading(true);
 
@@ -126,3 +126,4 @@ export default function OnboardingPage() {
         </div>
     );
 }
+

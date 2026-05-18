@@ -27,7 +27,7 @@ export const viewport: Viewport = {
     interactiveWidget: 'overlays-content',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
     return (
         <html lang="en" suppressHydrationWarning className="h-full">
             <body
@@ -39,3 +39,4 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </html>
     );
 }
+

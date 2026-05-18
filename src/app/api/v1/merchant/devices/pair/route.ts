@@ -26,7 +26,7 @@ import {
     buildOfflineStaffOutagePolicyMetadata,
 } from '@/lib/auth/offline-authz';
 
-export async function POST(request: Request) {
+export async function POST(request:  Request): Promise<Response> {
     const parsed = await parseJsonBody(request, PairDeviceSchema);
     if (!parsed.success) {
         return parsed.response;
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     }
 
     const adminClient = createServiceRoleClient();
-    const fetchEnterpriseDevice = () =>
+    const fetchEnterpriseDevice = (): React.JSX.Element =>
         adminClient
             .from('hardware_devices')
             .select(
@@ -237,3 +237,11 @@ export async function POST(request: Request) {
         200
     );
 }
+
+
+
+
+
+
+
+

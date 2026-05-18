@@ -17,7 +17,7 @@ function getAuthErrorMessage(error: unknown): string {
     return 'Unable to create account. Please try again.';
 }
 
-export default function SignUpPage() {
+export default function SignUpPage(): React.JSX.Element {
     const [restaurantName, setRestaurantName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -28,7 +28,7 @@ export default function SignUpPage() {
     const router = useRouter();
     const supabase = useMemo(() => createClient(), []);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
         setLoading(true);
         setError(null);
@@ -292,3 +292,6 @@ export default function SignUpPage() {
         </main>
     );
 }
+
+
+

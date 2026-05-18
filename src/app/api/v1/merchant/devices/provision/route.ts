@@ -16,7 +16,7 @@ import {
     resolveProvisionedDeviceShape,
 } from '@/lib/devices/pairing';
 
-export async function POST(request: Request) {
+export async function POST(request:  Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
         deviceProfile
     );
 
-    const insertEnterprise = () =>
+    const insertEnterprise = (): React.JSX.Element =>
         adminClient
             .from('hardware_devices')
             .insert({
@@ -165,3 +165,11 @@ export async function POST(request: Request) {
         201
     );
 }
+
+
+
+
+
+
+
+

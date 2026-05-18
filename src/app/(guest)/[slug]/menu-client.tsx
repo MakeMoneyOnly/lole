@@ -7,13 +7,19 @@ import { useCart } from '@/context/CartContext';
 import { FOOD_ITEMS } from '@/lib/constants';
 import { Star, Gift, Bell, Heart, ReceiptText, Tag } from 'lucide-react';
 import { isAbortError } from '@/hooks/useSafeFetch';
+import type { CartItem } from '@/domains/cart';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-const FALLBACK_IMAGE_URL = 'https://via.placeholder.com/150';
+const FALLBACK_IMAGE_URL = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=600&auto=format&fit=crop';
 const ALLOWED_REMOTE_IMAGE_HOSTS = new Set([
     'via.placeholder.com',
     'axuegixbqsvztdraenkz.supabase.co',
+    'images.unsplash.com',
+    'plus.unsplash.com',
+    'res.cloudinary.com',
+    'i.pravatar.cc',
+    'api.dicebear.com',
 ]);
 
 function tryParseHttpsUrl(value: string): URL | null {
@@ -52,11 +58,16 @@ interface RawMenuItem {
     category_id: string;
 }
 
+export interface Category {
+    id: string;
+    name: string;
+}
+
 export interface MenuItem {
     id: string;
     name: string;
     title: string;
-    imageUrl: string;
+    imageUrl: string | null;
     preparationTime: number;
     shopName: string;
     price: number;
@@ -86,7 +97,39 @@ export interface GuestContextPayload {
  * All data-fetching and session state for the guest menu.
  * Expose this hook to any new UI component tree via context or prop-drilling.
  */
-export function useGuestMenuData(): React.JSX.Element {
+interface GuestMenuData {
+    selectedItem: MenuItem | null;
+    setSelectedItem: (item: MenuItem | null) => void;
+    cartOpen: boolean;
+    setCartOpen: (open: boolean) => void;
+    paymentReturnSuccess: boolean;
+    paymentReturnOrderId: string | null;
+    loading: boolean;
+    contextLoading: boolean;
+    contextError: string | null;
+    activeTab: 'food' | 'drinks';
+    setActiveTab: (tab: 'food' | 'drinks') => void;
+    activeCategoryId: string;
+    setActiveCategoryId: (id: string) => void;
+    realItems: MenuItem[];
+    filteredItems: MenuItem[];
+    searchQuery: string;
+    setSearchQuery: (query: string) => void;
+    guestContext: GuestContextPayload | null;
+    guestSessionId: string | null;
+    authState: 'guest' | 'authenticated';
+    showPreMenuSplash: boolean;
+    setShowPreMenuSplash: (show: boolean) => void;
+    isOnlineOrderMode: boolean;
+    cartCount: number;
+    slug: string;
+    handleAddToCart: (item: MenuItem, quantity?: number) => void;
+    cartItems: CartItem[];
+    handleRemoveFromCart: (itemId: string) => void;
+    handleUpdateQuantity: (itemId: string, quantity: number) => void;
+}
+
+export function useGuestMenuData(): GuestMenuData {
     const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
     const [cartOpen, setCartOpen] = useState(false);
     const [paymentReturnSuccess, setPaymentReturnSuccess] = useState(false);
@@ -107,7 +150,7 @@ export function useGuestMenuData(): React.JSX.Element {
     const params = useParams<{ slug: string }>();
     const searchParams = useSearchParams();
 
-    const getQueryParam = (key: string): React.JSX.Element => searchParams.get(key) ?? searchParams.get(`amp;${key}`);
+    const getQueryParam = (key: string): string | null => searchParams.get(key) ?? searchParams.get(`amp;${key}`);
     const tableNumber = getQueryParam('table');
     const signature = getQueryParam('sig');
     const expiresAt = getQueryParam('exp');
@@ -267,7 +310,7 @@ export function useGuestMenuData(): React.JSX.Element {
 
                 const payload = await response.json();
                 if (!response.ok) {
-                    console.warn('Failed to upsert guest session:', payload?.error);
+                    void payload?.error;
                     return;
                 }
 
@@ -288,7 +331,7 @@ export function useGuestMenuData(): React.JSX.Element {
                 }
             } catch (error) {
                 if (!isAbortError(error)) {
-                    console.error('Failed to sync guest session:', error);
+                    void error;
                 }
             } finally {
                 setSessionSyncing(false);
@@ -314,7 +357,7 @@ export function useGuestMenuData(): React.JSX.Element {
                     .eq('restaurant_id', guestContext.restaurant_id);
 
                 if (categoryError) {
-                    console.error('Error fetching categories:', categoryError);
+                    void categoryError;
                     setRealItems([]);
                     return;
                 }
@@ -340,13 +383,13 @@ export function useGuestMenuData(): React.JSX.Element {
                     .in('category_id', categoryIds);
 
                 if (itemError) {
-                    console.error('Error fetching menu:', itemError);
+                    void itemError;
                     setRealItems([]);
                     return;
                 }
 
-                const getSmartImageUrl = (path: string | null): React.JSX.Element => {
-                    if (!path) return FALLBACK_IMAGE_URL;
+                const getSmartImageUrl = (path: string | null): string | null => {
+                    if (!path || path.trim() === '') return null;
                     if (path.startsWith('fab')) return path;
                     if (isAllowedRemoteImageUrl(path)) return path;
                     const { data } = supabase.storage.from('menu-images').getPublicUrl(path);
@@ -358,14 +401,7 @@ export function useGuestMenuData(): React.JSX.Element {
                         const category = categoryById.get(item.category_id);
                         if (!category) return null;
 
-                        const constantItem = FOOD_ITEMS.find(
-                            food =>
-                                food.title.toLowerCase().trim() === item.name.toLowerCase().trim()
-                        );
-
-                        const imageUrl = constantItem
-                            ? constantItem.imageUrl
-                            : getSmartImageUrl(item.image_url);
+                        const imageUrl = getSmartImageUrl(item.image_url);
 
                         return {
                             id: item.id,
@@ -390,7 +426,7 @@ export function useGuestMenuData(): React.JSX.Element {
 
                 setRealItems(formattedItems);
             } catch (error) {
-                console.error('Unexpected menu error:', error);
+                void error;
                 setRealItems([]);
             } finally {
                 setLoading(false);
@@ -398,7 +434,7 @@ export function useGuestMenuData(): React.JSX.Element {
         }
 
         void fetchMenu();
-    }, [guestContext?.restaurant_id, showPreMenuSplash, supabase]);
+    }, [guestContext?.restaurant_id, guestContext?.restaurant_name, showPreMenuSplash, supabase]);
 
     // ── Auth state change ────────────────────────────────────────────────────
     useEffect(() => {
@@ -428,7 +464,7 @@ export function useGuestMenuData(): React.JSX.Element {
         return item.categories?.name?.toLowerCase() === activeCategoryId.toLowerCase();
     });
 
-    const handleAddToCart = (item: MenuItem, quantity = 1): React.JSX.Element => {
+    const handleAddToCart = (item: MenuItem, quantity = 1): void => {
         addToCart({
             menuItemId: item.id,
             title: item.title,
@@ -477,7 +513,6 @@ export function useGuestMenuData(): React.JSX.Element {
 
 import { GuestMenuHeader } from '@/components/guest-menu/GuestMenuHeader';
 import { GuestMenuSearchBar } from '@/components/guest-menu/GuestMenuSearchBar';
-import { GuestMenuCategoryChips } from '@/components/guest-menu/GuestMenuCategoryChips';
 import { GuestMenuProductGrid } from '@/components/guest-menu/GuestMenuProductCard';
 import { GuestMenuBottomNav } from '@/components/guest-menu/GuestMenuBottomNav';
 import { GuestMenuCart } from '@/components/guest-menu/GuestMenuCart';
@@ -530,11 +565,11 @@ export function MenuClientContent(): React.JSX.Element {
         );
     }
 
-    const categories = Array.from(new Set(data.realItems.map(item => item.categories.name)))
-        .map(name => ({ id: name.toLowerCase(), name }));
+    const categories: Category[] = Array.from(new Set(data.realItems.map((item: MenuItem) => item.categories.name)))
+        .map((name: string) => ({ id: name.toLowerCase(), name }));
 
-    const handleNavChange = (index: number): React.JSX.Element => {
-        setActiveIndex(index);
+    const handleNavChange = (_index: number): void => {
+        setActiveIndex(_index);
     };
 
     // ── Screen Rendering ─────────────────────────────────────────────────────
@@ -547,11 +582,15 @@ export function MenuClientContent(): React.JSX.Element {
                         onBack={() => setActiveIndex(0)}
                         onUpdateQuantity={data.handleUpdateQuantity}
                         onRemove={data.handleRemoveFromCart}
-                        onCheckout={() => console.log('Checkout')}
+                        onCheckout={(): void => {
+                            // TODO: Implement checkout
+                        }}
                     />
                 );
             case 2: // Profile
-                return <GuestMenuProfile onLogout={() => console.log('Logout')} />;
+                return <GuestMenuProfile onLogout={(): void => {
+                    // TODO: Implement logout
+                }} />;
             case 0: // Home
             default:
                 return (
@@ -600,23 +639,20 @@ export function MenuClientContent(): React.JSX.Element {
                             {/* QUICK ACTIONS ROW */}
                             <QuickActionsGrid isOnlineOrderMode={data.isOnlineOrderMode} />
 
-                            <div className="px-5">
-                                <GuestMenuCategoryChips
-                                    categories={categories}
-                                    activeCategoryId={data.activeCategoryId}
-                                    onCategoryChange={data.setActiveCategoryId}
-                                />
-                            </div>
-
                             {/* RECOMMENDED FOR YOU */}
                             <section className="mt-8 px-5">
-                                <div className="mb-4 flex items-center justify-between">
-                                    <h2 className="text-[20px] font-bold text-[#1A1A1A] tracking-tight">
+                                <div className="mb-4">
+                                    <h2 className="text-[22px] font-medium text-[#1A1A1A] tracking-tighter">
                                         Recommended for you
                                     </h2>
-                                    <button className="text-[14px] font-semibold text-gray-400 hover:text-gray-600 transition-colors">
-                                        See all
-                                    </button>
+                                    <div className="mt-1 flex items-center justify-between">
+                                        <p className="text-[13px] text-[#A3A3A3]">
+                                            Handpicked favorites just for you.
+                                        </p>
+                                        <button className="text-[13px] text-[#A3A3A3] hover:text-black/60 transition-colors">
+                                            View All
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <GuestMenuRecommendedCard item={data.filteredItems[0]} />
@@ -624,10 +660,18 @@ export function MenuClientContent(): React.JSX.Element {
 
                             {/* MORE FOR YOU (GRID) */}
                             <section className="mt-10">
-                                <div className="mb-4 px-5 flex items-center justify-between">
-                                    <h2 className="text-[20px] font-bold text-[#1A1A1A] tracking-tight">
+                                <div className="mb-4 px-5">
+                                    <h2 className="text-[22px] font-medium text-[#1A1A1A] tracking-tighter">
                                         More for You
                                     </h2>
+                                    <div className="mt-1 flex items-center justify-between">
+                                        <p className="text-[13px] text-[#A3A3A3]">
+                                            Explore our full menu offerings.
+                                        </p>
+                                        <button className="text-[13px] text-[#A3A3A3] hover:text-black/60 transition-colors">
+                                            View All
+                                        </button>
+                                    </div>
                                 </div>
                                 <GuestMenuProductGrid
                                     items={data.realItems.slice(1, 9)}
@@ -641,6 +685,8 @@ export function MenuClientContent(): React.JSX.Element {
         }
     };
 
+    const cartCount = data.cartItems?.reduce((acc: number, curr: CartItem) => acc + (curr.quantity || 0), 0) || 0;
+
     return (
         <main className="min-h-screen w-full bg-[#FFFFFF] pb-32 font-inter">
             {renderScreen()}
@@ -650,6 +696,7 @@ export function MenuClientContent(): React.JSX.Element {
                 activeIndex={activeIndex}
                 onIndexChange={handleNavChange}
                 isOnlineOrderMode={data.isOnlineOrderMode}
+                cartCount={cartCount}
             />
         </main>
     );

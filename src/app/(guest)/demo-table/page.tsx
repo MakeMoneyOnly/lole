@@ -7,10 +7,15 @@ import { FOOD_ITEMS } from '@/lib/constants';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-const FALLBACK_IMAGE_URL = 'https://via.placeholder.com/150';
+const FALLBACK_IMAGE_URL = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=600&auto=format&fit=crop';
 const ALLOWED_REMOTE_IMAGE_HOSTS = new Set([
     'via.placeholder.com',
     'axuegixbqsvztdraenkz.supabase.co',
+    'images.unsplash.com',
+    'plus.unsplash.com',
+    'res.cloudinary.com',
+    'i.pravatar.cc',
+    'api.dicebear.com',
 ]);
 
 function tryParseHttpsUrl(value: string): URL | null {
@@ -76,7 +81,7 @@ const DEMO_CONTEXT = {
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
-function DemoMenuContent() {
+function DemoMenuContent(): React.JSX.Element {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'food' | 'drinks'>('food');
     const [activeCategoryId, setActiveCategoryId] = useState('all');
@@ -84,7 +89,7 @@ function DemoMenuContent() {
     const { addToCart, count } = useCart();
 
     useEffect(() => {
-        async function fetchDemoMenu() {
+        async function fetchDemoMenu(): Promise<void> {
             setLoading(true);
             const supabase = createClient();
 
@@ -168,7 +173,7 @@ function DemoMenuContent() {
                     return;
                 }
 
-                const getSmartImageUrl = (path: string | null) => {
+                const getSmartImageUrl = (path: string | null): string => {
                     if (!path) return FALLBACK_IMAGE_URL;
                     if (path.startsWith('fab')) return path;
                     if (isAllowedRemoteImageUrl(path)) return path;
@@ -242,10 +247,13 @@ function DemoMenuContent() {
     );
 }
 
-export default function DemoTablePage() {
+export default function DemoTablePage(): React.JSX.Element {
     return (
         <CartProvider>
             <DemoMenuContent />
         </CartProvider>
     );
 }
+
+
+

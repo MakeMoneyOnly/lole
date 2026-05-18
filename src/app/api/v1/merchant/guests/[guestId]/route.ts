@@ -23,7 +23,7 @@ const UpdateGuestSchema = z
 export async function GET(
     _request: Request,
     routeContext: { params: Promise<{ guestId: string }> }
-) {
+): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -62,7 +62,7 @@ export async function GET(
 export async function PATCH(
     request: Request,
     routeContext: { params: Promise<{ guestId: string }> }
-) {
+): Promise<Response> {
     // Apply rate limiting for guest mutations
     const rateLimitResponse = await redisRateLimiters.guestCreate(request as NextRequest);
     if (rateLimitResponse) {

@@ -31,7 +31,7 @@ const CreateHappyHourSchema = z.object({
 
 const _UpdateHappyHourSchema = CreateHappyHourSchema.partial();
 
-export async function GET() {
+export async function GET(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -74,7 +74,7 @@ export async function GET() {
     }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -147,3 +147,11 @@ export async function POST(request: Request) {
 
     return apiSuccess({ happy_hour: data }, 201);
 }
+
+
+
+
+
+
+
+

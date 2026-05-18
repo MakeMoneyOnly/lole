@@ -14,7 +14,7 @@ import { testAlerts, areAlertsEnabled } from '@/lib/monitoring';
  * GET /api/test-alerts
  * Check if alerts are configured
  */
-export async function GET() {
+export async function GET(request: Request): Promise<Response> {
     // Only allow in development or with secret key
     const isDevelopment = process.env.NODE_ENV === 'development';
 
@@ -42,7 +42,7 @@ export async function GET() {
  *
  * In production, this requires an authorization header with a valid secret.
  */
-export async function POST(request: Request) {
+export async function POST(request:  Request): Promise<Response> {
     const isDevelopment = process.env.NODE_ENV === 'development';
 
     // In production, require authorization
@@ -61,3 +61,11 @@ export async function POST(request: Request) {
         status: result.success ? 200 : 500,
     });
 }
+
+
+
+
+
+
+
+

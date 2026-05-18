@@ -95,17 +95,7 @@ const slideVariants = {
 };
 
 // ─── Step Components ──────────────────────────────────────────────────────────
-
-function InputField({
-    label,
-    icon: Icon,
-    required,
-    ...props
-}: {
-    label: string;
-    icon: React.ElementType;
-    required?: boolean;
-} & React.InputHTMLAttributes<HTMLInputElement>) {
+function InputField(): React.JSX.Element | void {
     return (
         <div className="space-y-1.5">
             <label className="text-sm font-bold text-gray-700">
@@ -130,7 +120,7 @@ function StepOwnerProfile({
 }: {
     data: OnboardingData;
     onChange: (d: Partial<OnboardingData>) => void;
-}) {
+}): React.JSX.Element {
     return (
         <div className="space-y-6">
             <div>
@@ -176,7 +166,7 @@ function StepRestaurantDetails({
 }: {
     data: OnboardingData;
     onChange: (d: Partial<OnboardingData>) => void;
-}) {
+}): React.JSX.Element {
     return (
         <div className="space-y-5">
             <div>
@@ -245,7 +235,7 @@ function StepSettlement({
     banks: ChapaBankOption[];
     loadingBanks: boolean;
     onChange: (d: Partial<OnboardingData>) => void;
-}) {
+}): React.JSX.Element {
     const [destinationType, setDestinationType] = useState<DestinationType>('bank');
 
     const bankOptions = useMemo(
@@ -380,7 +370,7 @@ function StepBrand({
 }: {
     data: OnboardingData;
     onChange: (d: Partial<OnboardingData>) => void;
-}) {
+}): React.JSX.Element {
     return (
         <div className="space-y-6">
             <div>
@@ -451,7 +441,7 @@ function StepBrand({
 }
 
 // Step 4: Go Live
-function StepGoLive({ data, loading }: { data: OnboardingData; loading: boolean }) {
+function StepGoLive(): React.JSX.Element | void {
     const checks = [
         { label: 'Restaurant profile created', done: true },
         { label: 'Merchant payout account connected', done: true },
@@ -514,7 +504,7 @@ function StepGoLive({ data, loading }: { data: OnboardingData; loading: boolean 
 
 // ─── Main Wizard ──────────────────────────────────────────────────────────────
 
-export default function OnboardingPage() {
+export default function OnboardingPage(): React.JSX.Element {
     const router = useRouter();
     const supabase = useMemo(() => createClient(), []);
 
@@ -538,12 +528,12 @@ export default function OnboardingPage() {
         settlement_account_number: '',
     });
 
-    const merge = (patch: Partial<OnboardingData>) => setData(prev => ({ ...prev, ...patch }));
+    const merge = (patch: Partial<OnboardingData>): React.JSX.Element => setData(prev => ({ ...prev, ...patch }));
 
     useEffect(() => {
         let cancelled = false;
 
-        async function loadBanks() {
+        async function loadBanks(): Promise<void> {
             try {
                 setLoadingBanks(true);
                 const response = await fetch('/api/v1/merchant/core/onboarding/banks', { cache: 'no-store' });
@@ -596,12 +586,12 @@ export default function OnboardingPage() {
         return false;
     }, [step, data, loadingBanks]);
 
-    const go = (newStep: number) => {
+    const go = (newStep: number): React.JSX.Element => {
         setDirection(newStep > step ? 1 : -1);
         setStep(newStep);
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (): Promise<void> => {
         setLoading(true);
         setError(null);
 
@@ -812,3 +802,4 @@ export default function OnboardingPage() {
         </main>
     );
 }
+

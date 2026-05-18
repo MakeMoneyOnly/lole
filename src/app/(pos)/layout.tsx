@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 
 import { CartProvider } from '@/context/CartContext';
 
-export default function PosLayout({ children }: { children: React.ReactNode }) {
+export default function PosLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
     // This layout bypasses the main dashboard layout
     // No sidebar, no header. Just full screen PWA-style.
     return (
@@ -26,3 +26,4 @@ export const metadata = {
         userScalable: false,
     },
 };
+

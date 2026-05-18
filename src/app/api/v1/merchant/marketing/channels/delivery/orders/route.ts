@@ -30,7 +30,7 @@ const DeliveryOrdersQuerySchema = z.object({
     limit: z.coerce.number().int().min(1).max(200).optional().default(50),
 });
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -85,3 +85,11 @@ export async function GET(request: Request) {
         total: data?.length ?? 0,
     });
 }
+
+
+
+
+
+
+
+

@@ -2,7 +2,7 @@ import { apiError, apiSuccess } from '@/lib/api/response';
 import { getDeviceContext } from '@/lib/api/authz';
 import { listActiveDiscountsForRestaurant } from '@/lib/discounts/service';
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
     const context = await getDeviceContext(request);
     if (!context.ok) {
         return context.response;
@@ -23,3 +23,11 @@ export async function GET(request: Request) {
         );
     }
 }
+
+
+
+
+
+
+
+

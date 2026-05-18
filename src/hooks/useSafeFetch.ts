@@ -13,7 +13,7 @@ interface SafeFetchOptions extends RequestInit {
  * const { safeFetch } = useSafeFetch();
  *
  * useEffect(() => {
- *   const fetchData = async () => {
+ *   const fetchData = async (): Promise<void> => {
  *     try {
  *       const response = await safeFetch('/api/data');
  *       const data = await response.json();
@@ -68,7 +68,7 @@ export function isLockError(error: unknown): boolean {
     return false;
 }
 
-export function useSafeFetch() {
+export function useSafeFetch(): React.JSX.Element {
     const abortControllerRef = useRef<AbortController | null>(null);
 
     useEffect(() => {

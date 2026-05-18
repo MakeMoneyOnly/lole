@@ -49,6 +49,6 @@ export async function generateMetadata({
  * Restaurant Info Page - Server Component wrapper
  * Displays location, hours, contact info, and about section
  */
-export default function RestaurantInfoPage() {
+export default function RestaurantInfoPage(): React.JSX.Element {
     return <RestaurantInfoClient />;
 }

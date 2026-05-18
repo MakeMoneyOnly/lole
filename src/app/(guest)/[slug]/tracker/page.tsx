@@ -49,6 +49,6 @@ export async function generateMetadata({
  * Order Tracker Page - Server Component wrapper
  * Displays real-time order status for guests
  */
-export default function TrackerPage() {
+export default function TrackerPage(): React.JSX.Element {
     return <TrackerClient />;
 }

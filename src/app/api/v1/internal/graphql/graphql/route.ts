@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { apiSuccess } from '@/lib/api/response';
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest): Promise<Response> {
     return apiSuccess({
         service: 'lole GraphQL API',
         status: 'operational',
@@ -24,7 +24,7 @@ export async function GET(_request: NextRequest) {
     });
 }
 
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest): Promise<Response> {
     return apiSuccess({
         service: 'lole GraphQL API',
         status: 'operational',
@@ -41,3 +41,11 @@ export async function POST(_request: NextRequest) {
         docs: 'See graphql/subgraphs/ for schema definitions and router/ for Apollo Router configuration.',
     });
 }
+
+
+
+
+
+
+
+

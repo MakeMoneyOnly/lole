@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
  * Skip Link Component for Accessibility
  * Allows keyboard users to skip directly to main content
  */
-function SkipLink() {
+function SkipLink(): React.JSX.Element {
     return (
         <a
             href="#main-content"
@@ -18,7 +18,7 @@ function SkipLink() {
     );
 }
 
-export default function GuestLayout({ children }: { children: React.ReactNode }) {
+export default function GuestLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
     return (
         <div className="flex min-h-screen flex-col bg-[var(--background)]">
             {/* Skip Link for Accessibility */}
@@ -32,3 +32,4 @@ export default function GuestLayout({ children }: { children: React.ReactNode })
         </div>
     );
 }
+

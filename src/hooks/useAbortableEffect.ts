@@ -74,7 +74,7 @@ export function useAbortableEffect(
  * }, [signal]);
  * ```
  */
-export function useAbortController() {
+export function useAbortController(): React.JSX.Element {
     const abortControllerRef = useRef<AbortController | null>(null);
 
     useEffect(() => {

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-export default function GuestNotFound() {
+export default function GuestNotFound(): React.JSX.Element {
     return (
         <div className="bg-brand-canvas flex min-h-screen flex-col items-center justify-center px-4 text-center">
             <h1 className="text-brand-primary mb-3 text-4xl font-bold">Restaurant Not Found</h1>

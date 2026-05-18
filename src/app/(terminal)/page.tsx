@@ -126,7 +126,7 @@ const PAYMENT_TRUTH_BADGE_STYLES: Record<string, string> = {
     review_required: 'bg-violet-50 text-violet-700 ring-1 ring-violet-200',
 };
 
-export default function TerminalPage() {
+export default function TerminalPage(): React.JSX.Element {
     const managedDevice = useManagedDeviceSession({
         route: '/terminal',
         expectedProfiles: ['cashier'],
@@ -301,7 +301,7 @@ export default function TerminalPage() {
         }
     }, [overview?.payment_options]);
 
-    const createEvenSplit = async () => {
+    const createEvenSplit = async (): Promise<void> => {
         if (!deviceToken || !selectedOrderId || !selectedOrder) return;
 
         try {
@@ -328,7 +328,7 @@ export default function TerminalPage() {
         splitId?: string;
         amount: number;
         label: string;
-    }) => {
+    }): Promise<void> => {
         if (!deviceToken) return;
 
         try {
@@ -406,7 +406,7 @@ export default function TerminalPage() {
         }
     };
 
-    const closeTableSettlement = async () => {
+    const closeTableSettlement = async (): Promise<void> => {
         if (!deviceToken || !selectedTable) return;
 
         const parsedAmount = Number(orderAmountInput);
@@ -981,3 +981,4 @@ export default function TerminalPage() {
         </div>
     );
 }
+

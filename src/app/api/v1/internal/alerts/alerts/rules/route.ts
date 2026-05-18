@@ -14,7 +14,7 @@ const AlertRuleSchema = z.object({
     target_json: z.record(z.string(), z.unknown()).optional(),
 });
 
-export async function GET() {
+export async function GET(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -43,7 +43,7 @@ export async function GET() {
     return apiSuccess({ rules: data ?? [] });
 }
 
-export async function POST(request: Request) {
+export async function POST(request:  Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -107,3 +107,11 @@ export async function POST(request: Request) {
 
     return apiSuccess({ rule: inserted, idempotency_key: idempotencyKey }, 201);
 }
+
+
+
+
+
+
+
+

@@ -33,8 +33,7 @@ export interface FleetActionRecord {
     requestedAt: string | null;
     providerJobId: string | null;
 }
-
-function formatTime(value: string | null) {
+function formatTime(): React.JSX.Element | void {
     if (!value) return 'Not reported yet';
 
     return new Intl.DateTimeFormat('en-US', {
@@ -46,7 +45,7 @@ function formatTime(value: string | null) {
 export function FleetManagementPageClient(args: {
     devices: FleetDeviceRecord[];
     actions: FleetActionRecord[];
-}) {
+}): React.JSX.Element {
     const router = useRouter();
     const [pendingDeviceId, setPendingDeviceId] = useState<string | null>(null);
     const [versionDrafts, setVersionDrafts] = useState<Record<string, string>>({});
@@ -78,7 +77,7 @@ export function FleetManagementPageClient(args: {
         deviceId: string,
         body: Record<string, unknown>,
         successLabel: string
-    ) => {
+    ): Promise<void> => {
         try {
             setPendingDeviceId(deviceId);
             const response = await fetch(

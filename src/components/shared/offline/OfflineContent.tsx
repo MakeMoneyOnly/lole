@@ -9,7 +9,7 @@ import { WifiOff, Home, Utensils, RefreshCw } from 'lucide-react';
  * Displayed when the user is offline and tries to access a non-cached page.
  * Part of PWA offline-first implementation.
  */
-export default function OfflineContent() {
+export default function OfflineContent(): React.JSX.Element {
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-neutral-950 px-4 text-center">
             <div className="mx-auto max-w-md space-y-8">

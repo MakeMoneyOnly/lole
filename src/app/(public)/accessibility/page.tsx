@@ -14,7 +14,7 @@ export const metadata = generatePageMetadata({
     path: '/accessibility',
 });
 
-export default function AccessibilityPage() {
+export default function AccessibilityPage(): React.JSX.Element {
     return (
         <div className="min-h-screen bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-3xl">
@@ -229,3 +229,6 @@ export default function AccessibilityPage() {
         </div>
     );
 }
+
+
+

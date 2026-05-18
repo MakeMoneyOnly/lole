@@ -1,7 +1,7 @@
 import { apiError, apiSuccess } from '@/lib/api/response';
 import { getAuthenticatedUser, getAuthorizedRestaurantContext } from '@/lib/api/authz';
 
-export async function GET() {
+export async function GET(request: Request) {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -81,3 +81,11 @@ export async function GET() {
         partners,
     });
 }
+
+
+
+
+
+
+
+

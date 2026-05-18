@@ -48,7 +48,7 @@ const PROFILE_ART = {
     },
 } as const;
 
-export function ManagedDeviceShell() {
+export function ManagedDeviceShell(): React.JSX.Element {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(true);
     const [session, setSession] = useState<StoredDeviceSession | null>(null);

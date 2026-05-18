@@ -36,7 +36,7 @@ const CreateCampaignSchema = z.object({
     scheduled_at: z.string().datetime().optional(),
 });
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -189,7 +189,7 @@ export async function GET(request: Request) {
     });
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -278,3 +278,11 @@ export async function POST(request: Request) {
 
     return apiSuccess({ campaign: data, idempotency_key: idempotencyKey }, 201);
 }
+
+
+
+
+
+
+
+

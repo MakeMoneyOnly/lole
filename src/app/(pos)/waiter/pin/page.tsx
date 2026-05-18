@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ShieldCheck, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
-function WaiterPinContent() {
+function WaiterPinContent(): React.JSX.Element {
     const router = useRouter();
     const searchParams = useSearchParams();
     const restaurantId = searchParams.get('restaurantId');
@@ -18,17 +18,17 @@ function WaiterPinContent() {
         }
     }, [restaurantId, router]);
 
-    const handleNumberClick = (num: number) => {
+    const handleNumberClick = (num: number): React.JSX.Element => {
         if (pin.length < 4) {
             setPin(prev => prev + num);
         }
     };
 
-    const handleDelete = () => {
+    const handleDelete = (): React.JSX.Element => {
         setPin(prev => prev.slice(0, -1));
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (): Promise<void> => {
         if (pin.length !== 4) return;
         setLoading(true);
 
@@ -135,7 +135,7 @@ function WaiterPinContent() {
     );
 }
 
-export default function WaiterPinPage() {
+export default function WaiterPinPage(): React.JSX.Element {
     return (
         <Suspense
             fallback={
@@ -151,3 +151,4 @@ export default function WaiterPinPage() {
         </Suspense>
     );
 }
+

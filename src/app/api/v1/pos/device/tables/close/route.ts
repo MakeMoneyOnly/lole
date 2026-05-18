@@ -40,7 +40,7 @@ const BLOCKING_ORDER_STATUSES = [
 ] as const;
 const FINALIZABLE_ORDER_STATUSES = ['ready', 'served'] as const;
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<Response> {
     const ctx = await getDeviceContext(request);
     if (!ctx.ok) return ctx.response;
 
@@ -476,3 +476,11 @@ export async function POST(request: Request) {
         completed_order_ids: finalizableOrderIds,
     });
 }
+
+
+
+
+
+
+
+

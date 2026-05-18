@@ -7,7 +7,7 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request): Promise<Response> {
     const html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -142,3 +142,11 @@ export async function GET() {
         },
     });
 }
+
+
+
+
+
+
+
+

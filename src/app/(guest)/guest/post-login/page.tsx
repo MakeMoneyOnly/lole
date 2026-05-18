@@ -10,7 +10,7 @@ function sanitizeNextPath(rawNext: string | null): string {
     return rawNext.startsWith('/') ? rawNext : '/';
 }
 
-function PostLoginContent() {
+function PostLoginContent(): React.JSX.Element {
     const router = useRouter();
     const searchParams = useSearchParams();
     const supabase = useMemo(() => createClient(), []);
@@ -18,7 +18,7 @@ function PostLoginContent() {
     useEffect(() => {
         let cancelled = false;
 
-        async function finalizeGuestLogin() {
+        async function finalizeGuestLogin(): Promise<void> {
             const nextPath = sanitizeNextPath(searchParams.get('next'));
             const {
                 data: { user },
@@ -50,7 +50,7 @@ function PostLoginContent() {
     );
 }
 
-export default function GuestPostLoginPage() {
+export default function GuestPostLoginPage(): React.JSX.Element {
     return (
         <main className="flex min-h-screen items-center justify-center bg-[#0b1013] text-white">
             <Suspense
@@ -68,3 +68,6 @@ export default function GuestPostLoginPage() {
         </main>
     );
 }
+
+
+

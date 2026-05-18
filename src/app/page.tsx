@@ -15,7 +15,7 @@ import { Footer } from '@/components/landing/layout/Footer';
 import { LenisRoot } from '@/components/providers/LenisRoot';
 import { OfflineIndicator } from '@/components/providers/OfflineIndicator';
 
-export default function LandingPage() {
+export default function LandingPage(): React.JSX.Element {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isFeaturesOpen, setIsFeaturesOpen] = useState(false);
     const [billPlan, setBillPlan] = useState<'monthly' | 'annually'>('monthly');
@@ -25,14 +25,14 @@ export default function LandingPage() {
     const operatorsScrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const handleScroll = () => {
+        const handleScroll = (): void => {
             setIsScrolled(window.scrollY > 50);
         };
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    const scrollBusiness = (direction: 'left' | 'right') => {
+    const scrollBusiness = (direction: 'left' | 'right'): void => {
         if (!businessScrollRef.current) return;
         const scrollAmount = 400;
         businessScrollRef.current.scrollBy({
@@ -41,7 +41,7 @@ export default function LandingPage() {
         });
     };
 
-    const scrollOperators = (direction: 'left' | 'right') => {
+    const scrollOperators = (direction: 'left' | 'right'): void => {
         if (!operatorsScrollRef.current) return;
         const scrollAmount = 400;
         operatorsScrollRef.current.scrollBy({
@@ -86,3 +86,5 @@ export default function LandingPage() {
         </LenisRoot>
     );
 }
+
+

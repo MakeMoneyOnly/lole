@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
  * Skip Link Component for Accessibility
  * Allows keyboard users to skip directly to main content
  */
-function SkipLink() {
+function SkipLink(): React.JSX.Element {
     return (
         <a
             href="#main-content"
@@ -19,7 +19,7 @@ function SkipLink() {
     );
 }
 
-export default function KDSLayout({ children }: { children: React.ReactNode }) {
+export default function KDSLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
     return (
         <RoleGuard allowedRoles={['kitchen', 'bar', 'admin', 'manager', 'owner']}>
             <div className="font-manrope flex h-dvh min-h-0 w-screen flex-col overflow-hidden bg-gray-50 text-gray-900">
@@ -37,3 +37,4 @@ export default function KDSLayout({ children }: { children: React.ReactNode }) {
         </RoleGuard>
     );
 }
+

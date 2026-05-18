@@ -49,7 +49,7 @@ export function useReducedMotion(): boolean {
         setPrefersReducedMotion(mediaQuery.matches);
 
         // Handler for changes
-        const handleChange = (event: MediaQueryListEvent) => {
+        const handleChange = (event: MediaQueryListEvent): React.JSX.Element => {
             setPrefersReducedMotion(event.matches);
         };
 

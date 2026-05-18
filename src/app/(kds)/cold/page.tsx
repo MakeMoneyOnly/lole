@@ -2,7 +2,7 @@
 
 import { StationBoard } from '@/features/kds/components/StationBoard';
 
-export default function ColdPage() {
+export default function ColdPage(): React.JSX.Element {
     return (
         <StationBoard
             station="cold"
@@ -11,3 +11,6 @@ export default function ColdPage() {
         />
     );
 }
+
+
+

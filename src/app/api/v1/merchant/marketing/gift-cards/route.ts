@@ -23,11 +23,11 @@ const CreateGiftCardSchema = z.object({
     metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
-function generateGiftCardCode() {
+function generateGiftCardCode(): React.JSX.Element {
     return `GC-${randomBytes(4).toString('hex').toUpperCase()}`;
 }
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -83,7 +83,7 @@ export async function GET(request: Request) {
     return apiSuccess({ gift_cards: data ?? [] });
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -177,3 +177,11 @@ export async function POST(request: Request) {
 
     return apiSuccess({ gift_card: giftCard, idempotency_key: idempotencyKey }, 201);
 }
+
+
+
+
+
+
+
+

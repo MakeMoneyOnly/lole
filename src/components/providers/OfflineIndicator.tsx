@@ -97,7 +97,7 @@ export function OfflineIndicator({
     );
 }
 
-export function useNetworkStatus() {
+export function useNetworkStatus(): React.JSX.Element {
     const { isOnline, isSyncing, pendingCount, sync, operatingMode } = useSyncStatus();
 
     return {
@@ -109,7 +109,7 @@ export function useNetworkStatus() {
     };
 }
 
-export function useOfflineSync() {
+export function useOfflineSync(): React.JSX.Element {
     const { isOnline, isSyncing, pendingCount, sync, operatingMode } = useSyncStatus();
 
     return {

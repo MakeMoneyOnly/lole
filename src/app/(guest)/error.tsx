@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle, RefreshCw, Utensils } from 'lucide-react';
@@ -14,7 +15,7 @@ export default function GuestError({
 }: {
     error: Error & { digest?: string };
     reset: () => void;
-}) {
+}): React.JSX.Element {
     const router = useRouter();
 
     useEffect(() => {
@@ -63,3 +64,4 @@ export default function GuestError({
         </div>
     );
 }
+

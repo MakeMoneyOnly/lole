@@ -2,7 +2,7 @@
 
 import { StationBoard } from '@/features/kds/components/StationBoard';
 
-export default function GrillPage() {
+export default function GrillPage(): React.JSX.Element {
     return (
         <StationBoard
             station="grill"
@@ -11,3 +11,6 @@ export default function GrillPage() {
         />
     );
 }
+
+
+

@@ -2,7 +2,7 @@
 
 import { StationBoard } from '@/features/kds/components/StationBoard';
 
-export default function DessertPage() {
+export default function DessertPage(): React.JSX.Element {
     return (
         <StationBoard
             station="dessert"
@@ -11,3 +11,6 @@ export default function DessertPage() {
         />
     );
 }
+
+
+

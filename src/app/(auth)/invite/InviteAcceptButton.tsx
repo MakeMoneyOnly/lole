@@ -5,11 +5,11 @@ import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { acceptInvite } from '@/app/(auth)/invite/actions';
 
-export function InviteAcceptButton({ code }: { code: string }) {
+export function InviteAcceptButton({ code }: { code: string }): React.ReactElement {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    const handleAccept = async () => {
+    const handleAccept = async (): Promise<void> => {
         try {
             setLoading(true);
             const result = await acceptInvite(code);
@@ -38,3 +38,4 @@ export function InviteAcceptButton({ code }: { code: string }) {
         </button>
     );
 }
+

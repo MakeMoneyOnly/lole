@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle, RefreshCw, CreditCard } from 'lucide-react';
@@ -14,7 +15,7 @@ export default function TerminalError({
 }: {
     error: Error & { digest?: string };
     reset: () => void;
-}) {
+}): React.JSX.Element {
     const router = useRouter();
 
     useEffect(() => {
@@ -62,3 +63,4 @@ export default function TerminalError({
         </div>
     );
 }
+

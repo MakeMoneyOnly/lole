@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-export default function NotFound() {
+export default function NotFound(): React.JSX.Element {
     return (
         <div className="bg-brand-canvas flex min-h-screen flex-col items-center justify-center px-4 text-center">
             <h1 className="text-brand-primary mb-4 text-6xl font-bold">404</h1>
@@ -25,3 +25,5 @@ export default function NotFound() {
         </div>
     );
 }
+
+

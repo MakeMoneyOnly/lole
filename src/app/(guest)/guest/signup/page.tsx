@@ -22,7 +22,7 @@ function getAuthErrorMessage(error: unknown): string {
     return 'Unable to create account. Please try again.';
 }
 
-function SignUpContent() {
+function SignUpContent(): React.JSX.Element {
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
@@ -36,7 +36,7 @@ function SignUpContent() {
     const supabase = useMemo(() => createClient(), []);
     const nextPath = sanitizeNextPath(searchParams.get('next'));
 
-    const handleSubmit = async (event: React.FormEvent) => {
+    const handleSubmit = async (event: React.FormEvent): Promise<void> => {
         event.preventDefault();
         setLoading(true);
         setError(null);
@@ -283,10 +283,13 @@ function SignUpContent() {
 
 import { Suspense } from 'react';
 
-export default function GuestSignUpPage() {
+export default function GuestSignUpPage(): React.JSX.Element {
     return (
         <Suspense fallback={null}>
             <SignUpContent />
         </Suspense>
     );
 }
+
+
+

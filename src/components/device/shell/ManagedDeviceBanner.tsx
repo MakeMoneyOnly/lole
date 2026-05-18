@@ -12,7 +12,7 @@ export function ManagedDeviceBanner(args: {
     session: StoredDeviceSession | null;
     routeLabel: string;
     className?: string;
-}) {
+}): React.JSX.Element | null {
     if (!args.session) {
         return null;
     }
