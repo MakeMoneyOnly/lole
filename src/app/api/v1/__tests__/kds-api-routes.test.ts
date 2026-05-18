@@ -14,13 +14,22 @@ const getAuthenticatedUserMock = vi.mocked(getAuthenticatedUser);
 const getAuthorizedRestaurantContextMock = vi.mocked(getAuthorizedRestaurantContext);
 
 type FakeRecord = Record<string, unknown>;
-
-function makeFakeDb(options: {
-    orders?: FakeRecord[];
-    externalOrders?: FakeRecord[];
-    orderItems?: FakeRecord[];
-    kdsItems?: FakeRecord[];
-}) {
+function makeFakeDb(
+    options: {
+        orders?: unknown[];
+        externalOrders?: unknown[];
+        orderItems?: unknown[];
+        kdsItems?: unknown[];
+    } = {}
+): {
+    from: (table: string) => {
+        select: ReturnType<typeof vi.fn>;
+        eq: ReturnType<typeof vi.fn>;
+        in: ReturnType<typeof vi.fn>;
+        order: ReturnType<typeof vi.fn>;
+        limit: ReturnType<typeof vi.fn>;
+    };
+} {
     const orders = options.orders ?? [];
     const externalOrders = options.externalOrders ?? [];
     const orderItems = options.orderItems ?? [];
@@ -50,14 +59,13 @@ function makeFakeDb(options: {
     };
 }
 
-function setAuthUnauthorized() {
+function setAuthUnauthorized(): void {
     getAuthenticatedUserMock.mockResolvedValue({
         ok: false,
         response: apiError('Unauthorized', 401, 'UNAUTHORIZED'),
     } as any);
 }
-
-function setAuthAndContextOk(supabase: any) {
+function setAuthAndContextOk(db: ReturnType<typeof makeFakeDb>): void {
     getAuthenticatedUserMock.mockResolvedValue({
         ok: true,
         user: { id: 'user-1' },
@@ -66,7 +74,7 @@ function setAuthAndContextOk(supabase: any) {
     getAuthorizedRestaurantContextMock.mockResolvedValue({
         ok: true,
         restaurantId: 'resto-1',
-        supabase,
+        supabase: db,
     } as any);
 }
 
@@ -78,7 +86,9 @@ describe('KDS API routes', () => {
     it('GET /api/v1/merchant/operations/kds/queue returns 401 when unauthorized', async () => {
         setAuthUnauthorized();
 
-        const response = await getKdsQueue(new Request('http://localhost/api/v1/merchant/operations/kds/queue'));
+        const response = await getKdsQueue(
+            new Request('http://localhost/api/v1/merchant/operations/kds/queue')
+        );
 
         expect(response.status).toBe(401);
     });
@@ -87,7 +97,9 @@ describe('KDS API routes', () => {
         setAuthAndContextOk(makeFakeDb({}));
 
         const response = await getKdsQueue(
-            new Request('http://localhost/api/v1/merchant/operations/kds/queue?limit=0&station=invalid')
+            new Request(
+                'http://localhost/api/v1/merchant/operations/kds/queue?limit=0&station=invalid'
+            )
         );
 
         expect(response.status).toBe(400);

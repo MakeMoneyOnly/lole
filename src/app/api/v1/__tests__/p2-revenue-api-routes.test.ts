@@ -6,9 +6,15 @@ import {
     POST as postLoyaltyPrograms,
 } from '@/app/api/v1/merchant/marketing/loyalty/programs/route';
 import { POST as postLoyaltyAdjust } from '@/app/api/v1/merchant/marketing/loyalty/accounts/[accountId]/adjust/route';
-import { GET as getGiftCards, POST as postGiftCards } from '@/app/api/v1/merchant/marketing/gift-cards/route';
+import {
+    GET as getGiftCards,
+    POST as postGiftCards,
+} from '@/app/api/v1/merchant/marketing/gift-cards/route';
 import { POST as postGiftCardRedeem } from '@/app/api/v1/merchant/marketing/gift-cards/[giftCardId]/redeem/route';
-import { GET as getCampaigns, POST as postCampaigns } from '@/app/api/v1/merchant/marketing/campaigns/route';
+import {
+    GET as getCampaigns,
+    POST as postCampaigns,
+} from '@/app/api/v1/merchant/marketing/campaigns/route';
 import { POST as postCampaignLaunch } from '@/app/api/v1/merchant/marketing/campaigns/[campaignId]/launch/route';
 
 vi.mock('@/lib/api/authz', () => ({
@@ -19,14 +25,13 @@ vi.mock('@/lib/api/authz', () => ({
 const getAuthenticatedUserMock = vi.mocked(getAuthenticatedUser);
 const getAuthorizedRestaurantContextMock = vi.mocked(getAuthorizedRestaurantContext);
 
-function setAuthUnauthorized() {
+function setAuthUnauthorized(): React.JSX.Element {
     getAuthenticatedUserMock.mockResolvedValue({
         ok: false,
         response: apiError('Unauthorized', 401, 'UNAUTHORIZED'),
     } as any);
 }
-
-function setAuthAndContextOk(supabase: any = {}) {
+function setAuthAndContextOk(): React.JSX.Element | void {
     getAuthenticatedUserMock.mockResolvedValue({
         ok: true,
         user: { id: 'user-1' },
@@ -70,11 +75,14 @@ describe('P2 revenue API routes', () => {
         setAuthAndContextOk();
 
         const response = await postLoyaltyAdjust(
-            new Request('http://localhost/api/v1/merchant/marketing/loyalty/accounts/not-a-uuid/adjust', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ points_delta: 10, reason: 'promo' }),
-            }),
+            new Request(
+                'http://localhost/api/v1/merchant/marketing/loyalty/accounts/not-a-uuid/adjust',
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ points_delta: 10, reason: 'promo' }),
+                }
+            ),
             { params: Promise.resolve({ accountId: 'not-a-uuid' }) }
         );
 
@@ -84,7 +92,9 @@ describe('P2 revenue API routes', () => {
     it('GET /api/gift-cards returns 401 when unauthorized', async () => {
         setAuthUnauthorized();
 
-        const response = await getGiftCards(new Request('http://localhost/api/v1/merchant/marketing/gift-cards'));
+        const response = await getGiftCards(
+            new Request('http://localhost/api/v1/merchant/marketing/gift-cards')
+        );
 
         expect(response.status).toBe(401);
     });
@@ -127,7 +137,9 @@ describe('P2 revenue API routes', () => {
     it('GET /api/campaigns returns 401 when unauthorized', async () => {
         setAuthUnauthorized();
 
-        const response = await getCampaigns(new Request('http://localhost/api/v1/merchant/marketing/campaigns'));
+        const response = await getCampaigns(
+            new Request('http://localhost/api/v1/merchant/marketing/campaigns')
+        );
 
         expect(response.status).toBe(401);
     });

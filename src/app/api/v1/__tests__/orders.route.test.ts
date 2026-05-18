@@ -67,7 +67,7 @@ vi.mock('@/lib/security', () => ({
     },
 }));
 
-const mockSupabaseClient = (restaurantId: string | null) => {
+const mockSupabaseClient = (restaurantId: string | null): React.JSX.Element => {
     mocks.from.mockImplementation(() => ({
         select: () => ({
             eq: () => ({
@@ -119,7 +119,9 @@ describe('Orders API', () => {
                 error: new Error('Not authenticated'),
             });
 
-            const response = await GET(new NextRequest('http://localhost/api/v1/merchant/operations/orders?limit=10'));
+            const response = await GET(
+                new NextRequest('http://localhost/api/v1/merchant/operations/orders?limit=10')
+            );
 
             expect(response.status).toBe(401);
             const body = await response.json();
@@ -133,7 +135,9 @@ describe('Orders API', () => {
             });
 
             const response = await GET(
-                new NextRequest('http://localhost/api/v1/merchant/operations/orders?limit=not-a-number')
+                new NextRequest(
+                    'http://localhost/api/v1/merchant/operations/orders?limit=not-a-number'
+                )
             );
 
             expect(response.status).toBe(400);

@@ -25,14 +25,13 @@ const getAuthenticatedUserMock = vi.mocked(getAuthenticatedUser);
 const getAuthorizedRestaurantContextMock = vi.mocked(getAuthorizedRestaurantContext);
 const writeAuditLogMock = vi.mocked(writeAuditLog);
 
-function setAuthUnauthorized() {
+function setAuthUnauthorized(): React.JSX.Element {
     getAuthenticatedUserMock.mockResolvedValue({
         ok: false,
         response: apiError('Unauthorized', 401, 'UNAUTHORIZED'),
     } as any);
 }
-
-function setAuthAndContextOk(supabase: any = {}) {
+function setAuthAndContextOk(): React.JSX.Element | void {
     getAuthenticatedUserMock.mockResolvedValue({
         ok: true,
         user: { id: 'user-1' },
@@ -62,11 +61,14 @@ describe('Channels API routes', () => {
         setAuthAndContextOk();
 
         const response = await patchOnlineOrderingSettings(
-            new Request('http://localhost/api/v1/merchant/marketing/channels/online-ordering/settings', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({}),
-            })
+            new Request(
+                'http://localhost/api/v1/merchant/marketing/channels/online-ordering/settings',
+                {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({}),
+                }
+            )
         );
 
         expect(response.status).toBe(400);
@@ -135,7 +137,10 @@ describe('Channels API routes', () => {
         setAuthAndContextOk();
 
         const response = await getDeliveryOrders(
-            new Request('http://localhost/api/v1/merchant/marketing/channels/delivery/orders?limit=0', { method: 'GET' })
+            new Request(
+                'http://localhost/api/v1/merchant/marketing/channels/delivery/orders?limit=0',
+                { method: 'GET' }
+            )
         );
 
         expect(response.status).toBe(400);
@@ -145,11 +150,14 @@ describe('Channels API routes', () => {
         setAuthAndContextOk();
 
         const response = await postDeliveryAck(
-            new Request('http://localhost/api/v1/merchant/marketing/channels/delivery/orders/not-a-uuid/ack', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({}),
-            }),
+            new Request(
+                'http://localhost/api/v1/merchant/marketing/channels/delivery/orders/not-a-uuid/ack',
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({}),
+                }
+            ),
             { params: Promise.resolve({ externalOrderId: 'not-a-uuid' }) }
         );
 

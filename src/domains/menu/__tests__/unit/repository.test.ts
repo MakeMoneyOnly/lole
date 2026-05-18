@@ -16,10 +16,24 @@ vi.mock('@/lib/constants/query-columns', () => ({
 }));
 
 // Helper to create a thenable mock query chain
-function createMockQuery(resolvedValue?: { data: unknown; error: unknown }) {
-    let _resolvedValue = resolvedValue ?? { data: null, error: null };
+interface MockQuery {
+    select: ReturnType<typeof vi.fn>;
+    eq: ReturnType<typeof vi.fn>;
+    in: ReturnType<typeof vi.fn>;
+    limit: ReturnType<typeof vi.fn>;
+    order: ReturnType<typeof vi.fn>;
+    single: ReturnType<typeof vi.fn>;
+    maybeSingle: ReturnType<typeof vi.fn>;
+    then: unknown;
+    _setResolvedValue: (val: { data: unknown; error: unknown }) => void;
+}
 
-    const query: Record<string, unknown> = {};
+function createMockQuery(
+    resolvedValue: { data: unknown; error: unknown } = { data: null, error: null }
+): MockQuery {
+    let _resolvedValue = resolvedValue;
+
+    const query: MockQuery = {} as MockQuery;
 
     // Make the query thenable so `await query` works
     query.then = function (
@@ -55,8 +69,6 @@ function createMockQuery(resolvedValue?: { data: unknown; error: unknown }) {
 
     return query;
 }
-
-// Mock Supabase client
 const mockFrom = vi.fn(() => createMockQuery());
 
 vi.mock('@/lib/supabase/client', () => ({

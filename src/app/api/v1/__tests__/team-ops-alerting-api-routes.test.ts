@@ -2,9 +2,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { apiError } from '@/lib/api/response';
 import { getAuthenticatedUser, getAuthorizedRestaurantContext } from '@/lib/api/authz';
 
-import { GET as getStaffSchedule, POST as postStaffSchedule } from '@/app/api/v1/merchant/core/staff/schedule/route';
+import {
+    GET as getStaffSchedule,
+    POST as postStaffSchedule,
+} from '@/app/api/v1/merchant/core/staff/schedule/route';
 import { POST as postStaffClock } from '@/app/api/v1/merchant/core/staff/time-entries/clock/route';
-import { GET as getAlertRules, POST as postAlertRules } from '@/app/api/v1/internal/alerts/alerts/rules/route';
+import {
+    GET as getAlertRules,
+    POST as postAlertRules,
+} from '@/app/api/v1/internal/alerts/alerts/rules/route';
 import { PATCH as patchAlertRule } from '@/app/api/v1/internal/alerts/alerts/rules/[ruleId]/route';
 import {
     GET as getDashboardPresets,
@@ -19,14 +25,13 @@ vi.mock('@/lib/api/authz', () => ({
 const getAuthenticatedUserMock = vi.mocked(getAuthenticatedUser);
 const getAuthorizedRestaurantContextMock = vi.mocked(getAuthorizedRestaurantContext);
 
-function setAuthUnauthorized() {
+function setAuthUnauthorized(): React.JSX.Element {
     getAuthenticatedUserMock.mockResolvedValue({
         ok: false,
         response: apiError('Unauthorized', 401, 'UNAUTHORIZED'),
     } as any);
 }
-
-function setAuthAndContextOk(supabase: any = {}) {
+function setAuthAndContextOk(): React.JSX.Element | void {
     getAuthenticatedUserMock.mockResolvedValue({
         ok: true,
         user: { id: 'user-1' },
@@ -47,7 +52,9 @@ describe('P1 Team Operations and Alerting API routes', () => {
     it('GET /api/v1/merchant/core/staff/schedule returns 401 when unauthorized', async () => {
         setAuthUnauthorized();
 
-        const response = await getStaffSchedule(new Request('http://localhost/api/v1/merchant/core/staff/schedule'));
+        const response = await getStaffSchedule(
+            new Request('http://localhost/api/v1/merchant/core/staff/schedule')
+        );
 
         expect(response.status).toBe(401);
     });

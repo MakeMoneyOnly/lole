@@ -17,11 +17,11 @@ vi.mock('../../logger', () => ({
     },
 }));
 
-async function loadOrderSync() {
+async function loadOrderSync(): Promise<void> {
     return await import('../orderSync');
 }
 
-async function loadIdempotency() {
+async function loadIdempotency(): Promise<void> {
     return await import('../idempotency');
 }
 

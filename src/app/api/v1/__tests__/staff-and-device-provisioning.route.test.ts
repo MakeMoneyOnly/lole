@@ -24,7 +24,7 @@ const getAuthorizedRestaurantContextMock = vi.mocked(getAuthorizedRestaurantCont
 const createServiceRoleClientMock = vi.mocked(createServiceRoleClient);
 const writeAuditLogMock = vi.mocked(writeAuditLog);
 
-function setAuthContextOk() {
+function setAuthContextOk(): React.JSX.Element {
     getAuthenticatedUserMock.mockResolvedValue({
         ok: true,
         user: { id: 'user-1' },

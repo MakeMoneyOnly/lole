@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { apiError } from '@/lib/api/response';
 import { getAuthenticatedUser, getAuthorizedRestaurantContext } from '@/lib/api/authz';
 import { writeAuditLog } from '@/lib/api/audit';
-import { GET as getKdsTelemetry, POST as postKdsTelemetry } from '@/app/api/v1/merchant/operations/kds/telemetry/route';
+import {
+    GET as getKdsTelemetry,
+    POST as postKdsTelemetry,
+} from '@/app/api/v1/merchant/operations/kds/telemetry/route';
 
 vi.mock('@/lib/api/authz', () => ({
     getAuthenticatedUser: vi.fn(),
@@ -16,11 +19,7 @@ vi.mock('@/lib/api/audit', () => ({
 const getAuthenticatedUserMock = vi.mocked(getAuthenticatedUser);
 const getAuthorizedRestaurantContextMock = vi.mocked(getAuthorizedRestaurantContext);
 const writeAuditLogMock = vi.mocked(writeAuditLog);
-
-function makeFakeDb(options: {
-    orders?: Array<Record<string, unknown>>;
-    heartbeats?: Array<Record<string, unknown>>;
-}) {
+function makeFakeDb(): React.JSX.Element | void {
     const orders = options.orders ?? [];
     const heartbeats = options.heartbeats ?? [];
 
@@ -47,14 +46,13 @@ function makeFakeDb(options: {
     };
 }
 
-function setAuthUnauthorized() {
+function setAuthUnauthorized(): React.JSX.Element {
     getAuthenticatedUserMock.mockResolvedValue({
         ok: false,
         response: apiError('Unauthorized', 401, 'UNAUTHORIZED'),
     } as any);
 }
-
-function setAuthAndContextOk(supabase: any) {
+function setAuthAndContextOk(): React.JSX.Element | void {
     getAuthenticatedUserMock.mockResolvedValue({
         ok: true,
         user: { id: 'user-1' },

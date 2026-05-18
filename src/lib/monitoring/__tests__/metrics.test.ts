@@ -43,18 +43,19 @@ vi.mock('../prometheus', () => ({
     recordOrderEvent: mockRecordOrderEvent,
     recordPaymentEvent: mockRecordPaymentEvent,
 }));
-
-function createMockSupabase(insertResult: { error: Error | null } = { error: null }) {
+function createMockSupabase(opts?: { error?: Error }): any {
     return {
         from: vi.fn().mockReturnValue({
-            insert: vi.fn().mockResolvedValue(insertResult),
+            insert: vi
+                .fn()
+                .mockResolvedValue(
+                    opts?.error ? { data: null, error: opts.error } : { data: null, error: null }
+                ),
         }),
-    } as unknown as SupabaseClient<Database>;
+    };
 }
-
-function getInsertArg(supabase: SupabaseClient<Database>, callIndex = 0) {
-    const fromMock = (supabase as unknown as { from: Mock }).from;
-    const insertMock = fromMock('audit_logs').insert;
+function getInsertArg(supabase: any, callIndex = 0): { metadata: Record<string, unknown> } {
+    const insertMock = supabase.from('audit_logs').insert;
     return insertMock.mock.calls[callIndex][0] as { metadata: Record<string, unknown> };
 }
 
@@ -262,7 +263,7 @@ describe('metrics', () => {
                 durationMs: 100,
                 error: 'timeout',
             });
-            const insertArg = getInsertArg(supabase);
+            const insertArg = getInsertArg(supabase, 0);
             expect(insertArg.metadata.error).toBe('timeout');
         });
 
@@ -274,7 +275,7 @@ describe('metrics', () => {
                 statusCode: 200,
                 durationMs: 100,
             });
-            const insertArg = getInsertArg(supabase);
+            const insertArg = getInsertArg(supabase, 0);
             expect(insertArg.metadata.error).toBeUndefined();
         });
 
@@ -320,7 +321,7 @@ describe('metrics', () => {
                 durationMs: 300,
             });
             expect(result.error).toBeNull();
-            const insertArg = getInsertArg(supabase);
+            const insertArg = getInsertArg(supabase, 0);
             expect(insertArg.metadata.items).toBe(5);
             expect(insertArg.metadata.total).toBe(120.5);
             expect(insertArg.metadata.duration_ms).toBe(300);
@@ -334,7 +335,7 @@ describe('metrics', () => {
                 event: 'completed',
             });
             expect(result.error).toBeNull();
-            const insertArg = getInsertArg(supabase);
+            const insertArg = getInsertArg(supabase, 0);
             expect(insertArg.metadata.items).toBeUndefined();
             expect(insertArg.metadata.total).toBeUndefined();
             expect(insertArg.metadata.duration_ms).toBeUndefined();
@@ -403,7 +404,7 @@ describe('metrics', () => {
                 error: 'card declined',
             });
             expect(result.error).toBeNull();
-            const insertArg = getInsertArg(supabase);
+            const insertArg = getInsertArg(supabase, 0);
             expect(insertArg.metadata.amount).toBe(250.0);
             expect(insertArg.metadata.duration_ms).toBe(500);
             expect(insertArg.metadata.error).toBe('card declined');
@@ -418,7 +419,7 @@ describe('metrics', () => {
                 event: 'initiated',
             });
             expect(result.error).toBeNull();
-            const insertArg = getInsertArg(supabase);
+            const insertArg = getInsertArg(supabase, 0);
             expect(insertArg.metadata.amount).toBeUndefined();
             expect(insertArg.metadata.duration_ms).toBeUndefined();
             expect(insertArg.metadata.error).toBeUndefined();
@@ -490,7 +491,7 @@ describe('metrics', () => {
                 durationMs: 1200,
             });
             expect(result.error).toBeNull();
-            const insertArg = getInsertArg(supabase);
+            const insertArg = getInsertArg(supabase, 0);
             expect(insertArg.metadata.table_number).toBe(5);
             expect(insertArg.metadata.guest_count).toBe(3);
             expect(insertArg.metadata.duration_ms).toBe(1200);
@@ -504,7 +505,7 @@ describe('metrics', () => {
                 event: 'active',
             });
             expect(result.error).toBeNull();
-            const insertArg = getInsertArg(supabase);
+            const insertArg = getInsertArg(supabase, 0);
             expect(insertArg.metadata.table_number).toBeUndefined();
             expect(insertArg.metadata.guest_count).toBeUndefined();
             expect(insertArg.metadata.duration_ms).toBeUndefined();

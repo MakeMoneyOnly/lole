@@ -250,7 +250,7 @@ describe('orderService integration tests', () => {
     describe('checkRateLimit', () => {
         // Helper to create a proper mock chain for Supabase queries
         // The query chain is: from -> select -> eq -> gt -> returns { count, error }
-        const createMockChain = (count: number | null, hasError = false) => {
+        const createMockChain = (count: number | null, hasError = false): React.JSX.Element => {
             // Create the final result that returns { count, error }
             const countResult = {
                 count,

@@ -15,7 +15,7 @@ vi.mock('@/lib/api/audit', () => ({
 const getAuthenticatedUserMock = vi.mocked(getAuthenticatedUser);
 const getAuthorizedRestaurantContextMock = vi.mocked(getAuthorizedRestaurantContext);
 
-function createSupabaseMock() {
+function createSupabaseMock(): React.JSX.Element {
     return {
         from: vi.fn((table: string) => {
             if (table === 'orders') {

@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { Mock } from 'vitest';
 
 let mockQueryBuilder: Record<string, ReturnType<typeof vi.fn>>;
 let mockClient: { from: ReturnType<typeof vi.fn> };
 
-function createQueryBuilder() {
+function createQueryBuilder(): Record<string, ReturnType<typeof vi.fn>> {
     const qb: Record<string, ReturnType<typeof vi.fn>> = {};
     qb.from = vi.fn().mockReturnThis();
     qb.select = vi.fn().mockReturnThis();

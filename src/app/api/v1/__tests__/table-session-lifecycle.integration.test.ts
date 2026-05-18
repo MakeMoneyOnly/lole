@@ -107,7 +107,7 @@ class QueryBuilder {
     }
 }
 
-function createHarness() {
+function createHarness(): React.JSX.Element {
     const store: TableStore = {
         tables: [
             {
@@ -173,14 +173,17 @@ describe('Table session lifecycle integration', () => {
         ).toBe('occupied');
 
         const transferResponse = await postSessionTransfer(
-            new Request('http://localhost/api/v1/merchant/operations/table-sessions/session/transfer', {
-                method: 'POST',
-                body: JSON.stringify({
-                    to_table_id: '22222222-2222-4222-8222-222222222222',
-                    notes: 'moved to window',
-                }),
-                headers: { 'content-type': 'application/json' },
-            }),
+            new Request(
+                'http://localhost/api/v1/merchant/operations/table-sessions/session/transfer',
+                {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        to_table_id: '22222222-2222-4222-8222-222222222222',
+                        notes: 'moved to window',
+                    }),
+                    headers: { 'content-type': 'application/json' },
+                }
+            ),
             { params: Promise.resolve({ sessionId: openBody.data.id }) }
         );
         expect(transferResponse.status).toBe(200);
@@ -198,11 +201,14 @@ describe('Table session lifecycle integration', () => {
         ).toBe('occupied');
 
         const closeResponse = await postSessionClose(
-            new Request('http://localhost/api/v1/merchant/operations/table-sessions/session/close', {
-                method: 'POST',
-                body: JSON.stringify({ notes: 'bill settled' }),
-                headers: { 'content-type': 'application/json' },
-            }),
+            new Request(
+                'http://localhost/api/v1/merchant/operations/table-sessions/session/close',
+                {
+                    method: 'POST',
+                    body: JSON.stringify({ notes: 'bill settled' }),
+                    headers: { 'content-type': 'application/json' },
+                }
+            ),
             { params: Promise.resolve({ sessionId: transferBody.data.new_session.id }) }
         );
         expect(closeResponse.status).toBe(200);
@@ -278,13 +284,16 @@ describe('Table session lifecycle integration', () => {
         } as any);
 
         const response = await postSessionTransfer(
-            new Request('http://localhost/api/v1/merchant/operations/table-sessions/session/transfer', {
-                method: 'POST',
-                body: JSON.stringify({
-                    to_table_id: '22222222-2222-4222-8222-222222222222',
-                }),
-                headers: { 'content-type': 'application/json' },
-            }),
+            new Request(
+                'http://localhost/api/v1/merchant/operations/table-sessions/session/transfer',
+                {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        to_table_id: '22222222-2222-4222-8222-222222222222',
+                    }),
+                    headers: { 'content-type': 'application/json' },
+                }
+            ),
             { params: Promise.resolve({ sessionId: '44444444-4444-4444-8444-444444444444' }) }
         );
         const body = await response.json();

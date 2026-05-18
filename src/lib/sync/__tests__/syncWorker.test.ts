@@ -637,7 +637,7 @@ describe('SyncWorker', () => {
             });
 
             const events: SyncEvent[] = [];
-            const onSyncEvent = (event: SyncEvent) => events.push(event);
+            const onSyncEvent = (event: SyncEvent): React.JSX.Element => events.push(event);
 
             worker = createSyncWorker({ onSyncEvent });
             await worker.syncOnce();

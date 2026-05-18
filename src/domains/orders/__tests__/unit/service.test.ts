@@ -2,56 +2,56 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { OrderStatus } from '@/types/status';
 
 const {
-     mockFindByRestaurant,
-     mockCreate,
-     mockCreateItems,
-     mockUpdateStatus,
-     mockCancel,
-     mockFindById,
-     mockFindActiveByRestaurant,
-     mockFindByKDSStation,
-     mockGetItems,
-     mockGetMenuItemsByIds,
-     mockPublishEvent,
-     mockValidateModifiers,
-     mockRpc,
- } = vi.hoisted(() => ({
-     mockFindByRestaurant: vi.fn(),
-     mockCreate: vi.fn(),
-     mockCreateItems: vi.fn(),
-     mockUpdateStatus: vi.fn(),
-     mockCancel: vi.fn(),
-     mockFindById: vi.fn(),
-     mockFindActiveByRestaurant: vi.fn(),
-     mockFindByKDSStation: vi.fn(),
-     mockGetItems: vi.fn(),
-     mockGetMenuItemsByIds: vi.fn(),
-     mockPublishEvent: vi.fn(),
-     mockValidateModifiers: vi.fn(),
-     mockRpc: vi.fn(),
- }));
+    mockFindByRestaurant,
+    mockCreate,
+    mockCreateItems,
+    mockUpdateStatus,
+    mockCancel,
+    mockFindById,
+    mockFindActiveByRestaurant,
+    mockFindByKDSStation,
+    mockGetItems,
+    mockGetMenuItemsByIds,
+    mockPublishEvent,
+    mockValidateModifiers,
+    mockRpc,
+} = vi.hoisted(() => ({
+    mockFindByRestaurant: vi.fn(),
+    mockCreate: vi.fn(),
+    mockCreateItems: vi.fn(),
+    mockUpdateStatus: vi.fn(),
+    mockCancel: vi.fn(),
+    mockFindById: vi.fn(),
+    mockFindActiveByRestaurant: vi.fn(),
+    mockFindByKDSStation: vi.fn(),
+    mockGetItems: vi.fn(),
+    mockGetMenuItemsByIds: vi.fn(),
+    mockPublishEvent: vi.fn(),
+    mockValidateModifiers: vi.fn(),
+    mockRpc: vi.fn(),
+}));
 
 vi.mock('@supabase/supabase-js', () => ({
-     createClient: vi.fn(() => ({
-         rpc: mockRpc,
-         from: vi.fn(),
-     })),
- }));
+    createClient: vi.fn(() => ({
+        rpc: mockRpc,
+        from: vi.fn(),
+    })),
+}));
 
- vi.mock('../../repository', () => ({
-     ordersRepository: {
-         findById: mockFindById,
-         findByRestaurant: mockFindByRestaurant,
-         findActiveByRestaurant: mockFindActiveByRestaurant,
-         findByKDSStation: mockFindByKDSStation,
-         create: mockCreate,
-         createItems: mockCreateItems,
-         updateStatus: mockUpdateStatus,
-         cancel: mockCancel,
-         getItems: mockGetItems,
-         validateModifiers: mockValidateModifiers,
-     },
- }));
+vi.mock('../../repository', () => ({
+    ordersRepository: {
+        findById: mockFindById,
+        findByRestaurant: mockFindByRestaurant,
+        findActiveByRestaurant: mockFindActiveByRestaurant,
+        findByKDSStation: mockFindByKDSStation,
+        create: mockCreate,
+        createItems: mockCreateItems,
+        updateStatus: mockUpdateStatus,
+        cancel: mockCancel,
+        getItems: mockGetItems,
+        validateModifiers: mockValidateModifiers,
+    },
+}));
 
 vi.mock('@/lib/events/publisher', () => ({
     publishEvent: mockPublishEvent,
@@ -97,12 +97,12 @@ describe('OrdersService', () => {
         mockCreate.mockResolvedValue(mockOrder);
         mockCreateItems.mockResolvedValue([]);
         mockGetMenuItemsByIds.mockResolvedValue([]);
-mockValidateModifiers.mockResolvedValue({
-             is_valid: true,
-             missing_groups: [],
-             error_message: null,
-             error_message_am: null,
-         });
+        mockValidateModifiers.mockResolvedValue({
+            is_valid: true,
+            missing_groups: [],
+            error_message: null,
+            error_message_am: null,
+        });
     });
 
     afterEach(() => {
@@ -183,7 +183,7 @@ mockValidateModifiers.mockResolvedValue({
                 staffId: 'staff-1',
             });
 
-expect(mockValidateModifiers).toHaveBeenCalledWith('item-1', ['mod-1', 'mod-2']);
+            expect(mockValidateModifiers).toHaveBeenCalledWith('item-1', ['mod-1', 'mod-2']);
         });
 
         it('passes empty selectedModifierIds for items without modifiers', async () => {
@@ -197,7 +197,7 @@ expect(mockValidateModifiers).toHaveBeenCalledWith('item-1', ['mod-1', 'mod-2'])
                 staffId: 'staff-1',
             });
 
-expect(mockValidateModifiers).toHaveBeenCalledWith('item-1', []);
+            expect(mockValidateModifiers).toHaveBeenCalledWith('item-1', []);
         });
 
         it('skips modifiers without id property', async () => {
@@ -220,7 +220,7 @@ expect(mockValidateModifiers).toHaveBeenCalledWith('item-1', []);
                 staffId: 'staff-1',
             });
 
-expect(mockValidateModifiers).toHaveBeenCalledWith('item-1', []);
+            expect(mockValidateModifiers).toHaveBeenCalledWith('item-1', []);
         });
 
         it('skips modifiers with falsy id', async () => {
@@ -242,7 +242,7 @@ expect(mockValidateModifiers).toHaveBeenCalledWith('item-1', []);
                 staffId: 'staff-1',
             });
 
-expect(mockValidateModifiers).toHaveBeenCalledWith('item-1', []);
+            expect(mockValidateModifiers).toHaveBeenCalledWith('item-1', []);
         });
 
         it('skips non-object modifier values', async () => {
@@ -265,17 +265,17 @@ expect(mockValidateModifiers).toHaveBeenCalledWith('item-1', []);
                 staffId: 'staff-1',
             });
 
-expect(mockValidateModifiers).toHaveBeenCalledWith('item-1', []);
+            expect(mockValidateModifiers).toHaveBeenCalledWith('item-1', []);
         });
 
         it('throws loleGraphQLError when modifier validation fails', async () => {
             const service = await importService();
-mockValidateModifiers.mockResolvedValue({
-                 is_valid: false,
-                 missing_groups: ['spice-level'],
-                 error_message: 'Required modifiers not selected',
-                 error_message_am: 'አስፈላጊ ማስተካከያዎች',
-             });
+            mockValidateModifiers.mockResolvedValue({
+                is_valid: false,
+                missing_groups: ['spice-level'],
+                error_message: 'Required modifiers not selected',
+                error_message_am: 'አስፈላጊ ማስተካከያዎች',
+            });
 
             const error = await service
                 .createOrder({
@@ -315,12 +315,12 @@ mockValidateModifiers.mockResolvedValue({
 
         it('uses default error message when RPC returns null error_message', async () => {
             const service = await importService();
-mockValidateModifiers.mockResolvedValue({
-                 is_valid: false,
-                 missing_groups: [],
-                 error_message: null,
-                 error_message_am: null,
-             });
+            mockValidateModifiers.mockResolvedValue({
+                is_valid: false,
+                missing_groups: [],
+                error_message: null,
+                error_message_am: null,
+            });
 
             await expect(
                 service.createOrder({
@@ -536,9 +536,9 @@ mockValidateModifiers.mockResolvedValue({
                 staffId: 'staff-1',
             });
 
-expect(mockValidateModifiers).toHaveBeenCalledTimes(2);
-             expect(mockValidateModifiers).toHaveBeenCalledWith('item-1', ['mod-1']);
-             expect(mockValidateModifiers).toHaveBeenCalledWith('item-2', ['mod-2']);
+            expect(mockValidateModifiers).toHaveBeenCalledTimes(2);
+            expect(mockValidateModifiers).toHaveBeenCalledWith('item-1', ['mod-1']);
+            expect(mockValidateModifiers).toHaveBeenCalledWith('item-2', ['mod-2']);
         });
     });
 
@@ -617,12 +617,12 @@ expect(mockValidateModifiers).toHaveBeenCalledTimes(2);
 
         it('passes validation when RPC returns valid=true', async () => {
             const service = await importService();
-mockValidateModifiers.mockResolvedValue({
-                 is_valid: true,
-                 missing_groups: [],
-                 error_message: null,
-                 error_message_am: null,
-             });
+            mockValidateModifiers.mockResolvedValue({
+                is_valid: true,
+                missing_groups: [],
+                error_message: null,
+                error_message_am: null,
+            });
 
             const result = await service.createOrder({
                 restaurantId: 'rest-1',
@@ -768,18 +768,18 @@ mockValidateModifiers.mockResolvedValue({
             const service = await importService();
 
             const input = { id: 'order-1', status: '' as OrderStatus, staffId: 'staff-1' };
-            await expect(
-                service.updateOrderStatus(input)
-            ).rejects.toThrow('Status is required');
+            await expect(service.updateOrderStatus(input)).rejects.toThrow('Status is required');
         });
 
         it('throws Error when status is null', async () => {
             const service = await importService();
 
-            const input = { id: 'order-1', status: null as unknown as OrderStatus, staffId: 'staff-1' };
-            await expect(
-                service.updateOrderStatus(input)
-            ).rejects.toThrow('Status is required');
+            const input = {
+                id: 'order-1',
+                status: null as unknown as OrderStatus,
+                staffId: 'staff-1',
+            };
+            await expect(service.updateOrderStatus(input)).rejects.toThrow('Status is required');
         });
 
         it('publishes status_changed event on success', async () => {
