@@ -1,8 +1,8 @@
 import { updateSession } from '@/lib/supabase/middleware';
 import { rateLimitMiddleware } from '@/lib/rate-limit';
-import type { NextRequest } from 'next/server';
+import type { NextRequest, NextResponse } from 'next/server';
 
-export async function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest): Promise<NextResponse> {
     // BKND-033: Apply global rate limiting to all API mutation endpoints.
     // rateLimitMiddleware only applies to mutation methods (POST/PATCH/PUT/DELETE).
     // If rate limited, return 429 immediately — don't proceed to auth/session.
