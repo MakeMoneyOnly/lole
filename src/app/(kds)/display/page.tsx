@@ -4,7 +4,7 @@ type PageProps = {
     searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function KdsDisplayRedirectPage({ searchParams }: PageProps) {
+export default async function KdsDisplayRedirectPage({ searchParams }: PageProps): Promise<never> {
     const resolvedSearchParams = await searchParams;
     const restaurantId = resolvedSearchParams?.restaurantId;
     const restaurantValue = Array.isArray(restaurantId) ? restaurantId[0] : restaurantId;

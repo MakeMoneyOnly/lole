@@ -74,7 +74,7 @@ export async function GET(request: NextRequest): Promise<Response> {
 }
 
 // Also support POST for QStash calls
-export async function POST(request:  NextRequest): Promise<NextResponse> {
+export async function POST(request: NextRequest): Promise<Response> {
     return GET(request);
 }
 

@@ -6,6 +6,7 @@
  */
 
 import { z } from 'zod';
+import { logger } from '@/lib/logger';
 
 /**
  * Environment variable schema
@@ -171,7 +172,7 @@ function parseEnv(): Env {
 
             // In development, log warning but continue
             if (process.env.NODE_ENV === 'development') {
-                console.warn(
+                logger.warn(
                     '\n⚠️  Environment validation failed:\n' +
                         missingVars +
                         '\n\n' +
@@ -209,7 +210,7 @@ export function validateServerEnv(): void {
         serverEnvSchema.parse(process.env);
     } catch (error) {
         if (error instanceof z.ZodError) {
-            console.warn(
+            logger.warn(
                 'Server environment validation warnings:\n' +
                     error.issues
                         .map(issue => `  - ${issue.path.join('.')}: ${issue.message}`)

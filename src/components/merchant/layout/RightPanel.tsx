@@ -9,15 +9,15 @@ import { LoleChatbot } from '@/components/merchant/shared/LoleChatbot';
 export function RightPanel(): React.JSX.Element {
     const { loading, restaurantName, restaurantHandle } = useMerchantActivity();
 
-    const handleNotificationClick = (): React.JSX.Element => {
+    const handleNotificationClick = (): void => {
         toast('No new notifications', { icon: '🔔' });
     };
 
-    const handleMessageClick = (): React.JSX.Element => {
+    const handleMessageClick = (): void => {
         toast('No new messages', { icon: '💬' });
     };
 
-    const handleMoreClick = (): React.JSX.Element => {
+    const handleMoreClick = (): void => {
         toast('Settings menu', { icon: '⚙️' });
     };
 

@@ -158,7 +158,7 @@ export function withServiceRoleAudit(
         ServiceRoleAuditParams,
         'action' | 'description' | 'success' | 'resourceId'
     >
-) {
+): SupabaseClient<Database> {
     return supabase;
 }
 

@@ -118,13 +118,13 @@ export async function GET(request: Request): Promise<Response> {
     }
 
     const queueAges = (ordersRes.data ?? [])
-        .map(order => {
+        .map((order: { created_at: string | null }) => {
             if (!order.created_at) return 0;
             return Math.max(0, Math.floor((now - new Date(order.created_at).getTime()) / 60000));
         })
-        .filter(value => Number.isFinite(value));
+        .filter((value: number) => Number.isFinite(value));
 
-    const breachedCount = queueAges.filter(value => value >= sla_minutes).length;
+    const breachedCount = queueAges.filter((value: number) => value >= sla_minutes).length;
 
     const heartbeatRows = (heartbeatRes.data ?? []) as Array<{
         created_at: string | null;
@@ -159,7 +159,7 @@ export async function GET(request: Request): Promise<Response> {
             avg_minutes:
                 queueAges.length > 0
                     ? Number(
-                          (queueAges.reduce((sum, n) => sum + n, 0) / queueAges.length).toFixed(1)
+                          (queueAges.reduce((sum: number, n: number) => sum + n, 0) / queueAges.length).toFixed(1)
                       )
                     : 0,
             p50_minutes: percentile(queueAges, 50),

@@ -7,17 +7,19 @@ import {
 } from '@/lib/api/authz';
 import { parseJsonBody } from '@/lib/api/validation';
 import { writeAuditLog } from '@/lib/api/audit';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@/types/database';
 
 const CourseFireModeSchema = z.object({
     fire_mode: z.enum(['auto', 'manual']).optional(),
     current_course: z.enum(['appetizer', 'main', 'dessert', 'beverage', 'side']).optional(),
 });
 
-export async function PATCH(request: Request, context: { params: Promise<{ orderId: string }> }) {
+export async function PATCH(request: Request, context: { params: Promise<{ orderId: string }> }): Promise<Response> {
     const auth = await getAuthenticatedUser();
     let actorUserId: string | null = null;
     let restaurantId: string;
-    let db: Awaited<ReturnType<typeof getAuthorizedRestaurantContext>>['supabase'] | undefined;
+    let db: SupabaseClient<Database> | null = null;
 
     if (auth.ok) {
         const restaurantContext = await getAuthorizedRestaurantContext(auth.user.id);
@@ -33,7 +35,11 @@ export async function PATCH(request: Request, context: { params: Promise<{ order
             return auth.response;
         }
         restaurantId = deviceContext.restaurantId;
-        db = deviceContext.admin;
+        db = deviceContext.admin ?? undefined;
+    }
+
+    if (!db) {
+        return apiError('Database not initialized', 500, 'DB_NOT_INITIALIZED');
     }
 
     const parsed = await parseJsonBody(request, CourseFireModeSchema);

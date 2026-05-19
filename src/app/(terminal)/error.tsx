@@ -4,11 +4,8 @@ import * as React from 'react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle, RefreshCw, CreditCard } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
-/**
- * Error Boundary for Terminal Routes
- * Catches runtime errors and provides recovery options for payment terminals
- */
 export default function TerminalError({
     error,
     reset,
@@ -19,7 +16,7 @@ export default function TerminalError({
     const router = useRouter();
 
     useEffect(() => {
-        console.error('[Terminal Error Boundary]:', error);
+        logger.error('[Terminal Error Boundary]:', error);
     }, [error]);
 
     return (

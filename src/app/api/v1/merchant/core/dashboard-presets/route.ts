@@ -17,7 +17,7 @@ function resolveRecommendedPreset(role: string | null | undefined): z.infer<type
     return 'kitchen_lead';
 }
 
-export async function GET(request: Request): Promise<Response> {
+export async function GET(_request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;

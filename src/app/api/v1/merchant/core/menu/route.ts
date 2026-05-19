@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { logger } from '@/lib/logger';
 import { getCacheHeaders, CACHE_PRESETS } from '@/lib/api/cache';
 
-export async function GET(request: Request): Promise<Response> {
+export async function GET(_request: Request): Promise<Response> {
     try {
         const validatedItems = z.array(FoodItemSchema).safeParse(FOOD_ITEMS);
 

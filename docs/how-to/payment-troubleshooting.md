@@ -137,6 +137,27 @@ AND p.created_at < NOW() - INTERVAL '10 minutes'
 AND p.provider IN ('telebirr', 'chapa');
 ```
 
+#### Payment Status Enum
+
+Valid payment statuses:
+- `pending` - Payment initiated but not yet confirmed
+- `processing` - Payment being processed by provider
+- `captured` - Payment successfully captured
+- `failed` - Payment failed
+- `refunded` - Payment refunded
+- `cancelled` - Payment cancelled by user or system
+
+#### Payment Method Enum
+
+Valid payment methods:
+- `cash` - Cash payment
+- `telebirr` - Telebirr mobile payment
+- `chapa` - Chapa payment gateway
+- `cbe_birr` - CBE Birr mobile payment
+- `amole` - Amole digital wallet
+- `card` - Card payment
+- `gift_card` - Gift card payment
+
 Payments pending > 10 minutes need verification.
 
 ### Resolution
@@ -199,7 +220,7 @@ SELECT
   status,
   response_code,
   created_at
-FROM webhook_receipts
+FROM notification_logs
 WHERE payload->>'transaction_id' = '<provider_tx_id>'
 ORDER BY created_at DESC;
 ```

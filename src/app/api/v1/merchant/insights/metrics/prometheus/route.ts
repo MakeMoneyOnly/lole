@@ -31,7 +31,7 @@ const log = logger.child('merchant-insights/metrics');
  * - lole_active_sessions
  * - lole_active_restaurants
  */
-export async function GET(request: Request): Promise<Response> {
+export async function GET(_request: Request): Promise<Response> {
     try {
         const metrics = await getPrometheusMetrics();
         const contentType = getPrometheusContentType();

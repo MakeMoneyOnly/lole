@@ -28,7 +28,7 @@ export function createNoopPeripheralAdapter<K extends HardwarePeripheralKind>(in
     kind: K;
     driverKind: string;
 }): HardwarePeripheralAdapter<K> {
-    const now = (): React.JSX.Element => new Date().toISOString();
+    const now = (): string => new Date().toISOString();
 
     if (input.kind === 'scanner') {
         return {

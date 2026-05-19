@@ -240,7 +240,7 @@ const clients: Record<
 /**
  * Get the appropriate delivery client for a provider
  */
-export function getDeliveryClient(provider: SupportedProvider) {
+export function getDeliveryClient(provider: SupportedProvider): typeof BeuClient | typeof DeliverAddisClient | typeof ZmallClient | typeof EsooraClient {
     const client = clients[provider];
     if (!client) {
         throw new Error(`Unsupported delivery provider: ${provider}`);
@@ -248,14 +248,11 @@ export function getDeliveryClient(provider: SupportedProvider) {
     return client;
 }
 
-/**
- * Get config for a delivery partner
- */
 export async function getPartnerConfig(
     provider: SupportedProvider,
     supabase: import('@supabase/supabase-js').SupabaseClient<import('@/types/database').Database>,
     restaurantId: string
-) {
+): Promise<{ name: string; color: string; orderPrefix: string } | null> {
     switch (provider) {
         case 'beu':
             return BeuClient.getBEUConfig(supabase, restaurantId);

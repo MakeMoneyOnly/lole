@@ -15,6 +15,7 @@ import {
     isGatewayLanEventMessage,
     LocalGatewaySequenceTracker,
 } from '@/lib/gateway/local-events';
+import { logger } from '@/lib/logger';
 
 /**
  * HIGH-015: Reconnection configuration
@@ -186,7 +187,7 @@ export function useKDSRealtime({
     onOrderDelete,
     onLocalSignal,
     enabled = true,
-}: UseKDSRealtimeOptions) {
+}: UseKDSRealtimeOptions): { isConnected: boolean; reconnectionStatus: 'idle' | 'reconnecting' | 'failed' } {
     const channelRef = useRef<RealtimeChannel | null>(null);
     const supabase = useMemo(() => createClient(), []);
     const mountedRef = useRef(false);
@@ -285,11 +286,11 @@ export function useKDSRealtime({
             // MED-003: Check for duplicate messages
             const recordId = (payload.new?.id || payload.old?.id) as string;
             if (recordId && deduplicatorRef.current) {
-                const messageId = generateMessageId(payload.table, payload.eventType, recordId);
-                if (deduplicatorRef.current.isDuplicate(messageId)) {
-                    console.warn(`[KDS Realtime] Skipping duplicate message: ${messageId}`);
-                    return;
-                }
+const messageId = generateMessageId(payload.table, payload.eventType, recordId);
+                 if (deduplicatorRef.current.isDuplicate(messageId)) {
+                     logger.warn(`[KDS Realtime] Skipping duplicate message: ${messageId}`);
+                     return;
+                 }
             }
 
             // For DELETE events, payload.new is empty; use payload.old for restaurant_id check
@@ -338,11 +339,11 @@ export function useKDSRealtime({
             // MED-003: Check for duplicate messages
             const recordId = (payload.new?.id || payload.old?.id) as string;
             if (recordId && deduplicatorRef.current) {
-                const messageId = generateMessageId(payload.table, payload.eventType, recordId);
-                if (deduplicatorRef.current.isDuplicate(messageId)) {
-                    console.warn(`[KDS Realtime] Skipping duplicate message: ${messageId}`);
-                    return;
-                }
+const messageId = generateMessageId(payload.table, payload.eventType, recordId);
+                 if (deduplicatorRef.current.isDuplicate(messageId)) {
+                     logger.warn(`[KDS Realtime] Skipping duplicate message: ${messageId}`);
+                     return;
+                 }
             }
 
             // For DELETE events, payload.new is empty; use payload.old for restaurant_id check
@@ -424,7 +425,7 @@ export function useKDSRealtime({
                 }
             )
             .subscribe(status => {
-                console.warn(`[KDS Realtime] Subscription status: ${status}`);
+                logger.warn(`[KDS Realtime] Subscription status: ${status}`);
                 if (!mountedRef.current) return;
 
                 if (status === 'SUBSCRIBED') {
@@ -452,18 +453,18 @@ export function useKDSRealtime({
 
         const currentRetry = retryCountRef.current;
 
-        if (currentRetry >= RECONNECT_CONFIG.maxRetries) {
-            console.error(
-                `[KDS Realtime] Max reconnection attempts (${RECONNECT_CONFIG.maxRetries}) reached`
-            );
-            setReconnectionStatus('failed');
-            return;
-        }
+if (currentRetry >= RECONNECT_CONFIG.maxRetries) {
+                logger.error(
+                    `[KDS Realtime] Max reconnection attempts (${RECONNECT_CONFIG.maxRetries}) reached`
+                );
+                setReconnectionStatus('failed');
+                return;
+            }
 
-        const delay = calculateReconnectDelay(currentRetry);
-        console.warn(
-            `[KDS Realtime] Scheduling reconnect attempt ${currentRetry + 1}/${RECONNECT_CONFIG.maxRetries} in ${Math.round(delay)}ms`
-        );
+            const delay = calculateReconnectDelay(currentRetry);
+            logger.warn(
+                `[KDS Realtime] Scheduling reconnect attempt ${currentRetry + 1}/${RECONNECT_CONFIG.maxRetries} in ${Math.round(delay)}ms`
+            );
 
         setReconnectionStatus('reconnecting');
 
@@ -586,7 +587,7 @@ export function useDriverStatusRealtime({
     restaurantId,
     onDriverStatusUpdate,
     enabled = true,
-}: UseDriverStatusRealtimeOptions) {
+}: UseDriverStatusRealtimeOptions): void {
     const supabase = createClient();
     const mountedRef = useRef(false);
 

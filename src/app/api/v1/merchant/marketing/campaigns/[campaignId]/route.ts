@@ -17,7 +17,7 @@ const UpdateCampaignSchema = z.object({
 export async function PATCH(
     request: Request,
     { params }: { params: Promise<{ campaignId: string }> }
-) {
+): Promise<Response> {
     const { campaignId } = await params;
 
     const auth = await getAuthenticatedUser();
@@ -79,7 +79,7 @@ export async function PATCH(
 export async function DELETE(
     request: Request,
     { params }: { params: Promise<{ campaignId: string }> }
-) {
+): Promise<Response> {
     const { campaignId } = await params;
 
     const auth = await getAuthenticatedUser();

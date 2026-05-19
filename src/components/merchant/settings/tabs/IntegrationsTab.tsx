@@ -129,8 +129,9 @@ const STATUS_CONFIG: Record<IntegrationStatus, { label: string; dot: string; bad
         badge: 'bg-gray-50 text-gray-400 border-gray-100',
     },
 };
-function DocChecklistButton(): React.JSX.Element | void {
-    const handleDownload = (): React.JSX.Element => {
+
+function DocChecklistButton({ docs }: { docs: string[] }): React.JSX.Element | null {
+    const handleDownload = (): void => {
         const content = `Integrations Document Checklist\nGenerated: ${new Date().toLocaleDateString('en-ET')}\n\n${docs.map((d, i) => `${i + 1}. ☐ ${d}`).join('\n')}`;
         const blob = new Blob([content], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
@@ -156,7 +157,7 @@ function IntegrationCard({
 }: {
     integration: Integration;
     onToggle: (id: string) => void;
-}) {
+}): React.JSX.Element {
     const { label, dot, badge } = STATUS_CONFIG[integration.status];
     const isConnected = integration.status === 'connected';
 
@@ -281,7 +282,8 @@ export function IntegrationsTab(): React.JSX.Element {
         };
         fetchErcaStatus();
     }, []);
-function toggleIntegration(): React.JSX.Element | void {
+
+    const toggleIntegration = (id: string): void => {
         setIntegrations(prev =>
             prev.map(i => {
                 if (i.id !== id) return i;
@@ -292,7 +294,7 @@ function toggleIntegration(): React.JSX.Element | void {
                 };
             })
         );
-    }
+    };
 
     const connectedCount = integrations.filter(i => {
         if (i.id === 'erca') return ercaStatus === 'connected';

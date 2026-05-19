@@ -43,7 +43,7 @@ function canTransition(current: string, next: string): boolean {
 export async function PATCH(
     request: NextRequest,
     context: { params: Promise<{ orderId: string }> }
-) {
+): Promise<Response> {
     // Apply rate limiting for order status updates (mutation endpoint)
     const rateLimitResponse = await redisRateLimiters.mutation(request);
     if (rateLimitResponse) {
@@ -137,7 +137,7 @@ export async function PATCH(
             return apiError('Forbidden', 403, 'FORBIDDEN');
         }
 
-        if (!canTransition(order.status, parsed.data.status)) {
+        if (!canTransition(order.status ?? '', parsed.data.status)) {
             responseStatus = 409;
             return apiError(
                 `Invalid status transition from "${order.status}" to "${parsed.data.status}"`,
@@ -188,7 +188,7 @@ export async function PATCH(
         responseStatus = 200;
         const response = apiSuccess(updatedOrder);
 
-        const smsPromise = (async (): React.JSX.Element => {
+        const smsPromise = (async (): Promise<void> => {
             if (!updatedOrder?.customer_phone) return;
             const { data: restaurantSettings } = await supabase
                 .from('restaurants')

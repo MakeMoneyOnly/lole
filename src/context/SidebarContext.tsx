@@ -21,6 +21,6 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
     return <SidebarContext.Provider value={{ isCollapsed }}>{children}</SidebarContext.Provider>;
 }
 
-export function useSidebar(): React.JSX.Element {
+export function useSidebar(): SidebarContextValue {
     return useContext(SidebarContext);
 }

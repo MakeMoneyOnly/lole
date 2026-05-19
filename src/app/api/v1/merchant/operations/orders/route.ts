@@ -169,7 +169,7 @@ const CreateOrderRequestSchema = CreateOrderSchema.omit({
         .optional(),
 });
 
-async function resolveRestaurantIdForUser(userId: string) {
+async function resolveRestaurantIdForUser(userId: string): Promise<{ restaurantId: string | null; error?: string }> {
     const supabase = await createClient();
     const { data: staffEntry, error: staffError } = await supabase
         .from('restaurant_staff')
@@ -181,7 +181,7 @@ async function resolveRestaurantIdForUser(userId: string) {
         .maybeSingle();
 
     if (staffError) {
-        return { error: staffError.message };
+        return { restaurantId: null, error: staffError.message };
     }
 
     if (staffEntry?.restaurant_id) {
@@ -195,7 +195,7 @@ async function resolveRestaurantIdForUser(userId: string) {
         .maybeSingle();
 
     if (agencyError) {
-        return { error: agencyError.message };
+        return { restaurantId: null, error: agencyError.message };
     }
 
     return { restaurantId: agencyUser?.restaurant_ids?.[0] ?? null };

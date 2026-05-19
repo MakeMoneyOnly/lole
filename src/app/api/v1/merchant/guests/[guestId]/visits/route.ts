@@ -12,7 +12,7 @@ const GuestVisitsQuerySchema = z.object({
 export async function GET(
     request: Request,
     routeContext: { params: Promise<{ guestId: string }> }
-) {
+): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;

@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle, RefreshCw, Utensils } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 /**
  * Error Boundary for Guest Routes
@@ -19,7 +20,7 @@ export default function GuestError({
     const router = useRouter();
 
     useEffect(() => {
-        console.error('[Guest Error Boundary]:', error);
+        logger.error('[Guest Error Boundary]', error);
     }, [error]);
 
     return (

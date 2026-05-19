@@ -49,8 +49,6 @@ export function gregorianToEthiopianApprox(date: Date): {
     monthEn: string;
     day: number;
 } {
-    // Ethiopian new year is approximately September 11 (Gregorian)
-    const ethYear = date.getFullYear() - 8;
     const ethNewYear = new Date(date.getFullYear(), 8, 11); // Sept 11
 
     let daysSinceNewYear: number;

@@ -93,7 +93,7 @@ const ExternalOrderSchema = z
 
 type ValidatedExternalOrder = z.infer<typeof ExternalOrderSchema>;
 
-function createDeliveryAggregatorService(): React.JSX.Element {
+function createDeliveryAggregatorService(): AggregatorService {
     return new AggregatorService({
         publishLocalEvent: async event => {
             const gateway = getStoreGatewayService();

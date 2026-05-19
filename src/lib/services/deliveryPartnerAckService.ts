@@ -8,6 +8,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/api/audit';
+import { logger } from '@/lib/logger';
 
 // Partner API configurations for sending acknowledgments
 const PARTNER_ACK_CONFIGS = {
@@ -176,7 +177,7 @@ export async function autoAcknowledgeOrder(
             estimatedPrepTime,
         };
     } catch (error) {
-        console.error('Auto-acknowledge failed:', error);
+        logger.error('Auto-acknowledge failed:', error);
 
         return {
             success: false,
@@ -261,7 +262,7 @@ export async function manualAcknowledgeOrder(
             estimatedPrepTime,
         };
     } catch (error) {
-        console.error('Manual acknowledge failed:', error);
+        logger.error('Manual acknowledge failed:', error);
 
         return {
             success: false,
@@ -341,7 +342,7 @@ export async function rejectOrder(
 
         return { success: true };
     } catch (error) {
-        console.error('Order rejection failed:', error);
+        logger.error('Order rejection failed:', error);
 
         return {
             success: false,

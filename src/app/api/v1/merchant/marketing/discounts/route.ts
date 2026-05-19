@@ -20,7 +20,7 @@ const CreateDiscountSchema = z.object({
     is_active: z.boolean().optional().default(true),
 });
 
-export async function GET(request: Request): Promise<Response> {
+export async function GET(_request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;

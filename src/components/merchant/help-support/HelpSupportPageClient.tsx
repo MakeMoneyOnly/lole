@@ -3,6 +3,7 @@
 import React, { useCallback, useState } from 'react';
 import { BookOpen, Loader2, Search, Send } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { logger } from '@/lib/logger';
 
 interface SupportArticle {
     id: string;
@@ -29,7 +30,7 @@ interface HelpSupportPageClientProps {
 export function HelpSupportPageClient({
     initialArticles,
     initialTickets,
-}: HelpSupportPageClientProps) {
+}: HelpSupportPageClientProps): React.ReactElement {
     const [query, setQuery] = useState('');
     const [articles, setArticles] = useState<SupportArticle[]>(initialArticles);
     const [articlesLoading, setArticlesLoading] = useState(false);
@@ -53,7 +54,7 @@ export function HelpSupportPageClient({
             }
             setArticles((payload?.data?.articles ?? []) as SupportArticle[]);
         } catch (error) {
-            console.error(error);
+            logger.error('Failed to load articles', error);
             toast.error(error instanceof Error ? error.message : 'Failed to load articles.');
         } finally {
             setArticlesLoading(false);
@@ -72,7 +73,7 @@ export function HelpSupportPageClient({
             }
             setTickets((payload?.data?.tickets ?? []) as SupportTicket[]);
         } catch (error) {
-            console.error(error);
+            logger.error('Failed to load support tickets', error);
             toast.error(error instanceof Error ? error.message : 'Failed to load tickets.');
         } finally {
             setTicketsLoading(false);

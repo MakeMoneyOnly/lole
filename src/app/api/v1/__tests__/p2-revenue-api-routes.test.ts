@@ -25,13 +25,13 @@ vi.mock('@/lib/api/authz', () => ({
 const getAuthenticatedUserMock = vi.mocked(getAuthenticatedUser);
 const getAuthorizedRestaurantContextMock = vi.mocked(getAuthorizedRestaurantContext);
 
-function setAuthUnauthorized(): React.JSX.Element {
+function setAuthUnauthorized(): void {
     getAuthenticatedUserMock.mockResolvedValue({
         ok: false,
         response: apiError('Unauthorized', 401, 'UNAUTHORIZED'),
     } as any);
 }
-function setAuthAndContextOk(): React.JSX.Element | void {
+function setAuthAndContextOk(): void {
     getAuthenticatedUserMock.mockResolvedValue({
         ok: true,
         user: { id: 'user-1' },
@@ -40,8 +40,20 @@ function setAuthAndContextOk(): React.JSX.Element | void {
     getAuthorizedRestaurantContextMock.mockResolvedValue({
         ok: true,
         restaurantId: 'resto-1',
-        supabase,
+        supabase: {},
     } as any);
+}
+
+function _makeSupabase(): any {
+    return {
+        from: vi.fn(() => ({
+            select: vi.fn(() => ({
+                eq: vi.fn(() => ({
+                    single: vi.fn().mockResolvedValue({ data: null, error: null }),
+                })),
+            })),
+        })),
+    };
 }
 
 describe('P2 revenue API routes', () => {

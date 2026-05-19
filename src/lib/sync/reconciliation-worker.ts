@@ -6,7 +6,6 @@
  */
 
 import { getPowerSync } from './powersync-config';
-import { logger } from '@/lib/logger';
 
 export interface ReconciliationEntry {
     id: string;

@@ -69,7 +69,7 @@ function normalizePayoutStatus(params: {
     return 'verification_required';
 }
 
-export async function POST(request: NextRequest): Promise<Response> {
+export async function POST(_request: NextRequest): Promise<Response> {
     const supabase = await createClient();
 
     const {
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest): Promise<Response> {
 
     let body: OnboardingPayload;
     try {
-        body = (await req.json()) as OnboardingPayload;
+        body = (await _request.json()) as OnboardingPayload;
     } catch {
         return apiError('Invalid request body', 400);
     }
@@ -273,24 +273,22 @@ export async function POST(request: NextRequest): Promise<Response> {
             payoutStatus = normalizePayoutStatus({
                 subaccountId,
                 providerStatus: subaccount.status,
-                providerMessage: subaccount.message,
+                providerMessage: subaccount.message ?? undefined,
             });
             payoutError =
                 payoutStatus === 'active'
                     ? null
                     : subaccount.message || 'Payout destination is waiting for Chapa review.';
-        } catch (error) {
-            const message =
-                error instanceof Error
-                    ? error.message
-                    : 'Unknown Chapa subaccount provisioning error';
+} catch (error) {
+             const errorMessage = error instanceof Error ? error.message : null;
+             const message = errorMessage || 'Unknown Chapa subaccount provisioning error';
 
-            payoutStatus = normalizePayoutStatus({
-                subaccountId: activeSubaccountId,
-                providerMessage: message,
-            });
-            payoutError = message;
-        }
+payoutStatus = normalizePayoutStatus({
+            subaccountId: activeSubaccountId ?? undefined,
+            providerMessage: message,
+        });
+             payoutError = message;
+         }
     }
 
     const { error: finalizeError } = await supabase

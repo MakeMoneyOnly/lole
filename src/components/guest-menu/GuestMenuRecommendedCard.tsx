@@ -2,51 +2,110 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { Heart, Plus } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { MenuItem } from '@/app/(guest)/[slug]/menu-client';
+import { formatCurrency, cleanItemTitle } from '@/lib/utils/monetary';
 
-export const GuestMenuRecommendedCard: React.FC<{
+interface GuestMenuRecommendedCardProps {
     item?: MenuItem;
-}> = ({ item }) => {
-    // We'll use a placeholder structure for the design clone.
-    return (
-        <div className="relative flex aspect-[4/3] w-full flex-col justify-between overflow-hidden rounded-[32px] bg-[#C5E983] p-5">
-            {/* Top Badges */}
-            <div className="z-10 flex items-start justify-between">
-                <div className="rounded-full border border-white/20 bg-white/40 px-4 py-2 backdrop-blur-md">
-                    <span className="text-[13px] font-medium text-[#1A1A1A]">20% Off</span>
-                </div>
-                <button className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/40 backdrop-blur-md transition-transform active:scale-95">
-                    <Heart className="h-[18px] w-[18px] text-[#DDF853]" strokeWidth={1.5} />
-                </button>
-            </div>
+    onSelect?: (item: MenuItem) => void;
+    onAddToCart?: (item: MenuItem) => void;
+}
 
-            {/* Burger Image (absolute centered) */}
-            <div className="absolute inset-0 -mt-4 flex scale-110 items-center justify-center">
+export const GuestMenuRecommendedCard: React.FC<GuestMenuRecommendedCardProps> = ({
+    item,
+    onSelect,
+    onAddToCart
+}) => {
+    if (!item) return null;
+
+    // Use category name proper-cased or fallback to Chef's choice
+    const rawCategory = item.categories?.name || 'Lunch Special';
+    const categoryTag = rawCategory
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+    
+    // Format the price in ETB (hiding decimals according to standard requirements)
+    const formattedPrice = formatCurrency(item.price);
+    const cleanedTitle = cleanItemTitle(item.title);
+
+    return (
+        <div 
+            onClick={() => onSelect?.(item)}
+            className="group relative flex w-full h-full flex-col justify-between overflow-hidden rounded-[32px] bg-neutral-900 shadow-2xl cursor-pointer transition-all duration-500 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] active:scale-[0.99]"
+        >
+            {/* Background Full-bleed Food Image (based on Image 2 landing page style) */}
+            <div className="absolute inset-0 h-full w-full">
                 <Image
                     src={
-                        item?.imageUrl ||
+                        item.imageUrl ||
                         'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600&auto=format&fit=crop'
                     }
-                    alt="Burger"
-                    width={400}
-                    height={400}
-                    className="object-contain"
+                    alt={cleanedTitle}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 600px"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    priority
+                    unoptimized={true}
                 />
             </div>
 
-            {/* Bottom Glassy Details */}
-            <div className="relative z-10 flex items-center justify-between rounded-[24px] border border-white/30 bg-white/40 p-2 pl-4 backdrop-blur-md">
-                <div className="flex flex-col justify-center">
-                    <h3 className="text-[15px] leading-tight font-semibold tracking-tight text-[#1A1A1A]">
-                        {item?.title || 'Black Lavel Burger'}
-                    </h3>
-                    <span className="text-[13px] font-medium text-[#1A1A1A]/60">650 Kcal</span>
-                </div>
-                <button className="flex h-11 items-center gap-1.5 rounded-[18px] bg-white px-4 shadow-sm transition-transform active:scale-95">
-                    <Plus className="h-4 w-4 text-[#1A1A1A]" strokeWidth={2} />
-                    <span className="text-[14px] font-medium text-[#1A1A1A]">Add</span>
+            {/* Top Gradient Overlay (lighter to let photography shine) */}
+            <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-black/40 to-transparent opacity-90 transition-opacity duration-300" />
+
+            {/* Top Row: Category Tag & Button */}
+            <div className="relative z-10 flex items-start justify-between p-5">
+                <span className="rounded-full bg-black/40 backdrop-blur-md px-3 py-1.5 text-[12px] font-bold text-[#DDF853] tracking-[-0.04em]">
+                    {categoryTag}
+                </span>
+
+                {/* Top-Right Action Button */}
+                <button 
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (onAddToCart) {
+                            onAddToCart(item);
+                        } else {
+                            onSelect?.(item);
+                        }
+                    }}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-[#DDF853] text-[#1A1C1E] transition-all duration-300 hover:scale-110 active:scale-95 shadow-md"
+                >
+                    <ArrowUpRight className="h-5 w-5 stroke-[2.5]" />
                 </button>
+            </div>
+
+            {/* Bottom Row: Text Content with Faded Blur Overlay (Image 2 landing page signature effect) */}
+            <div className="absolute right-0 bottom-0 left-0 transition-all duration-300">
+                {/* 1. Dark Gradient backing - neutralizes raw color bleed from underlying photo to prevent muddy glow */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-95" />
+                
+                {/* 2. Premium frosted glass filter overlay with mask fading */}
+                <div 
+                    className="absolute inset-0 backdrop-blur-md bg-black/10" 
+                    style={{
+                        WebkitMaskImage: 'linear-gradient(to top, rgba(0, 0, 0, 1) 40%, rgba(0, 0, 0, 0) 100%)',
+                        maskImage: 'linear-gradient(to top, rgba(0, 0, 0, 1) 40%, rgba(0, 0, 0, 0) 100%)'
+                    }}
+                />
+                
+                {/* Content Container */}
+                <div className="relative z-10 flex flex-col p-5 pt-12">
+                    <div className="flex items-end justify-between gap-2">
+                        <div className="flex flex-col">
+                            <h3 className="text-[20px] font-bold tracking-[-0.04em] text-white leading-tight line-clamp-1">
+                                {cleanedTitle}
+                            </h3>
+                            <p className="text-[13px] font-medium text-white/80 tracking-[-0.04em] mt-0.5 line-clamp-1">
+                                {item.description || `${item.preparationTime || 15} mins • Freshly Cooked`}
+                            </p>
+                        </div>
+                        <span className="text-[20px] font-bold text-[#DDF853] tracking-[-0.04em] leading-tight shrink-0">
+                            {formattedPrice}
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     );

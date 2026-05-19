@@ -8,6 +8,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { writeAuditLog } from '@/lib/api/audit';
 import type { Json } from '@/types/database';
+import { logger } from '@/lib/logger';
 
 // Logistics partners configuration for Addis Ababa
 const LOGISTICS_PARTNERS = {
@@ -238,7 +239,7 @@ export async function dispatchDriver(request: DispatchRequest): Promise<Dispatch
             trackingUrl: data.tracking_url,
         };
     } catch (error) {
-        console.error('Driver dispatch failed:', error);
+        logger.error('Driver dispatch failed:', error);
         return {
             success: false,
             error: error instanceof Error ? error.message : 'Dispatch failed',
@@ -293,7 +294,7 @@ export async function cancelDispatch(
             }),
         });
     } catch (error) {
-        console.error('Failed to cancel with partner:', error);
+        logger.error('Failed to cancel with partner:', error);
         return { success: false, error: 'Failed to cancel dispatch' };
     }
 

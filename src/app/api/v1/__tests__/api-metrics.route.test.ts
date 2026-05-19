@@ -11,10 +11,10 @@ vi.mock('@/lib/api/authz', () => ({
 const getAuthenticatedUserMock = vi.mocked(getAuthenticatedUser);
 const getAuthorizedRestaurantContextMock = vi.mocked(getAuthorizedRestaurantContext);
 
-function unauthorizedResponse(): React.JSX.Element {
+function unauthorizedResponse() {
     return apiError('Unauthorized', 401, 'UNAUTHORIZED');
 }
-function buildAuditLogsQuery(): React.JSX.Element | void {
+function buildAuditLogsQuery(rows?: any[]): any {
     const chain: any = {
         select: vi.fn(() => chain),
         eq: vi.fn(() => chain),

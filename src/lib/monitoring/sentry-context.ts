@@ -9,6 +9,7 @@
  */
 
 import * as Sentry from '@sentry/nextjs';
+import { logger } from '@/lib/logger';
 
 // Storage key for restaurant context in localStorage (client-side)
 const RESTAURANT_CONTEXT_KEY = 'lole_restaurant_context';
@@ -53,7 +54,7 @@ export function setRestaurantContext(context: RestaurantContext): void {
             localStorage.setItem(RESTAURANT_CONTEXT_KEY, JSON.stringify(context));
         } catch {
             // localStorage might be unavailable in private mode
-            console.warn('Failed to persist restaurant context to localStorage');
+            logger.warn('Failed to persist restaurant context to localStorage');
         }
     }
 }

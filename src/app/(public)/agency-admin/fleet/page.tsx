@@ -13,7 +13,7 @@ function readRecord(value: unknown): Record<string, unknown> {
     return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};
 }
 
-export default async function AgencyFleetPage(): Promise<React.ReactElement> {
+export default async function AgencyFleetPage(): Promise<React.ReactElement | null> {
     const auth = await requireAdminOrManager();
     const access = await getAgencyFleetAccess(auth.user.id);
 
@@ -44,13 +44,13 @@ export default async function AgencyFleetPage(): Promise<React.ReactElement> {
     ]);
 
     const restaurantNames = new Map(
-        (restaurants ?? []).map(restaurant => [
+        (restaurants ?? []).map((restaurant: { id: string; name?: string }) => [
             String(restaurant.id),
             String(restaurant.name ?? 'Restaurant'),
         ])
     );
 
-    const fleetDevices: FleetDeviceRecord[] = (devices ?? []).map(device => {
+    const fleetDevices: FleetDeviceRecord[] = (devices ?? []).map((device: Record<string, unknown>) => {
         const metadata = readRecord(device.metadata);
         const management = readRecord(metadata.management);
 

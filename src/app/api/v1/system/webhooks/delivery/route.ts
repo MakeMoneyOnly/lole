@@ -81,7 +81,7 @@ const PROVIDER_CONFIGS = {
 
 type Provider = keyof typeof PROVIDER_CONFIGS;
 
-function createDeliveryAggregatorService(): React.JSX.Element {
+function createDeliveryAggregatorService(): AggregatorService {
     return new AggregatorService({
         publishLocalEvent: async event => {
             const gateway = getStoreGatewayService();

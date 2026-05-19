@@ -28,7 +28,23 @@ export type HardwareDevice = {
     created_at: string;
 };
 
-export function useDevices(initialData?: HardwareDevice[]) {
+export function useDevices(initialData?: HardwareDevice[]): {
+    devices: HardwareDevice[];
+    loading: boolean;
+    error: string | null;
+    fetchDevices: () => Promise<void>;
+    handleProvisionDevice: (payload: {
+        name: string;
+        device_type?: HardwareDeviceType;
+        device_profile?: DeviceProfile;
+        location_id?: string;
+        assigned_zones?: string[];
+        metadata?: HardwareDeviceMetadata;
+    }) => Promise<HardwareDevice | null>;
+    handleDeleteDevice: (deviceId: string) => Promise<boolean>;
+    handleRotateDeviceIdentity: (deviceId: string) => Promise<HardwareDevice | null>;
+    handleRevokeDeviceIdentity: (deviceId: string) => Promise<HardwareDevice | null>;
+} {
     const [devices, setDevices] = useState<HardwareDevice[]>(initialData ?? []);
     const [loading, setLoading] = useState(!initialData);
     const [error, setError] = useState<string | null>(null);
@@ -77,7 +93,7 @@ export function useDevices(initialData?: HardwareDevice[]) {
         location_id?: string;
         assigned_zones?: string[];
         metadata?: HardwareDeviceMetadata;
-    }): Promise<void> => {
+    }): Promise<HardwareDevice | null> => {
         try {
             const response = await fetch('/api/v1/merchant/devices/provision', {
                 method: 'POST',

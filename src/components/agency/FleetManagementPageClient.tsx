@@ -33,13 +33,13 @@ export interface FleetActionRecord {
     requestedAt: string | null;
     providerJobId: string | null;
 }
-function formatTime(): React.JSX.Element | void {
-    if (!value) return 'Not reported yet';
+function formatTime(value: string | null | undefined): React.JSX.Element | null {
+    if (!value) return null;
 
-    return new Intl.DateTimeFormat('en-US', {
+    return <>{new Intl.DateTimeFormat('en-US', {
         dateStyle: 'medium',
         timeStyle: 'short',
-    }).format(new Date(value));
+    }).format(new Date(value))}</>;
 }
 
 export function FleetManagementPageClient(args: {

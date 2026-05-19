@@ -160,7 +160,7 @@ export async function POST(request:  NextRequest): Promise<Response> {
 }
 
 // Only allow POST requests
-export async function GET(request: Request) {
+export async function GET(_request: Request): Promise<Response> {
     return apiError('Method not allowed', 405, 'METHOD_NOT_ALLOWED');
 }
 

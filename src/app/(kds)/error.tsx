@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle, RefreshCw, ChefHat } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 /**
  * Error Boundary for KDS (Kitchen Display System) Routes
@@ -19,7 +20,7 @@ export default function KDSError({
     const router = useRouter();
 
     useEffect(() => {
-        console.error('[KDS Error Boundary]:', error);
+        logger.error('[KDS Error Boundary]:', error);
     }, [error]);
 
     return (

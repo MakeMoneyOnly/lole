@@ -18,6 +18,7 @@
 
 import { useEffect, useCallback, useMemo, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { logger } from '@/lib/logger';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 /**
@@ -159,7 +160,11 @@ export function useSplitRealtimeChannels({
     onTableChange,
     onKDSItemChange,
     enabled = true,
-}: UseSplitRealtimeChannelsOptions) {
+}: UseSplitRealtimeChannelsOptions): {
+    connectionStatus: ChannelConnectionStatus;
+    isAllConnected: boolean;
+    hasError: boolean;
+} {
     const supabase = useMemo(() => createClient(), []);
     const mountedRef = useRef(false);
 
@@ -245,9 +250,9 @@ export function useSplitRealtimeChannels({
                         payload => {
                             if (!mountedRef.current) return;
                             const typedPayload = payload as unknown as RealtimePayload;
-                            if (checkDuplicate(typedPayload)) {
-                                console.warn(`[Realtime] Skipping duplicate orders message`);
-                                return;
+if (checkDuplicate(typedPayload)) {
+                                 logger.warn(`[Realtime] Skipping duplicate orders message`);
+                                 return;
                             }
                             onOrderChange?.(typedPayload);
                         }
@@ -266,11 +271,11 @@ export function useSplitRealtimeChannels({
                         payload => {
                             if (!mountedRef.current) return;
                             const typedPayload = payload as unknown as RealtimePayload;
-                            if (checkDuplicate(typedPayload)) {
-                                console.warn(
-                                    `[Realtime] Skipping duplicate external_orders message`
-                                );
-                                return;
+if (checkDuplicate(typedPayload)) {
+                                 logger.warn(
+                                     `[Realtime] Skipping duplicate external_orders message`
+                                 );
+                                 return;
                             }
                             onExternalOrderChange?.(typedPayload);
                         }
@@ -289,9 +294,9 @@ export function useSplitRealtimeChannels({
                         payload => {
                             if (!mountedRef.current) return;
                             const typedPayload = payload as unknown as RealtimePayload;
-                            if (checkDuplicate(typedPayload)) {
-                                console.warn(`[Realtime] Skipping duplicate tables message`);
-                                return;
+if (checkDuplicate(typedPayload)) {
+                                 logger.warn(`[Realtime] Skipping duplicate tables message`);
+                                 return;
                             }
                             onTableChange?.(typedPayload);
                         }
@@ -310,24 +315,24 @@ export function useSplitRealtimeChannels({
                         payload => {
                             if (!mountedRef.current) return;
                             const typedPayload = payload as unknown as RealtimePayload;
-                            if (checkDuplicate(typedPayload)) {
-                                console.warn(`[Realtime] Skipping duplicate kds_items message`);
-                                return;
+if (checkDuplicate(typedPayload)) {
+                                 logger.warn(`[Realtime] Skipping duplicate kds_items message`);
+                                 return;
                             }
                             onKDSItemChange?.(typedPayload);
                         }
                     );
                     break;
 
-                default:
-                    console.error(`[Realtime] Unknown channel type: ${channelType}`);
-                    return;
+default:
+                     logger.error(`[Realtime] Unknown channel type: ${channelType}`);
+                     return;
             }
 
-            // Subscribe with status handling
-            channel.subscribe(status => {
-                console.warn(`[Realtime] ${channelType} subscription status: ${status}`);
-                if (!mountedRef.current) return;
+// Subscribe with status handling
+             channel.subscribe(status => {
+                 logger.warn(`[Realtime] ${channelType} subscription status: ${status}`);
+                 if (!mountedRef.current) return;
 
                 if (status === 'SUBSCRIBED') {
                     updateStatus(channelType, 'connected');
@@ -365,16 +370,16 @@ export function useSplitRealtimeChannels({
 
             const currentRetry = retryCountRef.current.get(channelType) ?? 0;
 
-            if (currentRetry >= RECONNECT_CONFIG.maxRetries) {
-                console.error(`[Realtime] ${channelType}: Max reconnection attempts reached`);
-                updateStatus(channelType, 'error');
-                return;
+if (currentRetry >= RECONNECT_CONFIG.maxRetries) {
+                     logger.error(`[Realtime] ${channelType}: Max reconnection attempts reached`);
+                     updateStatus(channelType, 'error');
+                     return;
             }
 
-            const delay = calculateReconnectDelay(currentRetry);
-            console.warn(
-                `[Realtime] ${channelType}: Scheduling reconnect attempt ${currentRetry + 1} in ${Math.round(delay)}ms`
-            );
+const delay = calculateReconnectDelay(currentRetry);
+                     logger.warn(
+                         `[Realtime] ${channelType}: Scheduling reconnect attempt ${currentRetry + 1} in ${Math.round(delay)}ms`
+                     );
 
             const timeout = setTimeout(() => {
                 if (!mountedRef.current) return;
@@ -410,6 +415,10 @@ export function useSplitRealtimeChannels({
 
         mountedRef.current = true;
 
+        // Copy ref values at setup time for cleanup
+        const timeoutsAtSetup = reconnectTimeoutsRef.current;
+        const channelsAtSetup = channelsRef.current;
+
         // Setup each requested channel
         for (const channelType of channels) {
             retryCountRef.current.set(channelType, 0);
@@ -420,16 +429,16 @@ export function useSplitRealtimeChannels({
             mountedRef.current = false;
 
             // Clear all reconnect timeouts
-            for (const [, timeout] of reconnectTimeoutsRef.current) {
+            for (const timeout of timeoutsAtSetup.values()) {
                 clearTimeout(timeout);
             }
-            reconnectTimeoutsRef.current.clear();
+            timeoutsAtSetup.clear();
 
             // Unsubscribe all channels
-            for (const [, channel] of channelsRef.current) {
+            for (const channel of channelsAtSetup.values()) {
                 channel.unsubscribe();
             }
-            channelsRef.current.clear();
+            channelsAtSetup.clear();
 
             // Reset status
             setConnectionStatus({
@@ -469,7 +478,11 @@ export function useOrdersRealtime(options: {
     restaurantId: string;
     onOrderChange?: (payload: RealtimePayload) => void;
     enabled?: boolean;
-}) {
+}): {
+    connectionStatus: ChannelConnectionStatus;
+    isAllConnected: boolean;
+    hasError: boolean;
+} {
     return useSplitRealtimeChannels({
         restaurantId: options.restaurantId,
         channels: ['orders'],
@@ -487,7 +500,11 @@ export function useKDSChannels(options: {
     onExternalOrderChange?: (payload: RealtimePayload) => void;
     onKDSItemChange?: (payload: RealtimePayload) => void;
     enabled?: boolean;
-}) {
+}): {
+    connectionStatus: ChannelConnectionStatus;
+    isAllConnected: boolean;
+    hasError: boolean;
+} {
     return useSplitRealtimeChannels({
         restaurantId: options.restaurantId,
         channels: ['orders', 'external_orders', 'kds_items'],

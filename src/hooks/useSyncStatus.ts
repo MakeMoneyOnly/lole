@@ -8,6 +8,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getSyncQueueStatus, getSyncWorker } from '@/lib/sync';
 import { getUnresolvedConflictsCount } from '@/lib/sync/conflict-resolution';
+import { logger } from '@/lib/logger';
 
 /**
  * Sync status for UI display
@@ -137,7 +138,7 @@ export function useSyncStatus(options?: {
                 lastSyncAt: workerStatus.lastSyncAt,
             });
         } catch (error) {
-            console.error('[useSyncStatus] Failed to refresh status:', error);
+            logger.error('[useSyncStatus] Failed to refresh status:', error);
             setStatus(prev => ({
                 ...prev,
                 error: error instanceof Error ? error.message : 'Unknown error',
@@ -206,13 +207,13 @@ export function useSyncStatus(options?: {
 
     // Listen for online/offline events
     useEffect(() => {
-        const handleOnline = (): React.JSX.Element => {
+        const handleOnline = (): void => {
             setStatus(prev => ({ ...prev, isOnline: true }));
             // Trigger sync when coming back online
             triggerSync();
         };
 
-        const handleOffline = (): React.JSX.Element => {
+        const handleOffline = (): void => {
             setStatus(prev => ({ ...prev, isOnline: false }));
         };
 
@@ -254,12 +255,12 @@ export function useOnlineStatus(): {
         updateStatus();
         const intervalId = setInterval(updateStatus, 10000);
 
-        const handleOnline = (): React.JSX.Element => {
+        const handleOnline = (): void => {
             setIsOnline(true);
             updateStatus();
         };
 
-        const handleOffline = (): React.JSX.Element => {
+        const handleOffline = (): void => {
             setIsOnline(false);
         };
 

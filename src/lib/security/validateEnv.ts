@@ -5,6 +5,8 @@
  * if any critical configuration is missing.
  */
 
+import { logger } from '@/lib/logger';
+
 export interface EnvValidationResult {
     valid: boolean;
     missing: string[];
@@ -65,7 +67,7 @@ export function requireEnvVars(): void {
     if (process.env.NEXT_PHASE === 'phase-production-build') {
         const result = validateSecurityEnvVars();
         if (result.warnings.length > 0) {
-            console.warn('Build-time environment warnings:\n' + result.warnings.join('\n'));
+            logger.warn('Build-time environment warnings:\n' + result.warnings.join('\n'));
         }
         return;
     }
@@ -81,7 +83,7 @@ export function requireEnvVars(): void {
 
     // Log warnings in development
     if (process.env.NODE_ENV === 'development' && result.warnings.length > 0) {
-        console.warn('Environment warnings:\n' + result.warnings.join('\n'));
+        logger.warn('Environment warnings:\n' + result.warnings.join('\n'));
     }
 }
 

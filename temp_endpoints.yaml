@@ -1,0 +1,10 @@
+# Guest Portal Endpoints
+   /api/v1/guest-portal/context:
+     get:
+       tags: [Guest Portal]
+       summary: Get guest portal context
+       operationId: getGuestPortalContext
+       security: [bearerAuth: []]
+       responses:
+         200:
+           description: Guest portal context

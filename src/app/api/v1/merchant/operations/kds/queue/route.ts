@@ -17,7 +17,8 @@ import {
     getDeviceContext,
 } from '@/lib/api/authz';
 import { parseQuery } from '@/lib/api/validation';
-import type { TablesInsert } from '@/types/database';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database, TablesInsert } from '@/types/database';
 
 type StationFilter =
     | 'all'
@@ -254,14 +255,14 @@ function resolveReadyAutoArchiveMinutes(settings: unknown): number {
 }
 
 async function autoArchiveReadyOrders(params: {
-    db: Awaited<ReturnType<typeof getAuthorizedRestaurantContext>>['supabase'];
+    db: SupabaseClient<Database> | null;
     restaurantId: string;
     actorUserId: string | null;
     readyAutoArchiveMinutes: number;
-}) {
+}): Promise<number> {
     const { db, restaurantId, actorUserId, readyAutoArchiveMinutes } = params;
 
-    if (readyAutoArchiveMinutes <= 0) {
+    if (!db || readyAutoArchiveMinutes <= 0) {
         return 0;
     }
 
@@ -334,7 +335,7 @@ export async function GET(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
 
     let restaurantId: string | null = null;
-    let db: Awaited<ReturnType<typeof getAuthorizedRestaurantContext>>['supabase'] | null = null;
+    let db: SupabaseClient<Database> | null = null;
 
     if (auth.ok) {
         const context = await getAuthorizedRestaurantContext(auth.user.id, { phase: 'p1' });
@@ -396,7 +397,7 @@ export async function GET(request: Request): Promise<Response> {
         ? restaurantSettingsRows[0]
         : restaurantSettingsRows;
     const readyAutoArchiveMinutes = resolveReadyAutoArchiveMinutes(restaurantSettingsRow?.settings);
-    const autoArchivedCount = restaurantId
+    const autoArchivedCount = restaurantId && db
         ? await autoArchiveReadyOrders({
               db,
               restaurantId,
@@ -404,6 +405,10 @@ export async function GET(request: Request): Promise<Response> {
               readyAutoArchiveMinutes,
           })
         : 0;
+
+    if (!db) {
+        return apiError('Database not initialized', 500, 'DB_NOT_INITIALIZED');
+    }
 
     const { data: dineInOrders, error: dineInError } = await db
         .from('orders')

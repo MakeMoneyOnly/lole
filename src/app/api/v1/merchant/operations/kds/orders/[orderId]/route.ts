@@ -25,7 +25,7 @@ function canTransition(current: string | null, next: string): boolean {
 export async function PATCH(
     request: NextRequest,
     context: { params: Promise<{ orderId: string }> }
-) {
+): Promise<Response> {
     const log = logger.child('kds/orders');
     const { orderId } = await context.params;
 

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 export const LoginForm = (): React.JSX.Element => {
     const [email, setEmail] = useState('');
@@ -43,8 +44,7 @@ export const LoginForm = (): React.JSX.Element => {
                 .maybeSingle();
 
             if (roleError) {
-                console.error('Role fetch error:', roleError);
-                // Fallback or just go to dashboard and let the guard handle it
+                logger.error('Role fetch error:', roleError);
                 router.push('/merchant');
                 return;
             }

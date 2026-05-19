@@ -59,7 +59,7 @@ function RoleGuardWithAuth({ restaurantId, allowedRoles, children, fallback }: R
 
     if (!user || !role || !allowedRoles.includes(role)) {
         return (
-            fallback || (
+            <>{fallback}</> || (
                 <div className="flex h-screen w-full flex-col items-center justify-center bg-gray-50 p-6 text-center">
                     <h2 className="text-2xl font-bold text-gray-900">Access Denied</h2>
                     <p className="mt-2 text-gray-500">

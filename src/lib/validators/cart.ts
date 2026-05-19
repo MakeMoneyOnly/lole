@@ -8,6 +8,7 @@
  */
 
 import { z } from 'zod';
+import { logger } from '@/lib/logger';
 
 /**
  * Cart Item Schema - validates individual cart items
@@ -63,7 +64,7 @@ export function safeParseCartStorage(data: unknown): ValidatedCartStorage | null
         return result.data;
     }
 
-    console.warn('[CartStorage] Validation failed:', result.error.issues);
+    logger.warn('[CartStorage] Validation failed:', { error: result.error.issues });
     return null;
 }
 
@@ -79,7 +80,7 @@ export function safeParseOrderHistoryStorage(data: unknown): ValidatedOrderHisto
         return result.data;
     }
 
-    console.warn('[OrderHistoryStorage] Validation failed:', result.error.issues);
+    logger.warn('[OrderHistoryStorage] Validation failed:', { error: result.error.issues });
     return null;
 }
 
@@ -95,7 +96,7 @@ export function safeGetLocalStorage<T>(key: string): T | null {
         if (!stored) return null;
         return JSON.parse(stored) as T;
     } catch (e) {
-        console.warn(`[localStorage] Failed to parse ${key}:`, e);
+        logger.warn(`[localStorage] Failed to parse ${key}:`, { error: e });
         return null;
     }
 }
@@ -112,7 +113,7 @@ export function safeSetLocalStorage(key: string, value: unknown): boolean {
         localStorage.setItem(key, JSON.stringify(value));
         return true;
     } catch (e) {
-        console.warn(`[localStorage] Failed to save ${key}:`, e);
+        logger.warn(`[localStorage] Failed to save ${key}:`, { error: e });
         return false;
     }
 }

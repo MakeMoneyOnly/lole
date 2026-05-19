@@ -13,7 +13,7 @@ const PrintTicketBodySchema = z.object({
     reason: z.string().trim().min(2).max(120).optional().default('manual_print'),
 });
 
-export async function POST(request: Request, context: { params: Promise<{ orderId: string }> }) {
+export async function POST(request: Request, context: { params: Promise<{ orderId: string }> }): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;

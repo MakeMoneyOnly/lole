@@ -53,7 +53,7 @@ export async function POST(request:  Request): Promise<Response> {
         deviceProfile
     );
 
-    const insertEnterprise = (): React.JSX.Element =>
+    const insertEnterprise = async (): Promise<{ data: Record<string, unknown> | null; error: { message: string } | null }> =>
         adminClient
             .from('hardware_devices')
             .insert({
@@ -142,8 +142,8 @@ export async function POST(request:  Request): Promise<Response> {
         : null;
     const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') ?? null;
     const bootPath = getDeviceBootPathFromRecord({
-        device_profile: data?.device_profile ?? deviceProfile,
-        device_type: data?.device_type ?? deviceType,
+        device_profile: (data?.device_profile ?? deviceProfile) as string,
+        device_type: (data?.device_type ?? deviceType) as string,
         restaurant_slug: restaurant?.slug ?? null,
     });
 

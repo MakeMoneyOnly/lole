@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ShieldCheck, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -18,17 +18,17 @@ function WaiterPinContent(): React.JSX.Element {
         }
     }, [restaurantId, router]);
 
-    const handleNumberClick = (num: number): React.JSX.Element => {
+    const handleNumberClick = (num: number): void => {
         if (pin.length < 4) {
             setPin(prev => prev + num);
         }
     };
 
-    const handleDelete = (): React.JSX.Element => {
+    const handleDelete = (): void => {
         setPin(prev => prev.slice(0, -1));
     };
 
-    const handleSubmit = async (): Promise<void> => {
+    const handleSubmit = useCallback(async (): Promise<void> => {
         if (pin.length !== 4) return;
         setLoading(true);
 
@@ -54,13 +54,13 @@ function WaiterPinContent(): React.JSX.Element {
         } finally {
             setLoading(false);
         }
-    };
+    }, [pin, restaurantId, router]);
 
     useEffect(() => {
         if (pin.length === 4) {
             void handleSubmit();
         }
-    }, [pin]);
+    }, [pin, handleSubmit]);
 
     const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 

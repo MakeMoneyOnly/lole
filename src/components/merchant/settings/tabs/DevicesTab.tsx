@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { AlertTriangle, FileText, Monitor, Printer, Signal, Tablet, WifiOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { readPrinterSpoolerStatus, type PrinterSpoolerStatus } from '@/lib/sync/printerFallback';
+import type { PrinterHealthState } from '@/lib/printer/contracts';
 
 const EMPTY_STATUS: PrinterSpoolerStatus = {
     stats: {
@@ -15,19 +16,20 @@ const EMPTY_STATUS: PrinterSpoolerStatus = {
     },
     printers: [],
     queue: [],
-};
-function statusTone(): React.JSX.Element | void {
-    switch (state) {
-        case 'healthy':
-            return 'bg-green-50 text-green-700';
-        case 'degraded':
-            return 'bg-amber-50 text-amber-700';
-        case 'offline':
-            return 'bg-red-50 text-red-700';
-        default:
-            return 'bg-gray-100 text-gray-600';
-    }
-}
+ };
+
+function statusTone(state: PrinterHealthState): string {
+     switch (state) {
+         case 'healthy':
+             return 'bg-green-50 text-green-700';
+         case 'degraded':
+             return 'bg-amber-50 text-amber-700';
+         case 'offline':
+             return 'bg-red-50 text-red-700';
+         default:
+             return 'bg-gray-100 text-gray-600';
+     }
+ }
 
 export function DevicesTab(): React.JSX.Element {
     const [spooler, setSpooler] = useState<PrinterSpoolerStatus>(EMPTY_STATUS);

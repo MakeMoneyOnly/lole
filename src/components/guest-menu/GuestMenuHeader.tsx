@@ -17,7 +17,7 @@ const HeaderIcon: React.FC<HeaderIconProps> = ({ iconSrc, onTap, hasNotification
             className="relative flex h-[48px] w-[40px] items-center justify-center transition-all active:scale-95"
             aria-label="Header Action"
         >
-            <img src={iconSrc} className="h-[24px] w-[24px]" alt="Header Icon" />
+            <Image src={iconSrc} className="h-[24px] w-[24px]" alt="Header Icon" width={24} height={24} unoptimized={true} />
             {hasNotification && (
                 <div className="absolute top-2.5 right-1.5 h-1.5 w-1.5 rounded-full bg-[#DDF853]" />
             )}
@@ -36,16 +36,17 @@ export const GuestMenuHeader: React.FC = () => {
                         alt="User Avatar"
                         fill
                         className="object-cover"
+                        unoptimized={true}
                     />
                 </div>
 
                 <div className="flex flex-col gap-0">
-                    <h1 className="text-[16px] leading-tight font-bold tracking-tight text-white">
+                    <h1 className="text-[16px] leading-tight font-bold tracking-[-0.04em] text-white">
                         Hello Dawit Bekele
                     </h1>
                     <div className="flex items-center gap-1">
                         <MapPin className="h-3.5 w-3.5 text-[#DDF853]" />
-                        <span className="text-[13px] font-medium text-white/70">
+                        <span className="text-[13px] font-medium text-white/70 tracking-[-0.04em]">
                             Bole, Addis Ababa
                         </span>
                     </div>
@@ -53,8 +54,8 @@ export const GuestMenuHeader: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-1">
-                <HeaderIcon iconSrc="/icons/Guest Menu/letter-line.svg?v=2" />
-                <HeaderIcon iconSrc="/icons/Guest Menu/bell-line.svg?v=2" hasNotification />
+                <HeaderIcon iconSrc="/icons/Guest%20Menu/letter-line.svg?v=2" />
+                <HeaderIcon iconSrc="/icons/Guest%20Menu/bell-line.svg?v=2" hasNotification />
             </div>
         </header>
     );

@@ -8,11 +8,12 @@ export function cn(...inputs: ClassValue[]): string {
 
 export function formatCurrency(amount: number, currency = 'ETB'): string {
     if (currency.toUpperCase() === 'ETB') {
-        return formatETBCurrency(amount, {
+        const formatted = formatETBCurrency(amount, {
             locale: 'en',
             minimumFractionDigits: 0,
             maximumFractionDigits: 0,
         });
+        return formatted.replace(/ETB/g, 'Br.').trim();
     }
 
     return new Intl.NumberFormat('en-ET', {

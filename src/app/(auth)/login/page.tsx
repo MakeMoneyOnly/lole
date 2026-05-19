@@ -16,7 +16,7 @@ function getAuthErrorMessage(error: unknown): string {
     }
     return 'Unable to sign in. Please try again.';
 }
-    export default function LoginPage() {
+    export default function LoginPage(): React.ReactElement {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);

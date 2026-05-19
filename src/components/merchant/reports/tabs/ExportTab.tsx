@@ -7,13 +7,13 @@ import { ModernSelect } from '../../shared/ModernSelect';
 export function ExportTab(): React.JSX.Element {
     const [emails, setEmails] = useState(['']);
 
-    const addEmail = (): React.JSX.Element => setEmails([...emails, '']);
-    const updateEmail = (index: number, value: string): React.JSX.Element => {
+    const addEmail = (): void => setEmails([...emails, '']);
+    const updateEmail = (index: number, value: string): void => {
         const newEmails = [...emails];
         newEmails[index] = value;
         setEmails(newEmails);
     };
-    const removeEmail = (index: number): React.JSX.Element => {
+    const removeEmail = (index: number): void => {
         if (emails.length === 1) {
             setEmails(['']);
             return;

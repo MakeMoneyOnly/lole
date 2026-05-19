@@ -25,8 +25,10 @@ import { useEffect, useRef, useCallback } from 'react';
 export function useAbortableEffect(
     effect: (signal: AbortSignal) => Promise<void> | void,
     deps: React.DependencyList
-) {
+): void {
     const abortControllerRef = useRef<AbortController | null>(null);
+    const effectRef = useRef(effect);
+    effectRef.current = effect;
 
     useEffect(() => {
         // Abort any previous effect
@@ -38,7 +40,7 @@ export function useAbortableEffect(
         abortControllerRef.current = new AbortController();
         const signal = abortControllerRef.current.signal;
 
-        const effectResult = effect(signal);
+        const effectResult = effectRef.current(signal);
 
         return () => {
             // Abort on cleanup
@@ -51,6 +53,7 @@ export function useAbortableEffect(
                 });
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, deps);
 }
 
@@ -74,7 +77,7 @@ export function useAbortableEffect(
  * }, [signal]);
  * ```
  */
-export function useAbortController(): React.JSX.Element {
+export function useAbortController(): { getSignal: () => AbortSignal; abort: () => void; } {
     const abortControllerRef = useRef<AbortController | null>(null);
 
     useEffect(() => {

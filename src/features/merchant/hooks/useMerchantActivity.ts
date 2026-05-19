@@ -7,7 +7,16 @@ import { ActivityItem, ActivityType } from '../types';
 
 export type { ActivityType, ActivityItem };
 
-export function useMerchantActivity(): React.JSX.Element {
+export interface UseMerchantActivityReturn {
+    activities: ActivityItem[];
+    loading: boolean;
+    restaurantName: string;
+    restaurantHandle: string;
+    broadcastMessage: (message: string) => Promise<void>;
+    refresh: () => Promise<void>;
+}
+
+export function useMerchantActivity(): UseMerchantActivityReturn {
     const [activities, setActivities] = useState<ActivityItem[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -110,7 +119,6 @@ export function useMerchantActivity(): React.JSX.Element {
             avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${restaurantName}`,
         };
         setActivities(prev => [newActivity, ...prev]);
-        return true;
     };
 
     const refresh = async (): Promise<void> => {

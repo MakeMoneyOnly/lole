@@ -14,6 +14,7 @@ export const GuestMenuBannerCarousel: React.FC = () => {
                     alt="Premium Banner"
                     fill
                     className="object-cover"
+                    unoptimized={true}
                 />
                 <div className="absolute inset-0 bg-black/10" />
             </div>

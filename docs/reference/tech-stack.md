@@ -18,7 +18,7 @@ The lole Restaurant Operating System utilizes a modern, resilient technology sta
 
 | Component    | Technology   | Version | Purpose              | Notes                   |
 | ------------ | ------------ | ------- | -------------------- | ----------------------- |
-| Framework    | Next.js      | 15.x    | React meta-framework | App Router architecture |
+| Framework    | Next.js      | 16.2.3  | React meta-framework | App Router architecture |
 | React        | React        | 19.x    | UI component library | Concurrent features     |
 | TypeScript   | TypeScript   | 5.5+    | Type safety          | Strict mode enabled     |
 | Tailwind CSS | Tailwind CSS | 4.x     | Utility-first CSS    | Custom design system    |
@@ -28,8 +28,8 @@ The lole Restaurant Operating System utilizes a modern, resilient technology sta
 
 | Component       | Technology | Version    | Purpose                 |
 | --------------- | ---------- | ---------- | ----------------------- |
-| Bundler         | Turbopack  | Next.js 15 | Fast incremental builds |
-| Package Manager | npm/pnpm   | 10.x/9.x   | Dependency management   |
+| Bundler         | Turbopack  | Next.js 16 | Fast incremental builds |
+| Package Manager | npm/pnpm   | >=10.0.0 | Dependency management   |
 | Linting         | ESLint     | 9.x        | Code quality            |
 | Formatting      | Prettier   | 3.x        | Code formatting         |
 
@@ -49,7 +49,7 @@ The lole Restaurant Operating System utilizes a modern, resilient technology sta
 
 | Component  | Technology         | Version | Purpose                 |
 | ---------- | ------------------ | ------- | ----------------------- |
-| Primary    | Next.js API Routes | 15.x    | Serverless functions    |
+| Primary    | Next.js API Routes | 16.2.3 | Serverless functions    |
 | GraphQL    | Apollo Server      | 4.x     | Federated GraphQL       |
 | Router     | Apollo Router      | 2.x     | Rust-based federation   |
 | Validation | Zod                | 3.x     | Runtime type validation |
@@ -171,9 +171,9 @@ The lole Restaurant Operating System utilizes a modern, resilient technology sta
 
 | Component A | Component B | Compatible Versions | Notes           |
 | ----------- | ----------- | ------------------- | --------------- |
-| Next.js     | React       | 15.x ↔ 19.x         | Auto-linked     |
-| Next.js     | Node.js     | 15.x ↔ 20.x         | LTS requirement |
-| TypeScript  | Node.js     | 5.5+ ↔ 20.x         | Target ES2022   |
+| Next.js     | React       | 16.2.3 ↔ 19.x         | Auto-linked     |
+| Next.js     | Node.js     | 16.2.3 ↔ 22.x         | LTS requirement |
+| TypeScript  | Node.js     | 5.5+ ↔ 22.x         | Target ES2022   |
 | PostgreSQL  | Supabase    | 15.x ↔ Latest       | Native support  |
 | PowerSync   | Postgres    | Any ↔ 15.x          | Recommended     |
 
@@ -194,7 +194,7 @@ The lole Restaurant Operating System utilizes a modern, resilient technology sta
 | Component   | Deprecated Date | Removal Date | Migration Path    |
 | ----------- | --------------- | ------------ | ----------------- |
 | Legacy APIs | Q2 2026         | Q4 2026      | GraphQL migration |
-| Node 18     | Oct 2025        | Apr 2026     | Node 20 upgrade   |
+| Node 20     | Apr 2026        | Oct 2026     | Node 22 upgrade   |
 
 ---
 
@@ -303,7 +303,7 @@ The lole Restaurant Operating System utilizes a modern, resilient technology sta
 
 ### Phase 1 (2026)
 
-- [x] Next.js 15 migration complete
+- [x] Next.js 16 migration complete
 - [x] TypeScript 5.5 adoption
 - [ ] Tailwind 4 stable rollout
 
@@ -311,7 +311,7 @@ The lole Restaurant Operating System utilizes a modern, resilient technology sta
 
 - [ ] Apollo Federation 2 upgrade
 - [ ] Supabase Postgres 16
-- [ ] Node 22 LTS adoption
+- [ ] Node 22 LTS completion
 
 ---
 

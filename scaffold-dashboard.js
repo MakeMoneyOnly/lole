@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 const base = path.join(process.cwd(), 'src/app/(dashboard)/merchant');
 
@@ -77,14 +77,16 @@ fs.writeFileSync(path.join(base, 'page.tsx'), template('Dashboard'));
 // Try to remove old unused directories
 dirsToRemove.forEach(d => {
     const dirPath = path.join(base, d);
-    if (fs.existsSync(dirPath)) {
-        try {
-            fs.rmSync(dirPath, { recursive: true, force: true });
-            console.log('Removed ' + d);
-        } catch (e) {
-            console.log('Could not remove ' + d + ': ' + e.message);
-        }
-    }
+if (fs.existsSync(dirPath)) {
+         try {
+             fs.rmSync(dirPath, { recursive: true, force: true });
+             // eslint-disable-next-line no-console
+             console.log('Removed ' + d);
+         } catch (e) {
+             // eslint-disable-next-line no-console
+             console.log('Could not remove ' + d + ': ' + e.message);
+         }
+     }
 });
-
+// eslint-disable-next-line no-console
 console.log('scaffolding done!');

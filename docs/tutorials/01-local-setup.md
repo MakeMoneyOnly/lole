@@ -26,8 +26,8 @@ By completing this tutorial, you will:
 
 | Tool    | Minimum Version | Verification Command |
 | ------- | --------------- | -------------------- |
-| Node.js | 18.0.0          | `node --version`     |
-| pnpm    | 8.0.0           | `pnpm --version`     |
+| Node.js | 22.0.0          | `node --version`     |
+| pnpm    | 10.0.0          | `pnpm --version`     |
 | Git     | 2.30.0          | `git --version`      |
 
 ### 2.1 Install Missing Tools
@@ -37,7 +37,7 @@ By completing this tutorial, you will:
 ```bash
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
 source ~/.bashrc
-nvm install 20
+nvm install 22
 npm install -g pnpm
 ```
 
@@ -51,8 +51,8 @@ npm install -g pnpm
 **Verification:**
 
 ```bash
-node --version  # Expected: v18.x.x or higher
-pnpm --version  # Expected: 8.x.x or higher
+node --version  # Expected: v22.x.x
+pnpm --version  # Expected: 10.x.x
 git --version   # Expected: 2.30.x or higher
 ```
 
@@ -110,8 +110,8 @@ code .env.local
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=https://[PROJECT-REF].supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=[YOUR-ANON-KEY]
-SUPABASE_SERVICE_ROLE_KEY=[YOUR-SERVICE-ROLE-KEY]
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=[YOUR-PUBLISHABLE-KEY]
+SUPABASE_SECRET_KEY=[YOUR-SERVICE-ROLE-KEY]
 SUPABASE_PROJECT_REF=[PROJECT-REF]
 ```
 
@@ -125,8 +125,6 @@ supabase start
 ### 2.3 Configure Additional Variables
 
 ```bash
-NEXTAUTH_SECRET=$(openssl rand -base64 32)
-NEXTAUTH_URL=http://localhost:3000
 UPSTASH_REDIS_REST_URL=[your-upstash-url]
 UPSTASH_REDIS_REST_TOKEN=[your-upstash-token]
 ```
@@ -138,7 +136,7 @@ UPSTASH_REDIS_REST_TOKEN=[your-upstash-token]
 ### 3.1 Apply Database Migrations
 
 ```bash
-supabase db push
+pnpm supabase:cli db push
 ```
 
 ### 3.2 Seed Development Data
@@ -162,7 +160,7 @@ pnpm dev
 **Expected Output:**
 
 ```
-▲ Next.js 15.x.x
+▲ Next.js 16.x.x
   - Local:    http://localhost:3000
   - Network:  http://192.168.x.x:3000
 ```

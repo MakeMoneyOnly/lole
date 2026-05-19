@@ -17,7 +17,7 @@ const log = logger.child('[Campaign Send API]');
 export async function POST(
     request: NextRequest,
     { params }: { params: Promise<{ campaignId: string }> }
-) {
+): Promise<NextResponse> {
     try {
         const { campaignId } = await params;
         const cookieStore = await cookies();

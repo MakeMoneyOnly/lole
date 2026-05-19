@@ -24,7 +24,7 @@ export function useRole(restaurantId: string | null): UseRoleResult {
     useEffect(() => {
         let cancelled = false;
 
-        async function fetchRole(currentUser?: User | null) {
+        async function fetchRole(currentUser?: User | null): Promise<void> {
             if (!cancelled) {
                 setLoading(true);
             }
@@ -131,7 +131,7 @@ export function useRole(restaurantId: string | null): UseRoleResult {
         };
     }, [restaurantId, supabase]);
 
-    const requireRole = (allowedRoles: StaffRole[], redirectUrl = '/login'): React.JSX.Element => {
+    const requireRole = (allowedRoles: StaffRole[], redirectUrl = '/login'): void => {
         if (loading) return; // Don't redirect while loading
         if (!role || !allowedRoles.includes(role)) {
             router.push(redirectUrl);

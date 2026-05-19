@@ -63,7 +63,7 @@ const mapOrderToResponse = (order: {
     idempotency_key?: string | null;
     created_at?: string | null;
     updated_at?: string | null;
-}): React.JSX.Element => ({
+}) => ({
     id: order.id,
     restaurantId: order.restaurant_id,
     tableId: order.table_number,

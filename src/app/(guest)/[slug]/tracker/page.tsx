@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { generateOrderTrackerMetadata } from '@/lib/seo';
 import TrackerClient from './tracker-client';
+import { logger } from '@/lib/logger';
 
 /**
  * Dynamic metadata for SEO - order tracker page
@@ -36,7 +37,7 @@ export async function generateMetadata({
             slug: restaurant.slug,
         });
     } catch (error) {
-        console.error('Error generating metadata:', error);
+        logger.error('Error generating metadata', error);
         return {
             title: 'Order Tracker | lole',
             description: 'Track your order in real-time',

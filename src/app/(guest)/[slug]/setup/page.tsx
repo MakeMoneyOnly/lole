@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
     ArrowRight,
@@ -100,85 +100,88 @@ export default function DeviceSetupPage(): React.JSX.Element {
         return slug.replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
     }, [restaurantName, slug]);
 
-    const pairDevice = async (rawCode: string): Promise<void> => {
-        const normalizedCode = normalizePairingCode(rawCode).slice(0, DEVICE_PAIRING_CODE_LENGTH);
-        if (normalizedCode.length !== DEVICE_PAIRING_CODE_LENGTH) {
-            return;
-        }
-
-        setStatus('pairing');
-
-        try {
-            const nativeInfo = await getNativeDeviceInfo();
-            const response = await fetch('/api/v1/devices/pair', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    code: normalizedCode,
-                    device_uuid: nativeInfo.uuid ?? undefined,
-                    platform: nativeInfo.platform,
-                    app_version: nativeInfo.appVersion ?? nativeInfo.osVersion ?? undefined,
-                }),
-            });
-
-            const result = await response.json();
-
-            if (!response.ok || !result.data) {
-                setStatus('invalid');
-                toast.error(result?.error ?? 'Pairing failed. Please try again.');
+const pairDevice = useCallback(
+        async (rawCode: string): Promise<void> => {
+            const normalizedCode = normalizePairingCode(rawCode).slice(0, DEVICE_PAIRING_CODE_LENGTH);
+            if (normalizedCode.length !== DEVICE_PAIRING_CODE_LENGTH) {
                 return;
             }
 
-            const pairedDevice = result.data as PairResponse;
-            setDeviceInfo(pairedDevice);
-            setStatus('success');
+            setStatus('pairing');
 
-            const gatewaySession =
-                pairedDevice.restaurant_id && pairedDevice.location_id
-                    ? await bootstrapGatewayForPairedDevice({
-                          deviceToken: pairedDevice.device_token,
-                          restaurantId: pairedDevice.restaurant_id,
-                          locationId: pairedDevice.location_id,
-                          preferredBrokerUrl: process.env.NEXT_PUBLIC_LAN_MQTT_URL ?? null,
-                          fallbackBootstrapUrl:
-                              process.env.NEXT_PUBLIC_GATEWAY_BOOTSTRAP_URL ?? null,
-                      })
-                    : null;
-
-            await storeDeviceSession({
-                device_token: pairedDevice.device_token,
-                device_type: pairedDevice.device_type,
-                device_profile: pairedDevice.device_profile ?? null,
-                name: pairedDevice.name,
-                restaurant_id: pairedDevice.restaurant_id ?? null,
-                location_id: pairedDevice.location_id ?? null,
-                boot_path: pairedDevice.boot_path ?? null,
-                metadata: pairedDevice.metadata ?? null,
-                gateway: gatewaySession,
-                gateway_bootstrap_status: gatewaySession ? 'ready' : 'unavailable',
-            });
-
-            if (pairedDevice.metadata?.printer?.connection_type) {
-                await storePrinterSelection({
-                    connection_type: pairedDevice.metadata.printer.connection_type,
-                    device_id: pairedDevice.metadata.printer.device_id ?? null,
-                    device_name: pairedDevice.metadata.printer.device_name ?? null,
-                    mac_address: pairedDevice.metadata.printer.mac_address ?? null,
+            try {
+                const nativeInfo = await getNativeDeviceInfo();
+                const response = await fetch('/api/v1/devices/pair', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        code: normalizedCode,
+                        device_uuid: nativeInfo.uuid ?? undefined,
+                        platform: nativeInfo.platform,
+                        app_version: nativeInfo.appVersion ?? nativeInfo.osVersion ?? undefined,
+                    }),
                 });
-            }
 
-            if (!gatewaySession) {
-                toast.error('Device paired, but local gateway bootstrap is still unavailable.');
-            }
+                const result = await response.json();
 
-            window.setTimeout(() => {
-                router.push('/device');
-            }, 1600);
-        } catch {
-            setStatus('invalid');
-            toast.error('Pairing failed. Check connectivity and try again.');
-        }
-    };
+                if (!response.ok || !result.data) {
+                    setStatus('invalid');
+                    toast.error(result?.error ?? 'Pairing failed. Please try again.');
+                    return;
+                }
+
+                const pairedDevice = result.data as PairResponse;
+                setDeviceInfo(pairedDevice);
+                setStatus('success');
+
+                const gatewaySession =
+                    pairedDevice.restaurant_id && pairedDevice.location_id
+                        ? await bootstrapGatewayForPairedDevice({
+                              deviceToken: pairedDevice.device_token,
+                              restaurantId: pairedDevice.restaurant_id,
+                              locationId: pairedDevice.location_id,
+                              preferredBrokerUrl: process.env.NEXT_PUBLIC_LAN_MQTT_URL ?? null,
+                              fallbackBootstrapUrl:
+                                  process.env.NEXT_PUBLIC_GATEWAY_BOOTSTRAP_URL ?? null,
+                          })
+                        : null;
+
+                await storeDeviceSession({
+                    device_token: pairedDevice.device_token,
+                    device_type: pairedDevice.device_type,
+                    device_profile: pairedDevice.device_profile ?? null,
+                    name: pairedDevice.name,
+                    restaurant_id: pairedDevice.restaurant_id ?? null,
+                    location_id: pairedDevice.location_id ?? null,
+                    boot_path: pairedDevice.boot_path ?? null,
+                    metadata: pairedDevice.metadata ?? null,
+                    gateway: gatewaySession,
+                    gateway_bootstrap_status: gatewaySession ? 'ready' : 'unavailable',
+                });
+
+                if (pairedDevice.metadata?.printer?.connection_type) {
+                    await storePrinterSelection({
+                        connection_type: pairedDevice.metadata.printer.connection_type,
+                        device_id: pairedDevice.metadata.printer.device_id ?? null,
+                        device_name: pairedDevice.metadata.printer.device_name ?? null,
+                        mac_address: pairedDevice.metadata.printer.mac_address ?? null,
+                    });
+                }
+
+                if (!gatewaySession) {
+                    toast.error('Device paired, but local gateway bootstrap is still unavailable.');
+                }
+
+                window.setTimeout(() => {
+                    router.push('/device');
+                }, 1600);
+            } catch {
+                setStatus('invalid');
+                toast.error('Pairing failed. Check connectivity and try again.');
+            }
+        },
+        [router]
+    );
 
     const handlePair = async (event: React.FormEvent): Promise<void> => {
         event.preventDefault();
@@ -202,7 +205,7 @@ export default function DeviceSetupPage(): React.JSX.Element {
 
         setAutoPairAttempted(true);
         void pairDevice(codeFromLink);
-    }, [autoPairAttempted, searchParams, status]);
+    }, [autoPairAttempted, pairDevice, searchParams, status]);
 
     return (
         <div className="relative min-h-screen overflow-hidden bg-[#fbf6ef] text-[#131313]">

@@ -50,7 +50,7 @@ function getRestaurantId(data: Record<string, unknown>): string {
 }
 
 export class Connector {
-    async fetchCredentials() {
+    async fetchCredentials(): Promise<{ endpoint: string; token: string } | null> {
         const endpoint = getConfiguredEndpoint();
         const developmentToken = getDevelopmentToken();
 
@@ -93,7 +93,7 @@ export class Connector {
         };
     }
 
-    async uploadData(database: AbstractPowerSyncDatabase) {
+    async uploadData(database: AbstractPowerSyncDatabase): Promise<void> {
         const batch = await database.getCrudBatch();
         if (!batch || batch.crud.length === 0) {
             return;

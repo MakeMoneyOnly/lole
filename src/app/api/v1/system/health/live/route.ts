@@ -44,7 +44,7 @@ const startTime = Date.now();
  * - No external service calls
  * - Just confirms the server process is running
  */
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export async function GET(_request: NextRequest): Promise<NextResponse> {
     const responseTime = Date.now() - startTime;
 
     const response = {

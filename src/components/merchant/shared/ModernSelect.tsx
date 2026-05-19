@@ -25,7 +25,7 @@ export function ModernSelect({
     placeholder = 'Select an option',
     className,
     defaultValue,
-}: ModernSelectProps) {
+}: ModernSelectProps): React.ReactElement {
     const [isOpen, setIsOpen] = useState(false);
     const [internalValue, setInternalValue] = useState(
         value || defaultValue || options[0]?.value || ''

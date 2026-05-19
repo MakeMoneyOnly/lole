@@ -145,8 +145,8 @@ export async function checkPoolHealth(): Promise<PoolHealthStatus> {
         const { createServiceRoleClient } = await import('./service-role');
         const supabase = createServiceRoleClient();
 
-        // Query pg_stat_activity for real connection counts
-        const { data, error } = await supabase
+// Query pg_stat_activity for real connection counts
+         const { data: _data, error } = await supabase
             .from('_prisma_migrations' as never)
             .select('*', { count: 'exact', head: true })
             .limit(0);

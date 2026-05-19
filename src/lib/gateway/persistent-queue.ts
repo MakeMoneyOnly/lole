@@ -1,4 +1,4 @@
-import { openSync, closeSync, readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { logger } from '@/lib/logger';
 import { GatewayError, GatewayErrorCode } from '@/lib/gateway/errors';

@@ -3,10 +3,10 @@
 // Subgraph endpoints are operational at /api/subgraphs/{orders,menu,staff,payments,guests}.
 // Federation schemas are in graphql/subgraphs/ and published via CI.
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { apiSuccess } from '@/lib/api/response';
 
-export async function GET(request: NextRequest): Promise<Response> {
+export async function GET(_request: NextRequest): Promise<Response> {
     return apiSuccess({
         service: 'lole GraphQL API',
         status: 'operational',
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest): Promise<Response> {
     });
 }
 
-export async function POST(request: NextRequest): Promise<Response> {
+export async function POST(_request: NextRequest): Promise<Response> {
     return apiSuccess({
         service: 'lole GraphQL API',
         status: 'operational',

@@ -27,16 +27,21 @@ import {
 import { cn } from '@/lib/utils';
 import { useSidebar } from '@/context/SidebarContext';
 import { motion, AnimatePresence } from 'framer-motion';
-function SidebarTooltip(): React.JSX.Element | void {
+interface SidebarTooltipProps {
+    children: React.ReactNode;
+    label: string;
+}
+
+function SidebarTooltip({ children, label }: SidebarTooltipProps): React.JSX.Element {
     const [isVisible, setIsVisible] = React.useState(false);
     const [coords, setCoords] = React.useState({ top: 0, left: 0 });
     const triggerRef = React.useRef<HTMLDivElement>(null);
     const { isCollapsed } = useSidebar();
 
     // Early return if not collapsed
-    if (!isCollapsed) return <>{children}</>;
+    if (!isCollapsed) return <React.Fragment>{children}</React.Fragment> as React.JSX.Element;
 
-    const handleMouseEnter = (): React.JSX.Element => {
+    const handleMouseEnter = (): void => {
         if (triggerRef.current) {
             const rect = triggerRef.current.getBoundingClientRect();
             // Position the tooltip at the center-right of the trigger

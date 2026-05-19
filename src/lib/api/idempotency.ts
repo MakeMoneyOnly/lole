@@ -1,13 +1,13 @@
 import { randomUUID } from 'crypto';
 
-export function resolveIdempotencyKey(explicitKey?: string | null) {
+export function resolveIdempotencyKey(explicitKey?: string | null): string {
     if (explicitKey && explicitKey.trim().length > 0) {
         return explicitKey.trim();
     }
     return randomUUID();
 }
 
-export function isIdempotencyKeyValid(key: string | null | undefined) {
+export function isIdempotencyKeyValid(key: string | null | undefined): boolean {
     if (!key) {
         return false;
     }

@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 const base = path.join(process.cwd(), 'src/app/(dashboard)/merchant');
 
@@ -23,4 +23,5 @@ dirs.forEach(d => {
         fs.writeFileSync(filePath, `export default function Page() {\n  return null;\n}\n`);
     }
 });
+// eslint-disable-next-line no-console
 console.log('Cleared terrible templates');

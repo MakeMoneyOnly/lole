@@ -68,7 +68,7 @@ export function isLockError(error: unknown): boolean {
     return false;
 }
 
-export function useSafeFetch(): React.JSX.Element {
+export function useSafeFetch(): { safeFetch: (url: string, options?: SafeFetchOptions) => Promise<Response>; abort: () => void } {
     const abortControllerRef = useRef<AbortController | null>(null);
 
     useEffect(() => {

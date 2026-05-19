@@ -28,7 +28,7 @@ function canTransition(currentStatus: string, nextStatus: string): boolean {
 export async function PATCH(
     request: NextRequest,
     context: { params: Promise<{ requestId: string }> }
-) {
+): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -91,7 +91,7 @@ export async function PATCH(
         return apiError('Forbidden', 403, 'FORBIDDEN');
     }
 
-    if (!canTransition(requestRow.status, parsedBody.data.status)) {
+    if (!canTransition(requestRow.status ?? '', parsedBody.data.status)) {
         return apiError(
             `Invalid status transition from "${requestRow.status}" to "${parsedBody.data.status}"`,
             409,

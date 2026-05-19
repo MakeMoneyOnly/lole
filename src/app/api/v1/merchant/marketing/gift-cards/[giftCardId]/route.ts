@@ -14,7 +14,7 @@ const UpdateGiftCardSchema = z.object({
 export async function PATCH(
     request: Request,
     { params }: { params: Promise<{ giftCardId: string }> }
-) {
+): Promise<Response> {
     const { giftCardId } = await params;
 
     const auth = await getAuthenticatedUser();
@@ -83,7 +83,7 @@ export async function PATCH(
 export async function DELETE(
     request: Request,
     { params }: { params: Promise<{ giftCardId: string }> }
-) {
+): Promise<Response> {
     const { giftCardId } = await params;
 
     const auth = await getAuthenticatedUser();

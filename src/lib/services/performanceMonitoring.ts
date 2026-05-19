@@ -369,20 +369,19 @@ export function timeSync<T>(name: string, fn: () => T): T {
  * @param componentName - Name of the component
  * @returns Object with start and end functions
  */
-export function usePerformanceTracking(componentName: string) {
-    const monitor = getPerformanceMonitor();
+export function usePerformanceTracking(componentName: string): { trackRender: () => (metadata?: Record<string, unknown>) => number; trackEffect: (effectName: string) => (metadata?: Record<string, unknown>) => number } {
+     const monitor = getPerformanceMonitor();
 
-    const trackRender = (): React.JSX.Element => {
-        const stopTimer = monitor.startTimer(`render_${componentName}`);
-        return stopTimer;
-    };
+     const trackRender = (): ((metadata?: Record<string, unknown>) => number) => {
+         return monitor.startTimer(`render_${componentName}`);
+     };
 
-    const trackEffect = (effectName: string): React.JSX.Element => {
-        return monitor.startTimer(`effect_${componentName}_${effectName}`);
-    };
+     const trackEffect = (effectName: string): ((metadata?: Record<string, unknown>) => number) => {
+         return monitor.startTimer(`effect_${componentName}_${effectName}`);
+     };
 
-    return { trackRender, trackEffect };
-}
+     return { trackRender, trackEffect };
+ }
 
 // Export types and class
 export type { PerformanceMetric, PerformanceEvent };

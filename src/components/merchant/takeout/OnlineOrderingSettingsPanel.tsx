@@ -29,7 +29,7 @@ export function OnlineOrderingSettingsPanel({
     restaurantSlug,
     onChange,
     onSave,
-}: OnlineOrderingSettingsPanelProps) {
+}: OnlineOrderingSettingsPanelProps): React.ReactElement {
     if (loading) {
         return (
             <section className="rounded-xl border border-gray-200 bg-white p-6">

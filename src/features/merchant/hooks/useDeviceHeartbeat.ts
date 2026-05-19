@@ -14,7 +14,7 @@ export function useDeviceHeartbeat({
     route,
     enabled = true,
     intervalMs = 45_000,
-}: UseDeviceHeartbeatOptions) {
+}: UseDeviceHeartbeatOptions): void {
     useEffect(() => {
         if (!deviceToken || !enabled) {
             return;
@@ -66,7 +66,7 @@ export function useDeviceHeartbeat({
             void sendHeartbeat();
         }, intervalMs);
 
-        const onVisibilityChange = (): React.JSX.Element => {
+        const onVisibilityChange = (): void => {
             void sendHeartbeat();
         };
 

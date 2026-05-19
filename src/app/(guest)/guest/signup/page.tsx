@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { User, Mail, Lock, Eye, EyeOff, Phone } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 
 function sanitizeNextPath(rawNext: string | null): string {
     if (!rawNext || rawNext.trim().length === 0) return '/';
@@ -80,7 +81,7 @@ function SignUpContent(): React.JSX.Element {
                     });
 
                     if (guestError) {
-                        console.error('Error creating guest record:', guestError);
+                        logger.error('Error creating guest record', guestError);
                     }
                 }
 

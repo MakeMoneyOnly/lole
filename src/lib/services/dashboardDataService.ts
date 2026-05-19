@@ -21,6 +21,42 @@ const log = logger.child('DashboardData');
 // Types
 // ============================================================================
 
+interface RawOrder {
+    id: string;
+    order_number: string | null;
+    status: string | null;
+    table_number: number | null;
+    created_at: string | null;
+    completed_at: string | null;
+    total_price: number | null;
+    notes?: string | null;
+}
+
+interface RawServiceRequest {
+    id: string;
+    request_type: string;
+    status: string | null;
+    table_number: number | null;
+    created_at: string | null;
+    notes?: string | null;
+}
+
+interface RawTable {
+    id: string;
+    status: string;
+    is_active: boolean;
+}
+
+interface RawAlert {
+    id: string;
+    entity_type: string;
+    entity_id: string | null;
+    status: string | null;
+    severity: string | null;
+    created_at: string | null;
+    resolved_at: string | null;
+}
+
 export interface ChartPoint {
     label: string;
     income: number;
@@ -408,26 +444,29 @@ export async function getCommandCenterData(
     const previousOrders = prevOrdersRes.data ?? [];
 
     // Calculate metrics
-    const ordersInFlight = orders.filter(o => isInFlightStatus(o.status)).length;
-    const completedOrders = orders.filter(o => o.status === 'completed' || o.status === 'served');
-    const activeTables = tables.filter(
-        t => t.is_active !== false && t.status !== 'available'
-    ).length;
-    const openRequests = requests.filter(r => (r.status ?? 'pending') === 'pending').length;
-    const grossSalesSantim = orders.reduce((sum, o) => sum + Number(o.total_price ?? 0), 0);
+    const rawOrders = orders as unknown as RawOrder[];
+    const rawRequests = requests as unknown as RawServiceRequest[];
+    const rawTables = tables as unknown as RawTable[];
+    const rawAlerts = alerts as unknown as RawAlert[];
+
+    const ordersInFlight = rawOrders.filter((o: RawOrder) => isInFlightStatus(o.status)).length;
+    const completedOrders = rawOrders.filter((o: RawOrder) => o.status === 'completed' || o.status === 'served');
+    const activeTables = rawTables.filter((t: RawTable) => t.is_active !== false && t.status !== 'available').length;
+    const openRequests = rawRequests.filter((r: RawServiceRequest) => (r.status ?? 'pending') === 'pending').length;
+    const grossSalesSantim = rawOrders.reduce((sum: number, o: RawOrder) => sum + Number(o.total_price ?? 0), 0);
     const grossSales = grossSalesSantim / 100;
     const grossSalesPrevious =
         previousOrders.reduce(
             (sum: number, o: { total_price?: number | null }) => sum + Number(o.total_price ?? 0),
             0
         ) / 100;
-    const avgOrderValue = orders.length > 0 ? Math.round(grossSales / orders.length) : 0;
-    const uniqueTablesToday = new Set(orders.map(o => o.table_number).filter(Boolean)).size;
+    const avgOrderValue = rawOrders.length > 0 ? Math.round(grossSales / rawOrders.length) : 0;
+    const uniqueTablesToday = new Set(rawOrders.map((o: RawOrder) => o.table_number).filter(Boolean)).size;
 
     // Calculate average ticket time
     let avgTicketMinutes = 0;
     if (completedOrders.length > 0) {
-        const totalMinutes = completedOrders.reduce((sum, order) => {
+        const totalMinutes = completedOrders.reduce((sum: number, order: RawOrder) => {
             if (!order.created_at || !order.completed_at) {
                 return sum;
             }
@@ -440,37 +479,37 @@ export async function getCommandCenterData(
     }
 
     const paymentSuccessRate =
-        orders.length > 0 ? Math.round((completedOrders.length / orders.length) * 100) : 0;
+        rawOrders.length > 0 ? Math.round((completedOrders.length / rawOrders.length) * 100) : 0;
 
-    // Build attention queue
-    const attentionOrders: AttentionItem[] = orders
-        .filter(o => isInFlightStatus(o.status))
+// Build attention queue
+    const attentionOrders: AttentionItem[] = rawOrders
+        .filter((o: RawOrder) => isInFlightStatus(o.status))
         .slice(0, 10)
-        .map(o => ({
+        .map((o: RawOrder) => ({
             id: o.id,
             type: 'order' as const,
             label: o.order_number || o.id,
             status: o.status ?? 'pending',
             created_at: o.created_at,
-            table_number: o.table_number,
+            table_number: o.table_number != null ? String(o.table_number) : null,
         }));
 
-    const attentionRequests: AttentionItem[] = requests
-        .filter(r => (r.status ?? 'pending') === 'pending')
+    const attentionRequests: AttentionItem[] = rawRequests
+        .filter((r: RawServiceRequest) => (r.status ?? 'pending') === 'pending')
         .slice(0, 10)
-        .map(r => ({
+        .map((r: RawServiceRequest) => ({
             id: r.id,
             type: 'service_request' as const,
             label: r.request_type,
             status: r.status ?? 'pending',
             created_at: r.created_at,
-            table_number: r.table_number,
+            table_number: r.table_number != null ? String(r.table_number) : null,
         }));
 
-    const attentionAlerts: AttentionItem[] = alerts
-        .filter(alert => (alert.status ?? 'open') !== 'resolved')
+    const attentionAlerts: AttentionItem[] = rawAlerts
+        .filter((alert: RawAlert) => (alert.status ?? 'open') !== 'resolved')
         .slice(0, 10)
-        .map(alert => ({
+        .map((alert: RawAlert) => ({
             id: alert.id,
             type: 'alert' as const,
             label: `${alert.entity_type} alert`,
@@ -492,7 +531,7 @@ export async function getCommandCenterData(
         }
     );
 
-    // Build chart data (last 7 days by default for 'today'/'week', last 30 for 'month')
+// Build chart data (last 7 days by default for 'today'/'week', last 30 for 'month')
     const chartPoints: ChartPoint[] = [];
     const daysToTrack = range === 'month' ? 30 : 7;
     const now = new Date();
@@ -504,9 +543,9 @@ export async function getCommandCenterData(
 
         // Current period value for this day
         const dayIncome =
-            orders
-                .filter(o => o.created_at?.startsWith(dateStr))
-                .reduce((sum, o) => sum + Number(o.total_price ?? 0), 0) / 100;
+            rawOrders
+                .filter((o: RawOrder) => o.created_at?.startsWith(dateStr))
+                .reduce((sum: number, o: RawOrder) => sum + Number(o.total_price ?? 0), 0) / 100;
 
         // Previous period value for this equivalent day
         const prevDate = new Date(
@@ -515,8 +554,8 @@ export async function getCommandCenterData(
         const prevDateStr = prevDate.toISOString().split('T')[0];
         const prevIncome =
             previousOrders
-                .filter(o => o.created_at?.startsWith(prevDateStr))
-                .reduce((sum, o) => sum + Number(o.total_price ?? 0), 0) / 100;
+                .filter((o: { created_at?: string | null }) => o.created_at?.startsWith(prevDateStr))
+                .reduce((sum: number, o: { total_price?: number | null }) => sum + Number(o.total_price ?? 0), 0) / 100;
 
         chartPoints.push({
             label,
@@ -687,13 +726,13 @@ export async function getAnalyticsPageData(
         };
     }
 
-    const totalRevenue = orders?.reduce((sum, o) => sum + Number(o.total_price ?? 0), 0) ?? 0;
+const totalRevenue = orders?.reduce((sum: number, o: { total_price?: number | null }) => sum + Number(o.total_price ?? 0), 0) ?? 0;
     const totalOrders = orders?.length ?? 0;
     const avgOrderValue = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
 
     // Calculate peak hour
     const hourCounts: Record<number, number> = {};
-    orders?.forEach(order => {
+    orders?.forEach((order: { created_at?: string | null }) => {
         if (order.created_at) {
             const hour = new Date(order.created_at).getHours();
             hourCounts[hour] = (hourCounts[hour] ?? 0) + 1;
@@ -704,7 +743,7 @@ export async function getAnalyticsPageData(
 
     // Build chart data (daily aggregation)
     const dailyData: Record<string, { revenue: number; orders: number }> = {};
-    orders?.forEach(order => {
+    orders?.forEach((order: { created_at?: string | null; total_price?: number | null }) => {
         if (order.created_at) {
             const date = new Date(order.created_at).toISOString().split('T')[0];
             if (!dailyData[date]) {

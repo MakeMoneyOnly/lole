@@ -13,7 +13,7 @@ type HapticPattern = 'soft' | 'medium' | 'heavy' | 'success' | 'warning' | 'erro
  *   get haptic feedback on iOS web apps without a native container.
  * - iOS < 18 / unsupported: Silently no-ops (no crash, no error)
  */
-export function useHaptic(): React.JSX.Element {
+export function useHaptic(): { trigger: (pattern?: HapticPattern) => void } {
     const iosHapticRef = useRef<{ input: HTMLInputElement; label: HTMLLabelElement } | null>(null);
 
     // Create the hidden iOS haptic elements on mount

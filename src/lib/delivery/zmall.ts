@@ -103,11 +103,14 @@ export type ZmallOrderStatus =
 // =========================================================
 
 interface ZmallConfig {
-    baseUrl: string;
-    apiKey: string;
-    apiSecret: string;
-    partnerId: string;
-}
+     baseUrl: string;
+     apiKey: string;
+     apiSecret: string;
+     partnerId: string;
+     name: string;
+     color: string;
+     orderPrefix: string;
+ }
 
 /**
  * Get Zmall configuration for a restaurant
@@ -132,15 +135,18 @@ export async function getZmallConfig(
     const settings = (partner.settings_json ?? {}) as Record<string, unknown>;
     const credentials = (partner.credentials_ref ?? {}) as Record<string, unknown>;
 
-    return {
-        baseUrl:
-            (settings.base_url as string) ||
-            process.env.ZMALL_API_BASE_URL ||
-            'https://api.zmall.et/v1',
-        apiKey: (credentials.api_key as string) || process.env.ZMALL_API_KEY || '',
-        apiSecret: (credentials.api_secret as string) || process.env.ZMALL_API_SECRET || '',
-        partnerId: partner.id,
-    };
+return {
+         baseUrl:
+             (settings.base_url as string) ||
+             process.env.ZMALL_API_BASE_URL ||
+             'https://api.zmall.et/v1',
+         apiKey: (credentials.api_key as string) || process.env.ZMALL_API_KEY || '',
+         apiSecret: (credentials.api_secret as string) || process.env.ZMALL_API_SECRET || '',
+         partnerId: partner.id,
+         name: 'Zmall',
+         color: '#10B981',
+         orderPrefix: 'ZM-',
+     };
 }
 
 // =========================================================

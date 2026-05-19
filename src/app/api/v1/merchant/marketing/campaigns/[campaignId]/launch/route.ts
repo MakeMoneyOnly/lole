@@ -65,7 +65,7 @@ function normalizeSegmentRules(ruleJson: unknown): {
 export async function POST(
     request: Request,
     routeContext: { params: Promise<{ campaignId: string }> }
-) {
+): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;

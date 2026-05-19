@@ -1,4 +1,4 @@
-import { issueGatewaySessionToken, type GatewaySessionBundle } from '@/lib/auth/gateway-session';
+import type { GatewaySessionBundle } from '@/lib/auth/gateway-session';
 import {
     buildOfflineDeviceAuthorization,
     buildOfflineStaffOutagePolicy,
@@ -53,7 +53,20 @@ function buildBootstrapConfig(input: CreateGatewayBootstrapPayloadInput): StoreG
 
 export function createGatewayBootstrapPayload(
     input: CreateGatewayBootstrapPayloadInput
-): GatewayBootstrapPayload {
+): Omit<GatewayBootstrapPayload, 'session'> & {
+    session: {
+        deviceId: string;
+        restaurantId: string;
+        locationId: string;
+        gatewayId: string;
+        deviceType: HardwareDeviceType;
+        deviceProfile: DeviceProfile | null;
+        identityVersion: number;
+        authorizations: unknown[];
+        offlineAccessExpiresAt: string;
+        staffOutagePolicy: Record<string, unknown>;
+    };
+} {
     const config = buildBootstrapConfig(input);
     const health = buildGatewayHealthSnapshot(
         config,

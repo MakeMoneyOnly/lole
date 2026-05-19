@@ -12,6 +12,7 @@ import { useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 import {
     ChefHat,
     Clock,
@@ -170,7 +171,7 @@ function TrackerContent(): React.JSX.Element {
                 setItems(kdsItems);
                 setLastRefresh(new Date());
             } catch (err) {
-                console.error('Error fetching order data:', err);
+                logger.error('Error fetching order data', err);
                 setError(err instanceof Error ? err.message : 'Failed to load order status');
             } finally {
                 setLoading(false);
@@ -243,7 +244,7 @@ function TrackerContent(): React.JSX.Element {
                     setLastRefresh(new Date());
                 }
             } catch (error) {
-                console.warn('Poll failed:', error);
+                logger.warn('Poll failed', { error });
             }
         }, 8000);
 

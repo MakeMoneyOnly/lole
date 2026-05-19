@@ -13,6 +13,7 @@
  */
 
 import { AppLocale, DEFAULT_APP_LOCALE } from './locale';
+import { logger } from '../logger';
 
 // ============================================
 // TRANSLATION TYPES
@@ -661,7 +662,7 @@ export function t(
 
     // Return key if no translation found
     if (!translation) {
-        console.warn(`[i18n] Missing translation for key: ${key}`);
+        logger.warn(`[i18n] Missing translation for key: ${key}`);
         return key;
     }
 

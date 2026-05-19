@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { apiError, apiSuccess } from '@/lib/api/response';
 import { enforcePilotAccess } from '@/lib/api/pilotGate';
 
-async function resolveRestaurantIdForUser(userId: string) {
+async function resolveRestaurantIdForUser(userId: string): Promise<{ restaurantId: string | null; error?: string }> {
     const supabase = await createClient();
 
     // Parallelize both lookups — only one will have a result
@@ -17,14 +17,14 @@ async function resolveRestaurantIdForUser(userId: string) {
         supabase.from('agency_users').select('restaurant_ids').eq('user_id', userId).maybeSingle(),
     ]);
 
-    if (staffResult.error) return { error: staffResult.error.message };
+    if (staffResult.error) return { restaurantId: null, error: staffResult.error.message };
     if (staffResult.data?.restaurant_id) return { restaurantId: staffResult.data.restaurant_id };
 
-    if (agencyResult.error) return { error: agencyResult.error.message };
+    if (agencyResult.error) return { restaurantId: null, error: agencyResult.error.message };
     return { restaurantId: agencyResult.data?.restaurant_ids?.[0] ?? null };
 }
 
-export async function GET(_request: Request, context: { params: Promise<{ orderId: string }> }) {
+export async function GET(_request: Request, context: { params: Promise<{ orderId: string }> }): Promise<Response> {
     try {
         const { orderId } = await context.params;
         const supabase = await createClient();

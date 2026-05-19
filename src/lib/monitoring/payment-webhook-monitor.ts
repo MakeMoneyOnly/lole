@@ -11,6 +11,7 @@
 
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { Alerts, sendWarningAlert } from '@/lib/monitoring/alerts';
+import { logger } from '@/lib/logger';
 
 export interface SilentCallbackConfig {
     /** Minutes after payment initiation before alerting (default: 10) */
@@ -97,7 +98,7 @@ export async function findSilentCallbacks(
         .limit(50);
 
     if (error) {
-        console.error('[payment-webhook-monitor] Error querying payment sessions:', error);
+        logger.error('[payment-webhook-monitor] Error querying payment sessions:', error);
         return [];
     }
 

@@ -6,6 +6,7 @@ import { paymentsResolvers } from '@/domains/payments/resolvers';
 import { createSubgraphHandler } from '@/lib/graphql/subgraph-handler';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { NextRequest } from 'next/server';
 
 // Load the payments subgraph schema
 const paymentsSchema = readFileSync(
@@ -19,12 +20,12 @@ const handler = createSubgraphHandler({
     resolvers: paymentsResolvers,
 });
 
-export async function GET(request: Request): Promise<Response> {
-    return handler(request);
+export async function GET(request: NextRequest): Promise<Response> {
+    return handler(request as NextRequest);
 }
 
-export async function POST(request:  Request): Promise<Response> {
-    return handler(request);
+export async function POST(request: NextRequest): Promise<Response> {
+    return handler(request as NextRequest);
 }
 
 

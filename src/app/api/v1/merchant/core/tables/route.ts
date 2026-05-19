@@ -15,7 +15,7 @@ const CreateTableSchema = z.object({
     zone: z.string().trim().max(50).optional().nullable(),
 });
 
-export async function GET(request: Request): Promise<Response> {
+export async function GET(_request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;

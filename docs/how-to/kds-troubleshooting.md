@@ -186,7 +186,7 @@ GROUP BY status;
 BEGIN;
 -- Update item status
 UPDATE order_items
-SET status = '<new_status>',  -- pending/started/held/ready/served
+SET status = '<new_status>',  -- pending/fired/preparing/ready/served/cancelled
     updated_at = NOW()
 WHERE id = '<order_item_id>';
 
@@ -204,17 +204,17 @@ COMMIT;
 ```sql
 -- Start all pending items
 UPDATE order_items
-SET status = 'started',
+SET status = 'fired',
     updated_at = NOW()
 WHERE order_id = '<order_id>'
 AND status = 'pending';
 
--- Mark items as ready
+-- Mark items as preparing
 UPDATE order_items
-SET status = 'ready',
+SET status = 'preparing',
     updated_at = NOW()
 WHERE order_id = '<order_id>'
-AND status = 'started';
+AND status = 'fired';
 ```
 
 ---

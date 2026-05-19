@@ -31,7 +31,22 @@ export function useManagedDeviceSession({
     route,
     expectedProfiles = [],
     requirePaired = false,
-}: UseManagedDeviceSessionOptions) {
+}: UseManagedDeviceSessionOptions): {
+    loading: boolean;
+    session: StoredDeviceSession | null;
+    deviceToken: string | null;
+    isManaged: boolean;
+    resolvedProfile: DeviceProfile;
+    hasExpectedProfile: boolean;
+    requiresPairing: boolean;
+    hasProfileMismatch: boolean;
+    isIdentityRevoked: boolean;
+    outagePolicy: ReturnType<typeof resolveOfflineStaffOutagePolicy>;
+    outageAccess: ReturnType<typeof evaluateOfflineStaffAccess>;
+    hasOutageAccess: boolean;
+    profileLabel: string;
+    typeLabel: string;
+} {
     const [session, setSession] = useState<StoredDeviceSession | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -104,6 +119,7 @@ export function useManagedDeviceSession({
         session?.restaurant_id,
         session?.location_id,
         session?.gateway_bootstrap_status,
+        session,
     ]);
 
     const resolvedProfile = useMemo(() => {
@@ -118,7 +134,7 @@ export function useManagedDeviceSession({
                 ? session.device_type
                 : 'pos'
         );
-    }, [session?.device_profile, session?.device_type]);
+    }, [session]);
 
     const deviceToken = session?.device_token ?? null;
     const isManaged = Boolean(deviceToken);

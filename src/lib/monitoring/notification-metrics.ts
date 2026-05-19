@@ -16,6 +16,7 @@
 import * as Sentry from '@sentry/nextjs';
 import { Redis } from '@upstash/redis';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { logger } from '@/lib/logger';
 
 // =========================================================
 // Types and Interfaces
@@ -160,11 +161,11 @@ function getRedisClient(): Redis | null {
         return redisClient;
     }
 
-    if (!REDIS_URL || !REDIS_TOKEN) {
-        console.warn(
-            '[notification-metrics] Redis not configured, metrics will not be aggregated in real-time'
-        );
-        return null;
+if (!REDIS_URL || !REDIS_TOKEN) {
+         logger.warn(
+             '[notification-metrics] Redis not configured, metrics will not be aggregated in real-time'
+         );
+         return null;
     }
 
     try {
@@ -174,7 +175,7 @@ function getRedisClient(): Redis | null {
         });
         return redisClient;
     } catch (error) {
-        console.error('[notification-metrics] Failed to initialize Redis client:', error);
+        logger.error('[notification-metrics] Failed to initialize Redis client', error);
         return null;
     }
 }
@@ -203,7 +204,7 @@ async function _incrementCounter(key: string, amount: number = 1): Promise<void>
             // Set expiry to 30 days for metrics retention
             await redis.expire(key, 30 * 24 * 60 * 60);
         } catch (error) {
-            console.error('[notification-metrics] Redis increment error:', error);
+            logger.error('[notification-metrics] Redis increment error', error);
         }
     }
 }
@@ -214,12 +215,12 @@ async function _incrementCounter(key: string, amount: number = 1): Promise<void>
 async function _addLatency(key: string, latencyMs: number): Promise<void> {
     const redis = getRedisClient();
     if (redis) {
-        try {
-            await redis.incrbyfloat(key, latencyMs);
-            await redis.expire(key, 30 * 24 * 60 * 60);
-        } catch (error) {
-            console.error('[notification-metrics] Redis latency error:', error);
-        }
+try {
+        await redis.incrbyfloat(key, latencyMs);
+        await redis.expire(key, 30 * 24 * 60 * 60);
+    } catch (error) {
+        logger.error('[notification-metrics] Redis latency error', error);
+    }
     }
 }
 
@@ -291,24 +292,24 @@ export async function recordNotificationSent(params: MetricParams): Promise<void
             );
             await pipeline.exec();
         } catch (error) {
-            console.error('[notification-metrics] Error recording sent metrics:', error);
+            logger.error('[notification-metrics] Error recording sent metrics', error);
         }
     }
 
-    // Also record to database for persistence
-    try {
-        const supabase = createServiceRoleClient();
-        await supabase.from('notification_metrics').insert({
-            restaurant_id: restaurantId,
-            channel,
-            status: 'sent',
-            latency_ms: latencyMs,
-            notification_id: notificationId,
-            recorded_at: new Date().toISOString(),
-        });
-    } catch (error) {
-        console.error('[notification-metrics] Database insert error:', error);
-    }
+// Also record to database for persistence
+     try {
+         const supabase = createServiceRoleClient();
+         await supabase.from('notification_metrics').insert({
+             restaurant_id: restaurantId,
+             channel,
+             status: 'sent',
+             latency_ms: latencyMs,
+             notification_id: notificationId,
+             recorded_at: new Date().toISOString(),
+         });
+     } catch (error) {
+         logger.error('[notification-metrics] Database insert error', error);
+     }
 }
 
 /**
@@ -377,26 +378,26 @@ export async function recordNotificationFailed(params: MetricParams): Promise<vo
             );
             await pipeline.exec();
         } catch (error) {
-            console.error('[notification-metrics] Error recording failed metrics:', error);
+            logger.error('[notification-metrics] Error recording failed metrics', error);
         }
     }
 
     // Record to database
     try {
         const supabase = createServiceRoleClient();
-        await supabase.from('notification_metrics').insert({
-            restaurant_id: restaurantId,
-            channel,
-            status: 'failed',
-            latency_ms: latencyMs,
-            notification_id: notificationId,
-            error_code: errorCode,
-            error_message: errorMessage,
-            recorded_at: new Date().toISOString(),
-        });
-    } catch (error) {
-        console.error('[notification-metrics] Database insert error:', error);
-    }
+await supabase.from('notification_metrics').insert({
+             restaurant_id: restaurantId,
+             channel,
+             status: 'failed',
+             latency_ms: latencyMs,
+             notification_id: notificationId,
+             error_code: errorCode,
+             error_message: errorMessage,
+             recorded_at: new Date().toISOString(),
+         });
+     } catch (error) {
+         logger.error('[notification-metrics] Database insert error', error);
+     }
 }
 
 /**
@@ -458,7 +459,7 @@ export async function recordRetryAttempt(params: MetricParams): Promise<void> {
             );
             await pipeline.exec();
         } catch (error) {
-            console.error('[notification-metrics] Error recording retry metrics:', error);
+            logger.error('[notification-metrics] Error recording retry metrics', error);
         }
     }
 }
@@ -482,7 +483,7 @@ async function getMetricValue(
             const value = await redis.get(buildMetricKey(restaurantId, channel, metric));
             return typeof value === 'number' ? value : 0;
         } catch (error) {
-            console.error('[notification-metrics] Redis get error:', error);
+            logger.error('[notification-metrics] Redis get error', error);
         }
     }
 
@@ -524,7 +525,7 @@ async function getMetricFromDatabase(
 
         return count || 0;
     } catch (error) {
-        console.error('[notification-metrics] Database query error:', error);
+        logger.error('[notification-metrics] Database query error', error);
         return 0;
     }
 }
@@ -550,7 +551,7 @@ async function getAverageLatency(
 
             return count > 0 ? Math.round(sum / count) : 0;
         } catch (error) {
-            console.error('[notification-metrics] Redis latency calculation error:', error);
+            logger.error('[notification-metrics] Redis latency calculation error', error);
         }
     }
 
@@ -583,7 +584,7 @@ async function getLatencyFromDatabase(
         const sum = data.reduce((acc, row) => acc + (row.latency_ms || 0), 0);
         return Math.round(sum / data.length);
     } catch (error) {
-        console.error('[notification-metrics] Database latency query error:', error);
+        logger.error('[notification-metrics] Database latency query error', error);
         return 0;
     }
 }
@@ -756,7 +757,7 @@ export async function getDeliveryReport(
             avgLatencyMs = dbTotalCount > 0 ? Math.round(dbTotalLatency / dbTotalCount) : 0;
         }
     } catch (error) {
-        console.error('[notification-metrics] Error fetching delivery report:', error);
+        logger.error('[notification-metrics] Error fetching delivery report', error);
     }
 
     const overallSuccessRate =

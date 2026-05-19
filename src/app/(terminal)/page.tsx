@@ -4,10 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     AlertCircle,
-    CheckCircle,
     Banknote,
     CreditCard,
-    Loader2,
     Receipt,
     RefreshCw,
     UserX,
@@ -118,14 +116,6 @@ const METHOD_ICONS: Record<SupportedPaymentMethod, React.ReactNode> = {
     other: <Receipt className="h-4 w-4" />,
 };
 
-const PAYMENT_TRUTH_BADGE_STYLES: Record<string, string> = {
-    local_capture: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
-    pending_verification: 'bg-sky-50 text-sky-700 ring-1 ring-sky-200',
-    verified: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
-    failed: 'bg-red-50 text-red-700 ring-1 ring-red-200',
-    review_required: 'bg-violet-50 text-violet-700 ring-1 ring-violet-200',
-};
-
 export default function TerminalPage(): React.JSX.Element {
     const managedDevice = useManagedDeviceSession({
         route: '/terminal',
@@ -154,14 +144,16 @@ export default function TerminalPage(): React.JSX.Element {
 
         try {
             setLoading(true);
+const deviceName = deviceInfo?.name ?? 'Terminal';
+                                                             const deviceType = deviceInfo?.device_type ?? 'terminal';
+                                                             const metadata = (deviceInfo?.metadata as TerminalOverview['device']['metadata']) ?? null;
             const result = await readTerminalOverview({
                 device: {
                     id: deviceInfo?.device_token ?? 'paired-terminal',
-                    name: deviceInfo?.name ?? 'Terminal',
-                    device_type: deviceInfo?.device_type ?? 'terminal',
+                    name: deviceName,
+                    device_type: deviceType,
                     assigned_zones: [],
-                    metadata:
-                        (deviceInfo?.metadata as TerminalOverview['device']['metadata']) ?? null,
+                    metadata,
                 },
                 deviceToken,
             });
@@ -178,7 +170,7 @@ export default function TerminalPage(): React.JSX.Element {
         } finally {
             setLoading(false);
         }
-    }, [deviceToken]);
+    }, [deviceToken, deviceInfo?.device_token, deviceInfo?.name, deviceInfo?.device_type, deviceInfo?.metadata]);
 
     useEffect(() => {
         void loadOverview();
@@ -277,7 +269,7 @@ export default function TerminalPage(): React.JSX.Element {
         return Number(selectedTable.outstanding_total ?? 0);
     }, [selectedTable]);
 
-    const splitPaymentsById = useMemo(() => {
+    const _splitPaymentsById = useMemo(() => {
         const grouped = new Map<string, SettlementPayment[]>();
         for (const payment of splitPayload?.split_payments ?? []) {
             if (!payment.split_id) continue;

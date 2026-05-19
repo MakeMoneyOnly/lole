@@ -4,14 +4,11 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
-import { FOOD_ITEMS } from '@/lib/constants';
-import { Star, Gift, Bell, Heart, ReceiptText, Tag } from 'lucide-react';
 import { isAbortError } from '@/hooks/useSafeFetch';
 import type { CartItem } from '@/domains/cart';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-const FALLBACK_IMAGE_URL = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=600&auto=format&fit=crop';
 const ALLOWED_REMOTE_IMAGE_HOSTS = new Set([
     'via.placeholder.com',
     'axuegixbqsvztdraenkz.supabase.co',
@@ -465,13 +462,13 @@ export function useGuestMenuData(): GuestMenuData {
     });
 
     const handleAddToCart = (item: MenuItem, quantity = 1): void => {
-        addToCart({
-            menuItemId: item.id,
-            title: item.title,
-            price: item.price,
-            image: item.imageUrl,
-            quantity,
-        });
+addToCart({
+             menuItemId: item.id,
+             title: item.title,
+             price: item.price,
+             image: item.imageUrl ?? undefined,
+             quantity,
+         });
     };
 
     return {
@@ -517,9 +514,8 @@ import { GuestMenuProductGrid } from '@/components/guest-menu/GuestMenuProductCa
 import { GuestMenuBottomNav } from '@/components/guest-menu/GuestMenuBottomNav';
 import { GuestMenuCart } from '@/components/guest-menu/GuestMenuCart';
 import { GuestMenuProfile } from '@/components/guest-menu/GuestMenuProfile';
-import { GuestMenuRecommendedCard } from '@/components/guest-menu/GuestMenuRecommendedCard';
+import { GuestMenuFeaturedSpecialsCarousel } from '@/components/guest-menu/GuestMenuFeaturedSpecialsCarousel';
 import { QuickActionsGrid } from '@/components/guest-menu/QuickActions';
-import { ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 
 /**
@@ -564,9 +560,6 @@ export function MenuClientContent(): React.JSX.Element {
             </div>
         );
     }
-
-    const categories: Category[] = Array.from(new Set(data.realItems.map((item: MenuItem) => item.categories.name)))
-        .map((name: string) => ({ id: name.toLowerCase(), name }));
 
     const handleNavChange = (_index: number): void => {
         setActiveIndex(_index);
@@ -613,14 +606,14 @@ export function MenuClientContent(): React.JSX.Element {
                                 {/* HORIZONTAL TEXT FILTERS */}
                                 <div className="flex w-full items-center gap-6 overflow-x-auto px-5 py-2 no-scrollbar">
                                     <div className="flex flex-col items-center">
-                                        <span className="text-[14px] font-semibold text-white whitespace-nowrap">Home</span>
+                                        <span className="text-[14px] font-bold text-white tracking-[-0.04em] whitespace-nowrap">Home</span>
                                         <div className="mt-1 h-0.5 w-full bg-white rounded-full" />
                                     </div>
-                                    <span className="text-[14px] font-medium text-white/60 whitespace-nowrap">Burgers</span>
-                                    <span className="text-[14px] font-medium text-white/60 whitespace-nowrap">Pizza</span>
-                                    <span className="text-[14px] font-medium text-white/60 whitespace-nowrap">Sushi</span>
-                                    <span className="text-[14px] font-medium text-white/60 whitespace-nowrap">Drinks</span>
-                                    <span className="text-[14px] font-medium text-white/60 whitespace-nowrap">Desserts</span>
+                                    <span className="text-[14px] font-semibold text-white/60 tracking-[-0.04em] whitespace-nowrap">Burgers</span>
+                                    <span className="text-[14px] font-semibold text-white/60 tracking-[-0.04em] whitespace-nowrap">Pizza</span>
+                                    <span className="text-[14px] font-semibold text-white/60 tracking-[-0.04em] whitespace-nowrap">Sushi</span>
+                                    <span className="text-[14px] font-semibold text-white/60 tracking-[-0.04em] whitespace-nowrap">Drinks</span>
+                                    <span className="text-[14px] font-semibold text-white/60 tracking-[-0.04em] whitespace-nowrap">Desserts</span>
                                 </div>
 
                                 {/* SPACER FOR HEIGHT */}
@@ -639,42 +632,36 @@ export function MenuClientContent(): React.JSX.Element {
                             {/* QUICK ACTIONS ROW */}
                             <QuickActionsGrid isOnlineOrderMode={data.isOnlineOrderMode} />
 
-                            {/* RECOMMENDED FOR YOU */}
-                            <section className="mt-8 px-5">
-                                <div className="mb-4">
-                                    <h2 className="text-[22px] font-medium text-[#1A1A1A] tracking-tighter">
-                                        Recommended for you
+                            {/* FEATURED SPECIALS */}
+                            <section className="mt-4">
+                                <div className="mb-4 px-5 flex items-end justify-between">
+                                    <h2 className="text-[26px] font-bold text-[#1A1C1E] tracking-[-0.04em] leading-none">
+                                        Featured specials
                                     </h2>
-                                    <div className="mt-1 flex items-center justify-between">
-                                        <p className="text-[13px] text-[#A3A3A3]">
-                                            Handpicked favorites just for you.
-                                        </p>
-                                        <button className="text-[13px] text-[#A3A3A3] hover:text-black/60 transition-colors">
-                                            View All
-                                        </button>
-                                    </div>
+                                    <button className="text-[13px] font-semibold text-[#A3A3A3] hover:text-black/60 tracking-[-0.04em] transition-colors pb-0.5">
+                                        See all
+                                    </button>
                                 </div>
 
-                                <GuestMenuRecommendedCard item={data.filteredItems[0]} />
+                                <GuestMenuFeaturedSpecialsCarousel
+                                    items={data.filteredItems.slice(0, 5)}
+                                    onSelect={data.setSelectedItem}
+                                    onAddToCart={data.handleAddToCart}
+                                />
                             </section>
 
                             {/* MORE FOR YOU (GRID) */}
                             <section className="mt-10">
-                                <div className="mb-4 px-5">
-                                    <h2 className="text-[22px] font-medium text-[#1A1A1A] tracking-tighter">
+                                <div className="mb-4 px-5 flex items-end justify-between">
+                                    <h2 className="text-[26px] font-bold text-[#1A1C1E] tracking-[-0.04em] leading-none">
                                         More for You
                                     </h2>
-                                    <div className="mt-1 flex items-center justify-between">
-                                        <p className="text-[13px] text-[#A3A3A3]">
-                                            Explore our full menu offerings.
-                                        </p>
-                                        <button className="text-[13px] text-[#A3A3A3] hover:text-black/60 transition-colors">
-                                            View All
-                                        </button>
-                                    </div>
+                                    <button className="text-[13px] font-semibold text-[#A3A3A3] hover:text-black/60 tracking-[-0.04em] transition-colors pb-0.5">
+                                        View All
+                                    </button>
                                 </div>
                                 <GuestMenuProductGrid
-                                    items={data.realItems.slice(1, 9)}
+                                    items={data.filteredItems}
                                     onAddToCart={data.handleAddToCart}
                                     onSelect={data.setSelectedItem}
                                 />

@@ -5,26 +5,17 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
     Banknote,
-    Bell,
-    BookOpen,
-    Calendar,
     ChevronDown,
     Clock,
-    Flame,
     Inbox,
-    MessageSquare,
-    PauseCircle,
-    Pencil,
     Plus,
     Printer,
     RotateCcw,
     Search,
-    Send,
     Trash2,
     User,
     Sun,
     Moon,
-    X,
     CheckCircle2,
     AlertCircle,
     Loader2,
@@ -32,12 +23,12 @@ import {
     ShoppingCart,
     ArrowRight,
 } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
 import { format } from 'date-fns';
 import { useManagedDeviceSession } from '@/features/merchant/hooks/useManagedDeviceSession';
 import { getSupabaseClient } from '@/lib/supabase/client';
 import type { Database } from '@/types/database';
 import { formatCurrencyCompact } from '@/lib/utils/monetary';
+import { logger } from '@/lib/logger';
 
 import { useCart } from '@/context/CartContext';
 import type { CartItem } from '@/domains/cart';
@@ -64,7 +55,7 @@ export default function WaiterPosPage(): React.JSX.Element {
     const headerDropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-function handleClickOutside(): React.JSX.Element | void {
+        function handleClickOutside(event: MouseEvent): void {
             if (
                 headerDropdownRef.current &&
                 !headerDropdownRef.current.contains(event.target as Node)
@@ -102,7 +93,7 @@ function handleClickOutside(): React.JSX.Element | void {
 
                 setStaffSession(parsed);
             } catch (e) {
-                console.error('Invalid staff session structure, requiring PIN relogin.', e);
+                logger.error('Invalid staff session structure, requiring PIN relogin.', e);
                 router.replace(
                     `/waiter/pin?restaurantId=${managedDevice.session?.restaurant_id || ''}`
                 );
@@ -124,10 +115,10 @@ function handleClickOutside(): React.JSX.Element | void {
     const [tables, setTables] = useState<Database['public']['Tables']['tables']['Row'][]>([]);
     const [isLoadingMenu, setIsLoadingMenu] = useState(false);
 
-    const [orderType, setOrderType] = useState<'Dine-in' | 'Takeaway' | 'Delivery'>('Dine-in');
+    const [orderType, _setOrderType] = useState<'Dine-in' | 'Takeaway' | 'Delivery'>('Dine-in');
     const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
-    const [showOrderTypeDropdown, setShowOrderTypeDropdown] = useState(false);
-    const [showTableDropdown, setShowTableDropdown] = useState(false);
+    const [_showOrderTypeDropdown, _setShowOrderTypeDropdown] = useState(false);
+    const [_showTableDropdown, _setShowTableDropdown] = useState(false);
 
     const cart = useCart();
 
@@ -200,7 +191,7 @@ function handleClickOutside(): React.JSX.Element | void {
                     }
                 }
             } catch (err) {
-                console.error('Error fetching data for POS:', err);
+                logger.error('Error fetching data for POS:', err);
             } finally {
                 setIsLoadingRestaurant(false);
                 setIsLoadingMenu(false);
@@ -208,27 +199,27 @@ function handleClickOutside(): React.JSX.Element | void {
         }
 
         void fetchData();
-    }, [managedDevice.session?.restaurant_id]);
+    }, [managedDevice.session?.restaurant_id, selectedTableId]);
 
-    const formattedDate = useMemo(() => {
+    const _formattedDate = useMemo(() => {
         return format(currentTime, "EEEE, d MMM yyyy 'at' p.");
     }, [currentTime]);
 
     const [searchTerm, setSearchTerm] = useState('');
-    const [showFireMenu, setShowFireMenu] = useState(false);
+    const [_showFireMenu, _setShowFireMenu] = useState(false);
     const [showSplitPayment, setShowSplitPayment] = useState(false);
     const [_payFlow, _setPayFlow] = useState<
         'MODE_SELECT' | 'SINGLE_QR' | 'SPLIT_AVATARS' | 'SPLIT_QR'
     >('MODE_SELECT');
     const [paymentStatus, setPaymentStatus] = useState<'PENDING' | 'PAID'>('PENDING');
     const [_isGuestMode, _setIsGuestMode] = useState(false);
-    const [activeGuestId, setActiveGuestId] = useState(1);
+    const [_activeGuestId, _setActiveGuestId] = useState(1);
     const [_guestList, _setGuestList] = useState([
         { id: 1, name: 'Guest 1', color: 'bg-blue-100', paid: false },
         { id: 2, name: 'Guest 2', color: 'bg-emerald-100', paid: false },
     ]);
     const [splitMode, setSplitMode] = useState<'full' | 'split'>('full');
-    const [splitCount, setSplitCount] = useState(2);
+    const [_splitCount, _setSplitCount] = useState(2);
 
     const filteredItems = useMemo(() => {
         return menuItems.filter(item => {

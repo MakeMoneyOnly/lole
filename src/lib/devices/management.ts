@@ -19,7 +19,7 @@ export async function queueAndDispatchManagedDeviceAction(args: {
     packageName?: string | null;
     appVersion?: string | null;
     appChannel?: string | null;
-}) {
+}): Promise<{ actionId: string; providerJobId: string | null; status: 'dispatched' }> {
     const now = new Date().toISOString();
     const db = args.admin;
     const currentMetadata = readRecord(args.device.metadata);

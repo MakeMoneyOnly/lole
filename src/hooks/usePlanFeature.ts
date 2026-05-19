@@ -97,9 +97,26 @@ export function usePlanFeatures(options: {
     const { features, plan } = options;
 
     return useMemo(() => {
-        return features.map(feature => ({
-            ...usePlanFeature({ feature, plan, returnNullOnLocked: true }),
-        }));
+        return features.map(feature => {
+            const available = checkFeature(plan, feature);
+            const { requiredPlan } = getFeatureAccess(plan, feature);
+            const upgradeMessage = getUpgradeMessage(plan, feature);
+
+            if (available) {
+                return {
+                    isAvailable: true,
+                    requiredPlan,
+                    upgradeMessage: '',
+                };
+            }
+
+            return {
+                isAvailable: false,
+                requiredPlan,
+                upgradeMessage,
+                lockedFeature: undefined,
+            };
+        });
     }, [features, plan]);
 }
 

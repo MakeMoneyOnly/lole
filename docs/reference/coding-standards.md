@@ -1,7 +1,7 @@
 # lole - Coding Standards
 
-**Version:** 1.1.0  
-**Last Updated:** May 15, 2026
+**Version:** 1.2.0  
+**Last Updated:** 2026-05-18
 
 ---
 
@@ -165,7 +165,7 @@ export function OrdersList({ orders }: OrdersListProps) {
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { auth } from '@/lib/auth';
+import { createClient } from '@/lib/supabase/server';
 
 const CreateOrderSchema = z.object({
     restaurantId: z.string().uuid(),
@@ -178,21 +178,28 @@ const CreateOrderSchema = z.object({
 });
 
 export async function createOrder(input: unknown) {
-    const session = await auth();
-    if (!session) {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
         return { error: 'UNAUTHORIZED' };
     }
 
-    const validated = CreateOrderSchema.safeParse(input);
-    if (!validated.success) {
-        return { error: 'VALIDATION_ERROR', details: validated.error.flatten() };
+    // Zod v4: Use parseAsync for async contexts (handles async refinements)
+    try {
+        const validated = await CreateOrderSchema.parseAsync(input);
+        // Create order logic with user context
+        const order = await createOrderInDB(validated, user.id);
+
+        revalidatePath('/orders');
+        return { data: order };
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            // .flatten() still works for structured error output
+            return { error: 'VALIDATION_ERROR', details: error.flatten() };
+        }
+        return { error: 'INTERNAL_ERROR' };
     }
-
-    // Create order logic
-    const order = await createOrderInDB(validated.data);
-
-    revalidatePath('/orders');
-    return { data: order };
 }
 ```
 
@@ -221,8 +228,9 @@ export async function POST(request: Request) {
     try {
         const body = await request.json();
 
-        // Validate input
-        const validated = CreateOrderSchema.parse(body);
+        // Zod v4: Use parseAsync in async contexts (recommended)
+        // Note: .email() is stricter by default in v4 (RFC 5322 compliant)
+        const validated = await CreateOrderSchema.parseAsync(body);
 
         // Process
         const order = await createOrder(validated);
@@ -242,6 +250,33 @@ export async function POST(request: Request) {
             { error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' } },
             { status: 500 }
         );
+    }
+}
+```
+
+### 4.4 Zod v4 Best Practices
+
+```typescript
+// ✅ Use parseAsync() for async contexts
+// Handles async refinements, transforms, and provides better error behavior
+const validated = await Schema.parseAsync(data);
+
+// ✅ .email() requires RFC 5322 compliant emails by default
+const EmailSchema = z.object({
+    email: z.email() // Stricter validation in v4
+});
+
+// ✅ safeParse still works, but parseAsync is preferred for async code
+const result = Schema.safeParse(data); // Still valid for sync contexts
+const asyncResult = await Schema.parseAsync(data); // Preferred for async
+
+// ✅ Error handling with z.ZodError and .flatten()
+try {
+    await Schema.parseAsync(data);
+} catch (error) {
+    if (error instanceof z.ZodError) {
+        const { fieldErrors } = error.flatten();
+        // Use structured errors in response
     }
 }
 ```
@@ -485,4 +520,4 @@ Before merging any code:
 
 **Document Owner:** Engineering Team  
 **Review Cycle:** Quarterly  
-**Next Review:** May 2026
+**Next Review:** June 2026

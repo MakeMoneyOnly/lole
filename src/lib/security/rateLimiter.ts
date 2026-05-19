@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import type { Json } from '@/types/database';
+import { logger } from '@/lib/logger';
 
 /**
  * Rate limit configuration
@@ -116,7 +117,7 @@ export async function checkRateLimit(
         .gte('created_at', windowStart.toISOString());
 
     if (error) {
-        console.error('Rate limit check error:', error);
+        logger.error('Rate limit check error:', error);
         // SECURITY: Fail closed - deny request on error to prevent bypass
         // This ensures that if the rate limiting system fails, attackers cannot exploit it
         return {
@@ -162,7 +163,7 @@ export async function logRateLimitedRequest(
     });
 
     if (error) {
-        console.error('Failed to log rate limit entry:', error);
+        logger.error('Failed to log rate limit entry:', error);
     }
 }
 
@@ -180,7 +181,7 @@ export async function cleanupRateLimitLogs(olderThanHours: number = 24): Promise
         .lt('created_at', cutoff.toISOString());
 
     if (error) {
-        console.error('Failed to cleanup rate limit logs:', error);
+        logger.error('Failed to cleanup rate limit logs:', error);
         return 0;
     }
 

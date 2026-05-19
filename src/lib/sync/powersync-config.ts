@@ -511,7 +511,7 @@ function realColumns(names: string[]): Record<string, typeof column.real> {
     >;
 }
 
-async function resolveStorageBackend(): Promise<'wasqlite' | 'capacitor-sqlite'> {
+async function _resolveStorageBackend(): Promise<'wasqlite' | 'capacitor-sqlite'> {
     if (typeof window === 'undefined') return 'wasqlite';
 
     try {

@@ -262,8 +262,8 @@ CREATE TABLE order_items (
   item_total              INTEGER GENERATED ALWAYS AS (quantity * unit_price) STORED,
   modifiers               JSONB,                         -- selected modifier names + prices
   notes                   TEXT,
-  status                  TEXT DEFAULT 'pending'
-    CHECK (status IN ('pending','started','held','ready','served')),
+status                  TEXT DEFAULT 'pending'
+     CHECK (status IN ('pending','confirmed','preparing','ready','served','cancelled')),
   kds_station             TEXT,
   idempotency_key         TEXT UNIQUE NOT NULL,
   created_at              TIMESTAMPTZ DEFAULT NOW()
@@ -301,8 +301,8 @@ CREATE TABLE payments (
     CHECK (method IN ('cash','telebirr','chapa','cbe_birr','amole','card')),
   provider                TEXT,                          -- 'internal', 'chapa', 'telebirr', 'cbe'
   provider_transaction_id TEXT,                          -- provider's own TX ID (for webhook matching)
-  status                  TEXT NOT NULL DEFAULT 'pending'
-    CHECK (status IN ('pending','captured','failed','refunded')),
+status                  TEXT NOT NULL DEFAULT 'pending'
+     CHECK (status IN ('pending','processing','captured','failed','refunded','cancelled')),
   captured_at             TIMESTAMPTZ,
   idempotency_key         TEXT UNIQUE NOT NULL,
   created_at              TIMESTAMPTZ DEFAULT NOW()

@@ -16,6 +16,7 @@ import {
     type SessionData,
     type SessionStore,
 } from './sessionStore';
+import { logger } from '@/lib/logger';
 
 // Re-export types
 export type { SessionData, SessionStore };
@@ -150,12 +151,12 @@ export async function validateSessionContext(
 
     // Check if IP has changed (could indicate session hijacking)
     if (session.ipAddress !== ipAddress) {
-        console.warn(`Session ${sessionId} IP mismatch: ${session.ipAddress} vs ${ipAddress}`);
+        logger.warn(`Session ${sessionId} IP mismatch: ${session.ipAddress} vs ${ipAddress}`);
     }
 
     // Check if user agent has changed significantly
     if (session.userAgent !== userAgent) {
-        console.warn(`Session ${sessionId} User-Agent mismatch`);
+        logger.warn(`Session ${sessionId} User-Agent mismatch`);
     }
 
     return { valid: true };

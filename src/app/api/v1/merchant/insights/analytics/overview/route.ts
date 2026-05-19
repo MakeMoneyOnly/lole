@@ -7,8 +7,16 @@ import {
 } from '@/lib/services/timescaleAnalyticsService';
 import { getCacheHeaders, CACHE_PRESETS } from '@/lib/api/cache';
 import { logger } from '@/lib/logger';
+import type { Database } from '@/types/database';
 
 const log = logger.child('[analytics/overview]');
+
+type Order = Database['public']['Tables']['orders']['Row'] & {
+    order_items?: Array<{ name: string; quantity: number | null; price: number }>;
+};
+type Review = Database['public']['Tables']['reviews']['Row'];
+type Table = Database['public']['Tables']['tables']['Row'];
+type ServiceRequest = Database['public']['Tables']['service_requests']['Row'];
 
 export async function GET(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
@@ -109,28 +117,28 @@ export async function GET(request: Request): Promise<Response> {
     }
     // review fetch failure is non-critical, we can default to 0
 
-    const orders = ordersRes.data ?? [];
-    const requests = requestsRes.data ?? [];
-    const tables = tablesRes.data ?? [];
-    const reviews = reviewsRes.data ?? [];
+    const orders = (ordersRes.data ?? []) as Order[];
+    const requests = (requestsRes.data ?? []) as ServiceRequest[];
+    const tables = (tablesRes.data ?? []) as Table[];
+    const reviews = (reviewsRes.data ?? []) as Review[];
 
     // total_price is stored in santim — divide by 100 to get ETB
     const totalRevenue =
-        orders.reduce((sum, order) => sum + Number(order.total_price ?? 0), 0) / 100;
+        orders.reduce((sum: number, order: Order) => sum + Number(order.total_price ?? 0), 0) / 100;
     const totalOrders = orders.length;
-    const completedOrders = orders.filter(order =>
+    const completedOrders = orders.filter((order: Order) =>
         ['served', 'completed'].includes(order.status ?? '')
     ).length;
     const previousCompletedOrders = prevOrdersRes.count ?? 0;
 
-    const pendingOrders = orders.filter(order =>
+    const pendingOrders = orders.filter((order: Order) =>
         ['pending', 'acknowledged', 'preparing', 'ready'].includes(order.status ?? '')
     ).length;
-    const openRequests = requests.filter(r => (r.status ?? 'pending') === 'pending').length;
+    const openRequests = requests.filter((r: ServiceRequest) => (r.status ?? 'pending') === 'pending').length;
 
     // Table Metrics
     const activeTables = tables.filter(
-        t => t.is_active !== false && t.status !== 'available'
+        (t: Table) => t.is_active !== false && t.status !== 'available'
     ).length;
     const totalTables = tables.length;
 
@@ -139,19 +147,19 @@ export async function GET(request: Request): Promise<Response> {
     const avgRating =
         totalReviews > 0
             ? Number(
-                  (reviews.reduce((acc, r) => acc + (r.rating || 0), 0) / totalReviews).toFixed(1)
+                  (reviews.reduce((acc: number, r: Review) => acc + (r.rating || 0), 0) / totalReviews).toFixed(1)
               )
             : 0;
 
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
     const reviewsThisWeek = reviews.filter(
-        r => r.created_at && new Date(r.created_at) > oneWeekAgo
+        (r: Review) => r.created_at && new Date(r.created_at) > oneWeekAgo
     ).length;
 
     // Calculate Top Selling Items
     const itemSales: Record<string, { count: number; revenue: number }> = {};
-    orders.forEach(order => {
+    orders.forEach((order: Order) => {
         const items = order.order_items || [];
         items.forEach((item: { name: string; quantity: number | null; price: number }) => {
             const name = item.name || 'Unknown Item';
@@ -186,7 +194,7 @@ export async function GET(request: Request): Promise<Response> {
         trendBuckets[key] = { revenue: 0, orders: 0 };
     }
 
-    orders.forEach(order => {
+    orders.forEach((order: Order) => {
         if (!order.created_at) return;
         const date = new Date(order.created_at);
         let key = '';

@@ -199,7 +199,7 @@ export async function processLoyaltyAward(
         });
 
         if (transactionError) {
-            console.error('[loyalty-award] Failed to record transaction:', transactionError);
+            log.error('Failed to record transaction:', transactionError);
             // Don't fail - points were already awarded
         }
 

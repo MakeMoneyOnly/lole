@@ -6,6 +6,7 @@ import { guestsResolvers } from '@/domains/guests/resolvers';
 import { createSubgraphHandler } from '@/lib/graphql/subgraph-handler';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { NextRequest } from 'next/server';
 
 // Load the guests subgraph schema
 const guestsSchema = readFileSync(
@@ -19,12 +20,12 @@ const handler = createSubgraphHandler({
     resolvers: guestsResolvers,
 });
 
-export async function GET(request: Request): Promise<Response> {
-    return handler(request);
+export async function GET(request: NextRequest): Promise<Response> {
+    return handler(request as NextRequest);
 }
 
-export async function POST(request:  Request): Promise<Response> {
-    return handler(request);
+export async function POST(request: NextRequest): Promise<Response> {
+    return handler(request as NextRequest);
 }
 
 

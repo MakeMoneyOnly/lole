@@ -15,7 +15,7 @@ export const API_METRIC_ENTITY_TYPE = 'api_endpoint';
 export async function trackApiMetric(
     supabase: SupabaseClient<Database>,
     params: TrackApiMetricParams
-) {
+): Promise<{ error: Error | null }> {
     const isError = params.statusCode >= 400;
 
     const metadata: Json = {

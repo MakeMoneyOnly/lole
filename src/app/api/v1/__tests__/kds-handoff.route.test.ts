@@ -10,7 +10,7 @@ vi.mock('@/lib/api/authz', () => ({
 
 const getAuthenticatedUserMock = vi.mocked(getAuthenticatedUser);
 const getAuthorizedRestaurantContextMock = vi.mocked(getAuthorizedRestaurantContext);
-function makeDbWithRole(): React.JSX.Element | void {
+function makeDbWithRole(role?: string): any {
     return {
         from: (table: string) => {
             if (table === 'restaurant_staff') {

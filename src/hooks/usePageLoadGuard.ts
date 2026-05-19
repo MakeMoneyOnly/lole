@@ -14,7 +14,11 @@ import { useState, useCallback } from 'react';
  *
  * The flag is stored in sessionStorage so it clears when the tab is closed.
  */
-export function usePageLoadGuard(pageKey: string) {
+export function usePageLoadGuard(pageKey: string): {
+    loading: boolean;
+    setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+    markLoaded: () => void;
+} {
     const storageKey = `page.initialLoadDone.${pageKey}`;
 
     const [loading, setLoading] = useState<boolean>(() => {

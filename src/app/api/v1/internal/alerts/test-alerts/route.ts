@@ -14,7 +14,7 @@ import { testAlerts, areAlertsEnabled } from '@/lib/monitoring';
  * GET /api/test-alerts
  * Check if alerts are configured
  */
-export async function GET(request: Request): Promise<Response> {
+export async function GET(_request: Request): Promise<Response> {
     // Only allow in development or with secret key
     const isDevelopment = process.env.NODE_ENV === 'development';
 

@@ -5,9 +5,18 @@ import Image from 'next/image';
 import { SendIcon, LoaderIcon, BarChart3, ShoppingBag, Users, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+interface AutoResizeOptions {
+    minHeight: number;
+    maxHeight?: number;
+}
+
 // ─── Auto-resize textarea hook ───────────────────────────────────────────────
-function useAutoResizeTextarea(): React.JSX.Element | void {
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
+function useAutoResizeTextarea(options?: AutoResizeOptions): {
+     textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+     adjustHeight: (reset?: boolean) => void;
+ } {
+     const { minHeight = 44, maxHeight = 120 } = options || {};
+     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
     const adjustHeight = useCallback(
         (reset?: boolean) => {
@@ -200,7 +209,7 @@ export function LoleChatbot(): React.JSX.Element {
         [isTyping, adjustHeight]
     );
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>): React.JSX.Element => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage(value);

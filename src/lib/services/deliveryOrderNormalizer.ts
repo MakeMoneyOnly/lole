@@ -6,6 +6,7 @@
  */
 
 import { z } from 'zod';
+import { logger } from '@/lib/logger';
 
 // Standard normalized order structure
 export interface NormalizedExternalOrder {
@@ -198,7 +199,7 @@ export function parseBeuOrder(
             payload_json: order as unknown as Record<string, unknown>,
         };
     } catch (error) {
-        console.error('Failed to parse Beu order:', error);
+        logger.error('Failed to parse Beu order:', error);
         return null;
     }
 }
@@ -242,7 +243,7 @@ export function parseZmallOrder(
             payload_json: order as unknown as Record<string, unknown>,
         };
     } catch (error) {
-        console.error('Failed to parse Zmall order:', error);
+        logger.error('Failed to parse Zmall order:', error);
         return null;
     }
 }
@@ -285,7 +286,7 @@ export function parseDeliverAddisOrder(
             payload_json: order as unknown as Record<string, unknown>,
         };
     } catch (error) {
-        console.error('Failed to parse Deliver Addis order:', error);
+        logger.error('Failed to parse Deliver Addis order:', error);
         return null;
     }
 }
@@ -328,7 +329,7 @@ export function parseEsooraOrder(
             payload_json: order as unknown as Record<string, unknown>,
         };
     } catch (error) {
-        console.error('Failed to parse Esoora order:', error);
+        logger.error('Failed to parse Esoora order:', error);
         return null;
     }
 }
@@ -405,7 +406,7 @@ function mapEsooraStatus(
 /**
  * Get the appropriate parser for a delivery partner
  */
-export function getParserForProvider(provider: string) {
+export function getParserForProvider(provider: string): ((rawOrder: unknown, restaurantId: string) => NormalizedExternalOrder | null) | null {
     switch (provider.toLowerCase()) {
         case 'beu':
             return parseBeuOrder;

@@ -20,7 +20,7 @@ const log = logger.child('merchant-operations/fire-times');
 export async function POST(
     request: NextRequest,
     { params }: { params: Promise<{ orderId: string }> }
-) {
+): Promise<Response> {
     try {
         const { orderId } = await params;
         const cookieStore = await cookies();
@@ -129,7 +129,7 @@ export async function POST(
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ orderId: string }> }
-) {
+): Promise<Response> {
     try {
         const { orderId } = await params;
         const cookieStore = await cookies();

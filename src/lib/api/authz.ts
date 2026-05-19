@@ -1,3 +1,4 @@
+import type { PostgrestSingleResponse } from '@supabase/postgrest-js';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { apiError } from '@/lib/api/response';
@@ -134,7 +135,10 @@ export async function getAuthenticatedUser(): Promise<GetAuthenticatedUserResult
 export async function getAuthorizedRestaurantContext(
     userId: string,
     options?: { phase?: PilotPhase }
-) {
+): Promise<
+    | { ok: true; restaurantId: string; supabase: Awaited<ReturnType<typeof createClient>> }
+    | { ok: false; response: ReturnType<typeof apiError> }
+> {
     const phase = options?.phase ?? 'p0';
 
     // Use service role client in E2E mode to bypass RLS policies
@@ -247,7 +251,7 @@ export async function getDeviceContext(request: Request): Promise<GetDeviceConte
     }
 
     const admin = createServiceRoleClient();
-    const fetchEnterpriseDevice = (): React.JSX.Element =>
+    const fetchEnterpriseDevice = async (): Promise<PostgrestSingleResponse<EnterpriseDeviceRow>> =>
         admin
             .from('hardware_devices')
             .select(
@@ -353,10 +357,10 @@ export async function enforceTenantScope(
         .eq('is_active', true)
         .maybeSingle();
 
-    if (error) {
-        console.error('Failed to verify tenant scope:', error);
-        return { allowed: false, reason: 'Failed to verify access' };
-    }
+if (error) {
+         logger.error('Failed to verify tenant scope', error);
+         return { allowed: false, reason: 'Failed to verify access' };
+     }
 
     if (staffEntry) {
         return { allowed: true };
@@ -369,10 +373,10 @@ export async function enforceTenantScope(
         .eq('user_id', userId)
         .maybeSingle();
 
-    if (agencyError) {
-        console.error('Failed to verify agency access:', agencyError);
-        return { allowed: false, reason: 'Failed to verify access' };
-    }
+if (agencyError) {
+         logger.error('Failed to verify agency access', agencyError);
+         return { allowed: false, reason: 'Failed to verify access' };
+     }
 
     if (agencyUser?.restaurant_ids?.includes(restaurantId)) {
         return { allowed: true };
@@ -414,10 +418,7 @@ export async function validateResourceTenantScope(
     }
 
     // Log the validation attempt for audit purposes
-    console.warn(
-        `SEC-002: Resource validation requested for table ${resourceTable}, id ${resourceId}. ` +
-            `Consider using a type-specific validator for better type safety.`
-    );
+    logger.warn('SEC-002: Resource validation requested', { resourceTable, resourceId });
 
     // Return valid - actual table-specific validation should be done by calling
     // the appropriate type-specific function
@@ -445,10 +446,10 @@ export async function validateOrderTenantScope(
         .eq('id', orderId)
         .maybeSingle();
 
-    if (error) {
-        console.error('Failed to validate order scope:', error);
-        return { valid: false, reason: 'Failed to validate order' };
-    }
+if (error) {
+         logger.error('Failed to validate order scope', error);
+         return { valid: false, reason: 'Failed to validate order' };
+     }
 
     if (!data) {
         return { valid: false, reason: 'Order not found' };
@@ -498,10 +499,10 @@ export async function validateMenuItemTenantScope(
         .eq('id', menuItemId)
         .maybeSingle();
 
-    if (error) {
-        console.error('Failed to validate menu item scope:', error);
-        return { valid: false, reason: 'Failed to validate menu item' };
-    }
+if (error) {
+         logger.error('Failed to validate menu item scope', error);
+         return { valid: false, reason: 'Failed to validate menu item' };
+     }
 
     if (!data) {
         return { valid: false, reason: 'Menu item not found' };
@@ -554,10 +555,10 @@ export async function validateTableTenantScope(
         .eq('id', tableId)
         .maybeSingle();
 
-    if (error) {
-        console.error('Failed to validate table scope:', error);
-        return { valid: false, reason: 'Failed to validate table' };
-    }
+if (error) {
+         logger.error('Failed to validate table scope', error);
+         return { valid: false, reason: 'Failed to validate table' };
+     }
 
     if (!data) {
         return { valid: false, reason: 'Table not found' };

@@ -7,6 +7,10 @@
 - Production credentials configured
 - Staging Supabase project created
 - Vercel project configured
+- Environment variables set:
+  - `SUPABASE_ACCESS_TOKEN`
+  - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+  - `SUPABASE_SECRET_KEY`
 
 ## Steps
 
@@ -25,7 +29,7 @@ vercel --prebuilt --env NODE_ENV=production
 ### 3. Run Migrations
 
 ```bash
-supabase db push --db-url $STAGING_DATABASE_URL
+pnpm supabase:cli db push --db-url $STAGING_DATABASE_URL
 ```
 
 ### 4. Verify

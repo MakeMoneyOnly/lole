@@ -331,22 +331,22 @@ export async function PATCH(request: Request): Promise<Response> {
             nextStatus = normalizePayoutStatus({
                 subaccountId: returnedSubaccountId,
                 providerStatus: subaccount.status,
-                providerMessage: subaccount.message,
+                providerMessage: subaccount.message ?? undefined,
             });
             nextLastError =
                 nextStatus === 'active'
                     ? null
                     : subaccount.message || 'Payout destination is waiting for Chapa review.';
         }
-    } catch (error) {
-        const message =
-            error instanceof Error ? error.message : 'Unknown Chapa subaccount provisioning error';
-        nextStatus = normalizePayoutStatus({
-            subaccountId: nextSubaccountId,
-            providerMessage: message,
-        });
-        nextLastError = message;
-    }
+} catch (error) {
+         const errorMessage = error instanceof Error ? error.message : null;
+         const message = errorMessage || 'Unknown Chapa subaccount provisioning error';
+nextStatus = normalizePayoutStatus({
+               subaccountId: nextSubaccountId ?? undefined,
+               providerMessage: message,
+           });
+         nextLastError = message;
+     }
 
     log.info('Saving to database', {
         restaurantId: context.restaurantId,

@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle, RefreshCw, Monitor } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 /**
  * Error Boundary for POS Routes
@@ -19,7 +20,7 @@ export default function POSError({
     const router = useRouter();
 
     useEffect(() => {
-        console.error('[POS Error Boundary]:', error);
+        logger.error('[POS Error Boundary]:', error);
     }, [error]);
 
     return (

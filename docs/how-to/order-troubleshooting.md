@@ -33,7 +33,7 @@ WHERE order_number = '<order_number>'
 OR id = '<order_id>';
 ```
 
-**Expected status values:**
+**Order status values:**
 
 - `pending` - Order created, awaiting confirmation
 - `confirmed` - Confirmed by kitchen
@@ -41,6 +41,15 @@ OR id = '<order_id>';
 - `ready` - Ready for pickup/delivery
 - `served` - Order delivered to guest
 - `cancelled` - Order cancelled
+
+**KDS item status values:**
+
+- `pending` - Item waiting for preparation
+- `fired` - Item sent to kitchen display
+- `preparing` - Kitchen is preparing
+- `ready` - Item ready for pickup/delivery
+- `served` - Item delivered to guest
+- `cancelled` - Item cancelled
 
 #### Step 2: Verify KDS Station Routing
 
@@ -108,7 +117,7 @@ Orders older than 5 minutes in pending status need intervention.
 #### Step 2: Check for Errors
 
 ```sql
--- Look for failed items
+-- Look for cancelled or problematic items
 SELECT
   oi.id,
   mi.name,
@@ -117,7 +126,7 @@ SELECT
 FROM order_items oi
 JOIN menu_items mi ON mi.id = oi.menu_item_id
 WHERE oi.order_id = '<order_id>'
-AND oi.status = 'failed';
+AND oi.status IN ('cancelled', 'pending');
 ```
 
 ### Resolution
@@ -133,9 +142,9 @@ SET status = 'confirmed',
 WHERE id = '<order_id>'
 AND status = 'pending';
 
--- Update all items to confirmed
+-- Update all items to fired (sent to KDS)
 UPDATE order_items
-SET status = 'pending',  -- Items stay pending until kitchen starts
+SET status = 'fired',
     updated_at = NOW()
 WHERE order_id = '<order_id>';
 COMMIT;

@@ -234,30 +234,30 @@ export async function GET(request: NextRequest): Promise<Response> {
         const timeEntries = timeEntriesRes.data ?? [];
         const tipAllocations = tipAllocationsRes.data ?? [];
 
-        const ordersInFlight = orders.filter(o => isInFlightStatus(o.status)).length;
+        const ordersInFlight = orders.filter((o: { status: string | null }) => isInFlightStatus(o.status)).length;
         const completedOrders = orders.filter(
-            o => o.status === 'completed' || o.status === 'served'
+            (o: { status: string | null }) => o.status === 'completed' || o.status === 'served'
         );
         const activeTables = tables.filter(
-            t => t.is_active !== false && t.status !== 'available'
+            (t: { is_active: boolean | null; status: string | null }) => t.is_active !== false && t.status !== 'available'
         ).length;
-        const openRequests = requests.filter(r => (r.status ?? 'pending') === 'pending').length;
-        const grossSalesSantim = orders.reduce((sum, o) => sum + Number(o.total_price ?? 0), 0);
+        const openRequests = requests.filter((r: { status: string | null }) => (r.status ?? 'pending') === 'pending').length;
+        const grossSalesSantim = orders.reduce((sum: number, o: { total_price?: number | null }) => sum + Number(o.total_price ?? 0), 0);
         const grossSales = grossSalesSantim / 100;
         const grossSalesPrevious =
-            prevOrders.reduce((sum, o) => sum + Number(o.total_price ?? 0), 0) / 100;
+            prevOrders.reduce((sum: number, o: { total_price?: number | null }) => sum + Number(o.total_price ?? 0), 0) / 100;
         const avgOrderValue = orders.length > 0 ? Math.round(grossSales / orders.length) : 0;
-        const uniqueTablesToday = new Set(orders.map(o => o.table_number).filter(Boolean)).size;
+        const uniqueTablesToday = new Set(orders.map((o: { table_number: string | null }) => o.table_number).filter(Boolean)).size;
         const hourlyRateConfig = await getHourlyRateConfig(supabase, restaurantId);
         const laborMetrics = calculateLaborMetricsFromTimeEntries({
             salesTotal: grossSales,
-            timeEntries: timeEntries.map(entry => ({
-                staff_id: entry.staff_id,
-                clock_in_at: entry.clock_in_at,
+            timeEntries: timeEntries.map((entry: { staff_id: string | null; clock_in_at: string | null; clock_out_at: string | null }) => ({
+                staff_id: entry.staff_id ?? '',
+                clock_in_at: entry.clock_in_at ?? '',
                 clock_out_at: entry.clock_out_at,
             })),
             staffRoles: Object.fromEntries(
-                staff.map(member => [member.id, member.role ?? 'default'])
+                staff.map((member: { id: string; role: string | null }) => [member.id, member.role ?? 'default'])
             ),
             hourlyRateConfig,
             tipAllocations,
@@ -266,7 +266,7 @@ export async function GET(request: NextRequest): Promise<Response> {
 
         let avgTicketMinutes = 0;
         if (completedOrders.length > 0) {
-            const totalMinutes = completedOrders.reduce((sum, order) => {
+            const totalMinutes = completedOrders.reduce((sum: number, order: { created_at: string | null; completed_at: string | null }) => {
                 if (!order.created_at || !order.completed_at) {
                     return sum;
                 }
@@ -283,9 +283,9 @@ export async function GET(request: NextRequest): Promise<Response> {
             orders.length > 0 ? Math.round((completedOrders.length / orders.length) * 100) : 0;
 
         const attentionOrders: AttentionItem[] = orders
-            .filter(o => isInFlightStatus(o.status))
+            .filter((o: { id: string; order_number: string | null; status: string | null; created_at: string | null; table_number: string | null }) => isInFlightStatus(o.status))
             .slice(0, 10)
-            .map(o => ({
+            .map((o: { id: string; order_number: string | null; status: string | null; created_at: string | null; table_number: string | null }) => ({
                 id: o.id,
                 type: 'order',
                 label: o.order_number || o.id,
@@ -295,21 +295,21 @@ export async function GET(request: NextRequest): Promise<Response> {
             }));
 
         const attentionRequests: AttentionItem[] = requests
-            .filter(r => (r.status ?? 'pending') === 'pending')
+            .filter((r: { id: string; request_type: string | null; status: string | null; created_at: string | null; table_number: string | null }) => (r.status ?? 'pending') === 'pending')
             .slice(0, 10)
-            .map(r => ({
+            .map((r: { id: string; request_type: string | null; status: string | null; created_at: string | null; table_number: string | null }) => ({
                 id: r.id,
                 type: 'service_request',
-                label: r.request_type,
+                label: r.request_type ?? 'Service Request',
                 status: r.status ?? 'pending',
                 created_at: r.created_at,
                 table_number: r.table_number,
             }));
 
         const attentionAlerts: AttentionItem[] = alerts
-            .filter(alert => (alert.status ?? 'open') !== 'resolved')
+            .filter((alert: { id: string; entity_type: string | null; status: string | null; severity: string | null; created_at: string | null }) => (alert.status ?? 'open') !== 'resolved')
             .slice(0, 10)
-            .map(alert => ({
+            .map((alert: { id: string; entity_type: string | null; status: string | null; severity: string | null; created_at: string | null }) => ({
                 id: alert.id,
                 type: 'alert',
                 label: `${alert.entity_type} alert`,
@@ -343,8 +343,8 @@ export async function GET(request: NextRequest): Promise<Response> {
 
             const dayIncome =
                 orders
-                    .filter(o => o.created_at?.startsWith(dateStr))
-                    .reduce((sum, o) => sum + Number(o.total_price ?? 0), 0) / 100;
+                    .filter((o: { created_at: string | null; total_price?: number | null }) => o.created_at?.startsWith(dateStr))
+                    .reduce((sum: number, o: { total_price?: number | null }) => sum + Number(o.total_price ?? 0), 0) / 100;
 
             const prevDate = new Date(
                 d.getTime() -
@@ -357,8 +357,8 @@ export async function GET(request: NextRequest): Promise<Response> {
             const prevDateStr = prevDate.toISOString().split('T')[0];
             const prevIncome =
                 prevOrders
-                    .filter(o => o.created_at?.startsWith(prevDateStr))
-                    .reduce((sum, o) => sum + Number(o.total_price ?? 0), 0) / 100;
+                    .filter((o: { created_at: string | null; total_price?: number | null }) => o.created_at?.startsWith(prevDateStr))
+                    .reduce((sum: number, o: { total_price?: number | null }) => sum + Number(o.total_price ?? 0), 0) / 100;
 
             chartPoints.push({
                 label,

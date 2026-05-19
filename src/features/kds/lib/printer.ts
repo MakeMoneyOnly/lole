@@ -1,4 +1,5 @@
 import { createHash, createHmac, randomUUID } from 'crypto';
+import { logger } from '@/lib/logger';
 
 type PrintMode = 'off' | 'fallback' | 'always';
 type PrinterProvider = 'log' | 'webhook';
@@ -102,7 +103,7 @@ function signBridgeBody(
     return { signature, bodySha256 };
 }
 
-async function sleep(ms: number) {
+async function sleep(ms: number): Promise<void> {
     await new Promise(resolve => setTimeout(resolve, ms));
 }
 function computeBackoffMs(base: number, attempt: number): number {
@@ -222,7 +223,7 @@ export async function dispatchKdsPrintJob(
     }
 
     // Log-mode provider acts as a non-hardware fallback in lower environments.
-    console.warn('[KDS_PRINTER_LOG]', {
+    logger.warn('[KDS_PRINTER_LOG]', {
         event: 'kds.ticket.print.v1',
         event_id: eventId,
         copies: policy.copies,

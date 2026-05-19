@@ -3,6 +3,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 interface TabItem {
     id: number;
@@ -15,32 +16,32 @@ const TABS: TabItem[] = [
     {
         id: 0,
         label: 'Home',
-        iconFill: '/icons/Guest Menu/home-fill.svg?v=2',
-        iconLine: '/icons/Guest Menu/home-line.svg?v=2',
+        iconFill: '/icons/Guest%20Menu/home-fill.svg?v=2',
+        iconLine: '/icons/Guest%20Menu/home-line.svg?v=2',
     },
     {
         id: 4,
         label: 'Offers',
-        iconFill: '/icons/Guest Menu/discount-fill.svg?v=2',
-        iconLine: '/icons/Guest Menu/discount-line.svg?v=2',
+        iconFill: '/icons/Guest%20Menu/discount-fill.svg?v=2',
+        iconLine: '/icons/Guest%20Menu/discount-line.svg?v=2',
     },
     {
         id: 1,
         label: 'Pay',
-        iconFill: '/icons/Guest Menu/wallet-fill.svg?v=2',
-        iconLine: '/icons/Guest Menu/wallet-line.svg?v=2',
+        iconFill: '/icons/Guest%20Menu/wallet-fill.svg?v=2',
+        iconLine: '/icons/Guest%20Menu/wallet-line.svg?v=2',
     },
     {
         id: 3,
         label: 'Cart',
-        iconFill: '/icons/Guest Menu/cart-fill.svg?v=2',
-        iconLine: '/icons/Guest Menu/cart-line.svg?v=2',
+        iconFill: '/icons/Guest%20Menu/cart-fill.svg?v=2',
+        iconLine: '/icons/Guest%20Menu/cart-line.svg?v=2',
     },
     {
         id: 2,
         label: 'Profile',
-        iconFill: '/icons/Guest Menu/profile-fill.svg?v=2',
-        iconLine: '/icons/Guest Menu/profile-line.svg?v=2',
+        iconFill: '/icons/Guest%20Menu/profile-fill.svg?v=2',
+        iconLine: '/icons/Guest%20Menu/profile-line.svg?v=2',
     },
 ];
 
@@ -85,11 +86,14 @@ export const GuestMenuBottomNav: React.FC<{
                                 )}
                             >
                                 <div className="relative">
-                                    <img
-                                        src={isActive ? tab.iconFill : tab.iconLine}
-                                        alt={tab.label}
-                                        className="h-[22px] w-[22px]"
-                                    />
+<Image
+                                            src={isActive ? tab.iconFill : tab.iconLine}
+                                            alt={tab.label}
+                                            className="h-[22px] w-[22px]"
+                                            width={22}
+                                            height={22}
+                                            unoptimized={true}
+                                        />
                                     {tab.id === 3 && cartCount > 0 && (
                                         <span className={cn(
                                             "absolute -top-2 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold shadow-sm border border-black transition-all",
@@ -100,7 +104,7 @@ export const GuestMenuBottomNav: React.FC<{
                                     )}
                                 </div>
                                 {isActive && (
-                                    <span className="font-inter text-[13px] font-normal tracking-tight whitespace-nowrap select-none">
+                                    <span className="font-inter text-[13px] font-bold tracking-[-0.04em] whitespace-nowrap select-none">
                                         {tab.label}
                                     </span>
                                 )}

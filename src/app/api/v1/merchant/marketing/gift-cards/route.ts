@@ -23,7 +23,7 @@ const CreateGiftCardSchema = z.object({
     metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
-function generateGiftCardCode(): React.JSX.Element {
+function generateGiftCardCode(): string {
     return `GC-${randomBytes(4).toString('hex').toUpperCase()}`;
 }
 

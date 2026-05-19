@@ -65,26 +65,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         cartRepository.syncCartToPowerSync(items);
     }, [items]);
 
-    const addToCart = (newItem: Omit<CartItem, 'uniqueId'>): React.JSX.Element => {
+    const addToCart = (newItem: Omit<CartItem, 'uniqueId'>): void => {
         trigger('success');
         setItems(prev => cartService.addItem(prev, newItem));
     };
 
-    const removeFromCart = (uniqueId: string): React.JSX.Element => {
+    const removeFromCart = (uniqueId: string): void => {
         trigger('medium');
         setItems(prev => cartService.removeItem(prev, uniqueId));
     };
 
-    const updateQuantity = (uniqueId: string, delta: number): React.JSX.Element => {
+    const updateQuantity = (uniqueId: string, delta: number): void => {
         trigger('soft');
         setItems(prev => cartService.updateQuantity(prev, uniqueId, delta));
     };
 
-    const updateInstructions = (uniqueId: string, instructions: string): React.JSX.Element => {
+    const updateInstructions = (uniqueId: string, instructions: string): void => {
         setItems(prev => cartService.updateInstructions(prev, uniqueId, instructions));
     };
 
-    const clearCart = (): React.JSX.Element => {
+    const clearCart = (): void => {
         setItems([]);
         localStorage.removeItem(STORAGE_KEY);
         cartRepository.clearCartFromPowerSync();

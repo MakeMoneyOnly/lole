@@ -15,7 +15,7 @@ export function enforcePilotAccess(
     restaurantId: string,
     method?: string,
     options?: { phase?: PilotPhase }
-) {
+): ReturnType<typeof apiError> | null {
     const phase = options?.phase ?? 'p0';
     if (!isPilotRolloutEnabled(phase)) {
         return null;

@@ -7,6 +7,7 @@
  */
 
 import { colors } from '@/lib/constants/design-tokens';
+import { logger } from '@/lib/logger';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -294,7 +295,7 @@ export class SmartQueue {
 
     addOrder(order: KDSOrder): void {
         if (this.orders.size >= this.config.maxOrdersInQueue) {
-            console.warn(
+            logger.warn(
                 `SmartQueue: Maximum queue size reached (${this.config.maxOrdersInQueue})`
             );
             return;

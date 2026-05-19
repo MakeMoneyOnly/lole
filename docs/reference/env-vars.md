@@ -14,46 +14,32 @@ This document provides the definitive reference for all environment variables us
 
 ## Security Classification Legend
 
-| Symbol | Classification | Description                                 |
-| ------ | -------------- | ------------------------------------------- |
-| 🔒     | Secret         | Must be stored securely, never committed    |
+| Symbol | Classification | Description                              |
+| ------ | -------------- | ---------------------------------------- |
+| 🔒     | Secret         | Cryptographic secrets, API keys          |
 | ⚠️     | Sensitive      | Contains PII/business data, restrict access |
 | 📦     | Public         | Safe to commit, non-sensitive configuration |
-| 🛠️     | Tool           | Development/CI configuration                |
+| 🛠️     | Tool           | Development/CI configuration             |
 
 ---
 
 ## Core Application Variables
 
-### Authentication Required
-
-| Variable              | Description                      | Format                    | Example                                | Required | Security |
-| --------------------- | -------------------------------- | ------------------------- | -------------------------------------- | -------- | -------- |
-| `NEXTAUTH_SECRET`     | NextAuth.js cryptographic secret | Base64 string (32+ bytes) | `AbCdEfGhIjKlMnOpQrStUvWxYz1234567890` | 🔒 Yes   | Secret   |
-| `NEXTAUTH_URL`        | Canonical application URL        | Valid HTTP(S) URL         | `https://app.lole.restaurant`          | 🔒 Yes   | Public   |
-| `NEXT_PUBLIC_APP_URL` | Frontend-facing application URL  | Valid HTTP(S) URL         | `https://app.lole.restaurant`          | 📦 Yes   | Public   |
-
 ### Supabase Configuration
 
-| Variable                        | Description                      | Format            | Example                                   | Required    | Security |
-| ------------------------------- | -------------------------------- | ----------------- | ----------------------------------------- | ----------- | -------- |
-| `NEXT_PUBLIC_SUPABASE_URL`      | Supabase project API endpoint    | HTTPS URL         | `https://abc123.supabase.co`              | 🔒 Yes      | Public   |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Client-side anonymous access key | JWT token         | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` | 🔒 Yes      | Public   |
-| `SUPABASE_SERVICE_ROLE_KEY`     | Server-side admin access key     | JWT token         | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` | 🔒 Yes      | Secret   |
-| `SUPABASE_PROJECT_REF`          | Supabase project reference ID    | UUID alphanumeric | `abc123def456`                            | 🔒 Yes      | Public   |
-| `SUPABASE_DB_PASSWORD`          | Direct database password         | Alphanumeric      | `securePassword123`                       | 🔒 Optional | Secret   |
+| Variable                           | Description                             | Format            | Example                                   | Required    | Security |
+| ---------------------------------- | --------------------------------------- | ----------------- | ----------------------------------------- | ----------- | -------- |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Client-side anonymous access key      | JWT token         | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` | 🔒 Yes      | Public   |
+| `SUPABASE_SECRET_KEY`              | Server-side admin access key            | JWT token         | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` | 🔒 Yes      | Secret   |
+| `SUPABASE_ACCESS_TOKEN`            | Supabase CLI/personal access token    | JWT token         | `sbp_abc123...`                           | 🔒 Yes      | Secret   |
+| `NEXT_PUBLIC_SUPABASE_URL`         | Supabase project API endpoint           | HTTPS URL         | `https://abc123.supabase.co`              | 🔒 Yes      | Public   |
+| `SUPABASE_PROJECT_REF`             | Supabase project reference ID           | UUID alphanumeric | `abc123def456`                            | 🔒 Yes      | Public   |
+| `SUPABASE_DB_PASSWORD`             | Direct database password                | Alphanumeric      | `securePassword123`                       | 🔒 Optional | Secret   |
+| `DATABASE_URL`                     | Primary PostgreSQL connection string    | Connection string | `postgresql://...`                        | ⚠️ Recommended | Secret   |
+| `DATABASE_POOL_URL`                | Pooled connection for serverless        | Connection string | `postgresql://...`                        | 📦 Optional   | Secret   |
+| `DIRECT_URL`                       | Direct database connection              | Connection string | `postgresql://...`                        | ⚠️ For migrations | Secret   |
 
 ---
-
-## Database Configuration
-
-### Primary Connection
-
-| Variable            | Description                          | Default            | Required          | Security |
-| ------------------- | ------------------------------------ | ------------------ | ----------------- | -------- |
-| `DATABASE_URL`      | Primary PostgreSQL connection string | Auto from Supabase | ⚠️ Recommended    | Secret   |
-| `DATABASE_POOL_URL` | Pooled connection for serverless     | Separate pooler    | 📦 Optional       | Secret   |
-| `DIRECT_URL`        | Direct database connection           | Supabase provided  | ⚠️ For migrations | Secret   |
 
 ### PowerSync Configuration
 
@@ -193,19 +179,15 @@ This document provides the definitive reference for all environment variables us
 
 ```yaml
 # .env.example
-# Core Application
-NEXTAUTH_SECRET=
-NEXTAUTH_URL=http://localhost:3000
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-
 # Supabase
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SECRET_KEY=
+SUPABASE_ACCESS_TOKEN=
 NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
 SUPABASE_PROJECT_REF=
-
-# Database
+SUPABASE_DB_PASSWORD=
 DATABASE_URL=
+DATABASE_POOL_URL=
 DIRECT_URL=
 
 # PowerSync

@@ -8,6 +8,7 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
+import { logger } from '@/lib/logger';
 
 // =========================================================
 // Type Definitions
@@ -172,7 +173,7 @@ export async function calculateOrderFireTimes(
         };
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.error('[PrepTimeCalculator] Error:', errorMessage);
+        logger.error('[PrepTimeCalculator] Error', errorMessage);
         return { success: false, error: errorMessage };
     }
 }
@@ -193,7 +194,7 @@ export async function getItemsReadyToFire(
         });
 
         if (error) {
-            console.error('[PrepTimeCalculator] Failed to get ready items:', error);
+            logger.error('[PrepTimeCalculator] Failed to get ready items', error);
             return [];
         }
 
@@ -223,7 +224,7 @@ export async function getItemsReadyToFire(
             })
         );
     } catch (error) {
-        console.error('[PrepTimeCalculator] Error:', error);
+        logger.error('[PrepTimeCalculator] Error', error);
         return [];
     }
 }
@@ -301,7 +302,7 @@ export async function autoFireReadyItems(
         });
 
         if (error) {
-            console.error('[PrepTimeCalculator] Auto-fire failed:', error);
+            logger.error('[PrepTimeCalculator] Auto-fire failed', error);
             return { success: false, itemsFired: 0 };
         }
 
@@ -309,15 +310,11 @@ export async function autoFireReadyItems(
             success: true,
             itemsFired: data?.items_fired ?? 0,
         };
-    } catch (error) {
-        console.error('[PrepTimeCalculator] Auto-fire error:', error);
+} catch (error) {
+        logger.error('[PrepTimeCalculator] Auto-fire error', error);
         return { success: false, itemsFired: 0 };
     }
 }
-
-// =========================================================
-// Prep Time Management
-// =========================================================
 
 /**
  * Update prep time for a menu item
@@ -402,7 +399,7 @@ export async function getPrepTimeSummary(
             .order('prep_time_minutes', { ascending: false });
 
         if (error) {
-            console.error('[PrepTimeCalculator] Failed to get summary:', error);
+            logger.error('[PrepTimeCalculator] Failed to get summary', error);
             return { items: [], averagePrepTime: 0, longestPrepTime: 0 };
         }
 
@@ -431,7 +428,7 @@ export async function getPrepTimeSummary(
 
         return { items, averagePrepTime, longestPrepTime };
     } catch (error) {
-        console.error('[PrepTimeCalculator] Error:', error);
+        logger.error('[PrepTimeCalculator] Error', error);
         return { items: [], averagePrepTime: 0, longestPrepTime: 0 };
     }
 }

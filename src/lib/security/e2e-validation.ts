@@ -12,6 +12,8 @@
  * This module validates these constraints at application startup.
  */
 
+import { logger } from '@/lib/logger';
+
 /**
  * Validate E2E test configuration at startup.
  * Throws an error if E2E test mode is configured unsafely.
@@ -36,40 +38,40 @@ export function validateE2EConfig(): void {
             );
         }
 
-        if (e2eBypassSecret) {
-            console.warn(
-                '[SECURITY WARNING] E2E_BYPASS_SECRET should not be set in production. ' +
-                    'Remove this environment variable before deployment.'
-            );
-        }
+if (e2eBypassSecret) {
+             logger.warn(
+                 '[SECURITY WARNING] E2E_BYPASS_SECRET should not be set in production. ' +
+                     'Remove this environment variable before deployment.'
+             );
+         }
 
         // Production is safe - no E2E bypass possible
         return;
     }
 
     // Non-production environment (development, test, etc.)
-    if (e2eTestMode === 'true') {
-        if (!e2eBypassSecret || e2eBypassSecret === '') {
-            console.warn(
-                '[SECURITY WARNING] E2E_TEST_MODE is enabled but E2E_BYPASS_SECRET is not set. ' +
-                    'E2E bypass will not work without a configured secret. ' +
-                    'Set E2E_BYPASS_SECRET environment variable.'
-            );
-        } else {
-            console.warn(
-                '[E2E] E2E test mode is enabled with configured secret. ' +
-                    'E2E bypass will be available for testing.'
-            );
-        }
-    }
+if (e2eTestMode === 'true') {
+         if (!e2eBypassSecret || e2eBypassSecret === '') {
+             logger.warn(
+                 '[SECURITY WARNING] E2E_TEST_MODE is enabled but E2E_BYPASS_SECRET is not set. ' +
+                     'E2E bypass will not work without a configured secret. ' +
+                     'Set E2E_BYPASS_SECRET environment variable.'
+             );
+         } else {
+             logger.warn(
+                 '[E2E] E2E test mode is enabled with configured secret. ' +
+                     'E2E bypass will be available for testing.'
+             );
+         }
+     }
 
-    // Log for debugging in non-production
-    if (nodeEnv === 'development' && e2eTestMode !== 'true') {
-        console.warn(
-            '[E2E] E2E test mode is disabled. ' +
-                'Set E2E_TEST_MODE=true and E2E_BYPASS_SECRET=<secret> to enable E2E bypass.'
-        );
-    }
+// Log for debugging in non-production
+     if (nodeEnv === 'development' && e2eTestMode !== 'true') {
+         logger.warn(
+             '[E2E] E2E test mode is disabled. ' +
+                 'Set E2E_TEST_MODE=true and E2E_BYPASS_SECRET=<secret> to enable E2E bypass.'
+         );
+     }
 }
 
 /**
@@ -175,17 +177,14 @@ export function logE2ESecurityEvent(
         ...details,
     };
 
-    if (event === 'bypass_attempt' && nodeEnv === 'production') {
+if (event === 'bypass_attempt' && nodeEnv === 'production') {
         // Critical: Bypass attempt in production
-        console.error(
-            '[SECURITY CRITICAL] E2E bypass attempt in production environment:',
-            logEntry
-        );
+        logger.error('[SECURITY CRITICAL] E2E bypass attempt in production environment', logEntry);
     } else if (event === 'bypass_rejected') {
-        console.warn('[SECURITY] E2E bypass rejected:', logEntry);
+        logger.warn('[SECURITY] E2E bypass rejected', logEntry);
     } else if (event === 'bypass_success') {
-        console.warn('[E2E] E2E bypass successful:', logEntry);
+        logger.warn('[E2E] E2E bypass successful', logEntry);
     } else {
-        console.warn('[E2E]', event, logEntry);
+        logger.warn('[E2E]', logEntry);
     }
 }

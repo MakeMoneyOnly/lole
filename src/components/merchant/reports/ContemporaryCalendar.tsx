@@ -28,7 +28,7 @@ export function ContemporaryCalendar({
     onSelect,
     initialFrom,
     initialTo,
-}: ContemporaryCalendarProps) {
+}: ContemporaryCalendarProps): React.ReactElement {
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [from, setFrom] = useState<Date | null>(initialFrom || null);
     const [to, setTo] = useState<Date | null>(initialTo || null);

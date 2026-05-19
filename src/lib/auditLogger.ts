@@ -1,5 +1,6 @@
 import { createClient } from './supabase/server';
 import type { Database } from '@/types/database';
+import { logger } from './logger';
 
 export interface AuditLogEntry {
     restaurant_id: string;
@@ -16,7 +17,7 @@ export interface AuditLogEntry {
 /**
  * Logs an action to the audit_logs table
  */
-export async function logAction(entry: AuditLogEntry) {
+export async function logAction(entry: AuditLogEntry): Promise<void> {
     try {
         const supabase = await createClient();
 
@@ -26,9 +27,9 @@ export async function logAction(entry: AuditLogEntry) {
         } as Database['public']['Tables']['audit_logs']['Insert']);
 
         if (error) {
-            console.error('[AuditLogger] Database error:', error);
+            logger.error('[AuditLogger] Database error:', error);
         }
     } catch (error) {
-        console.error('[AuditLogger] Failed to log action:', error);
+        logger.error('[AuditLogger] Failed to log action:', error);
     }
 }

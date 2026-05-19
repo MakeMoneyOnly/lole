@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 /**
  * Error Boundary for Marketing Routes
@@ -19,7 +20,7 @@ export default function MarketingError({
     const router = useRouter();
 
     useEffect(() => {
-        console.error('[Marketing Error Boundary]:', error);
+        logger.error('[Marketing Error Boundary]:', error);
     }, [error]);
 
     return (

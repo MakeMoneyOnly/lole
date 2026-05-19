@@ -77,7 +77,7 @@ export function SalesTab(): React.JSX.Element {
         currentPage * itemsPerPage
     );
 
-    const handleSort = (key: string): React.JSX.Element => {
+    const handleSort = (key: string): void => {
         let direction: 'asc' | 'desc' = 'asc';
         if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
             direction = 'desc';
@@ -85,7 +85,7 @@ export function SalesTab(): React.JSX.Element {
         setSortConfig({ key, direction });
     };
 
-    const toggleActionMenu = (id: number): React.JSX.Element => {
+    const toggleActionMenu = (id: number): void => {
         setActionMenuOpenId(actionMenuOpenId === id ? null : id);
     };
 

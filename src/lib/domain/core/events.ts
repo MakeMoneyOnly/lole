@@ -199,7 +199,7 @@ export function buildOrderCreatedEvent(
     context: DomainEventContext,
     payload: OrderCreatedEventPayload,
     idempotencyKey: string
-) {
+): EnterpriseDomainEvent<'order.created'> {
     return buildEnterpriseEvent(
         context,
         'order',
@@ -214,7 +214,7 @@ export function buildOrderCourseFiredEvent(
     context: DomainEventContext,
     payload: OrderCourseFiredEventPayload,
     idempotencyKey: string
-) {
+): EnterpriseDomainEvent<'order.course_fired'> {
     return buildEnterpriseEvent(
         context,
         'order',
@@ -229,7 +229,7 @@ export function buildKdsStateChangedEvent(
     context: DomainEventContext,
     payload: KdsStateChangedEventPayload,
     idempotencyKey: string
-) {
+): EnterpriseDomainEvent<'kds.state_changed'> {
     return buildEnterpriseEvent(
         context,
         'kds_ticket',
@@ -244,7 +244,7 @@ export function buildPrinterQueuedEvent(
     context: DomainEventContext,
     payload: PrinterIntentEventPayload,
     idempotencyKey: string
-) {
+): EnterpriseDomainEvent<'printer.queued'> {
     return buildEnterpriseEvent(
         context,
         'printer_job',
@@ -259,7 +259,7 @@ export function buildFiscalQueuedEvent(
     context: DomainEventContext,
     payload: FiscalIntentEventPayload,
     idempotencyKey: string
-) {
+): EnterpriseDomainEvent<'fiscal.queued'> {
     return buildEnterpriseEvent(
         context,
         'fiscal_receipt',
@@ -274,7 +274,7 @@ export function buildAuditLoggedEvent(
     context: DomainEventContext,
     payload: AuditIntentEventPayload,
     idempotencyKey: string
-) {
+): EnterpriseDomainEvent<'audit.logged'> {
     return buildEnterpriseEvent(
         context,
         'audit_entry',

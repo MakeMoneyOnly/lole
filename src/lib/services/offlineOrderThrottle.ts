@@ -6,6 +6,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 
 export interface ThrottleCheckResult {
     allowed: boolean;
@@ -97,7 +98,7 @@ export async function checkOrderThrottle(restaurantId: string): Promise<Throttle
             .neq('normalized_status', 'cancelled');
 
         if (externalError) {
-            console.error('Failed to count external orders:', externalError);
+            logger.error('Failed to count external orders:', externalError);
         }
 
         const { count: todayDirectCount, error: directError } = await supabase
@@ -108,7 +109,7 @@ export async function checkOrderThrottle(restaurantId: string): Promise<Throttle
             .neq('status', 'cancelled');
 
         if (directError) {
-            console.error('Failed to count direct orders:', directError);
+            logger.error('Failed to count direct orders:', directError);
         }
 
         const totalToday = (todayExternalCount ?? 0) + (todayDirectCount ?? 0);
@@ -137,7 +138,7 @@ export async function checkOrderThrottle(restaurantId: string): Promise<Throttle
                 .neq('normalized_status', 'cancelled');
 
             if (recentError) {
-                console.error('Failed to count recent orders:', recentError);
+                logger.error('Failed to count recent orders:', recentError);
             }
 
             const THROTTLE_THRESHOLD = 5;
@@ -177,7 +178,7 @@ export async function checkOrderThrottle(restaurantId: string): Promise<Throttle
             .neq('normalized_status', 'cancelled');
 
         if (recentError) {
-            console.error('Failed to count recent orders:', recentError);
+            logger.error('Failed to count recent orders:', recentError);
         }
 
         const THROTTLE_THRESHOLD = 5;
@@ -211,7 +212,7 @@ export async function getEstimatedWaitTime(restaurantId: string): Promise<number
         .in('normalized_status', ['pending', 'confirmed', 'preparing']);
 
     if (error) {
-        console.error('Failed to count active orders:', error);
+        logger.error('Failed to count active orders:', error);
         return settings.estimated_prep_time_minutes;
     }
 

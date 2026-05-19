@@ -557,7 +557,7 @@ function getPerformanceHealth(): PerformanceHealth {
  * - 200: Healthy or Degraded (service is running)
  * - 503: Unhealthy (critical dependency down)
  */
-export async function GET(request: NextRequest): Promise<Response> {
+export async function GET(_request: NextRequest): Promise<Response> {
     // Run checks in parallel for efficiency
     const [databaseCheck, redisCheck, qstashCheck, supabaseCheck, paymentChecks] =
         await Promise.all([

@@ -103,11 +103,14 @@ export type DeliverAddisOrderStatus =
 // =========================================================
 
 interface DeliverAddisConfig {
-    baseUrl: string;
-    apiKey: string;
-    apiSecret: string;
-    partnerId: string;
-}
+     baseUrl: string;
+     apiKey: string;
+     apiSecret: string;
+     partnerId: string;
+     name: string;
+     color: string;
+     orderPrefix: string;
+ }
 
 /**
  * Get Deliver Addis configuration for a restaurant
@@ -132,15 +135,18 @@ export async function getDeliverAddisConfig(
     const settings = (partner.settings_json ?? {}) as Record<string, unknown>;
     const credentials = (partner.credentials_ref ?? {}) as Record<string, unknown>;
 
-    return {
-        baseUrl:
-            (settings.base_url as string) ||
-            process.env.DELIVER_ADDIS_API_BASE_URL ||
-            'https://api.deliveraddis.com/v1',
-        apiKey: (credentials.api_key as string) || process.env.DELIVER_ADDIS_API_KEY || '',
-        apiSecret: (credentials.api_secret as string) || process.env.DELIVER_ADDIS_API_SECRET || '',
-        partnerId: partner.id,
-    };
+return {
+         baseUrl:
+             (settings.base_url as string) ||
+             process.env.DELIVER_ADDIS_API_BASE_URL ||
+             'https://api.deliveraddis.com/v1',
+         apiKey: (credentials.api_key as string) || process.env.DELIVER_ADDIS_API_KEY || '',
+         apiSecret: (credentials.api_secret as string) || process.env.DELIVER_ADDIS_API_SECRET || '',
+         partnerId: partner.id,
+         name: 'Deliver Addis',
+         color: '#4F46E5',
+         orderPrefix: 'DA-',
+     };
 }
 
 // =========================================================

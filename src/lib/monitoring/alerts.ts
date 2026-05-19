@@ -34,6 +34,7 @@ export interface AlertContext {
  * Import PagerDuty for critical alert escalation
  */
 import { sendPagerDutyAlert, isPagerDutyEnabled } from './pagerduty';
+import { logger } from '@/lib/logger';
 
 /**
  * Configuration for Telegram alerts
@@ -153,13 +154,13 @@ export async function sendAlert(
                 telegramSuccess = true;
             } else {
                 const errorText = await response.text();
-                console.error(`Failed to send Telegram alert: ${response.status} ${errorText}`);
+                logger.error(`Failed to send Telegram alert: ${response.status} ${errorText}`);
             }
         } catch (error) {
-            console.error('Failed to send Telegram alert:', error);
+            logger.error('Failed to send Telegram alert:', error);
         }
     } else {
-        console.warn(
+        logger.warn(
             `[ALERT ${level.toUpperCase()}] Telegram alerts not configured. Message: ${message}`,
             context
         );
@@ -171,10 +172,10 @@ export async function sendAlert(
             const result = await sendPagerDutyAlert(level, message, context);
             pagerdutySuccess = result.success;
             if (!result.success) {
-                console.error('[PagerDuty] Failed to send alert:', result.error);
+                logger.error('[PagerDuty] Failed to send alert:', result.error);
             }
         } catch (error) {
-            console.error('[PagerDuty] Exception sending alert:', error);
+            logger.error('[PagerDuty] Exception sending alert:', error);
         }
     }
 

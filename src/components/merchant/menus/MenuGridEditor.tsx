@@ -72,24 +72,24 @@ export function MenuGridEditor({
         setSelectedIds([]);
     }, [category.id]);
 
-    const startInlineEdit = (item: MenuItemSummary): React.JSX.Element => {
-        if (readOnly) return;
-        setEditingItemId(item.id);
-        setFieldError(null);
-        setFormState({
-            name: item.name,
-            price: (item.price ?? 0).toString(),
-            description: item.description ?? '',
-            is_available: item.is_available ?? true,
-        });
-    };
+const startInlineEdit = (item: MenuItemSummary): void => {
+         if (readOnly) return;
+         setEditingItemId(item.id);
+         setFieldError(null);
+         setFormState({
+             name: item.name,
+             price: (item.price ?? 0).toString(),
+             description: item.description ?? '',
+             is_available: item.is_available ?? true,
+         });
+     };
 
-    const cancelInlineEdit = (): React.JSX.Element => {
-        if (isSaving) return;
-        setEditingItemId(null);
-        setFormState(null);
-        setFieldError(null);
-    };
+     const cancelInlineEdit = (): void => {
+         if (isSaving) return;
+         setEditingItemId(null);
+         setFormState(null);
+         setFieldError(null);
+     };
 
     const validateInlineForm = (): InlineMenuItemPatch | null => {
         if (!formState) return null;
@@ -148,7 +148,7 @@ export function MenuGridEditor({
         }
     };
 
-    const toggleSelection = (itemId: string): React.JSX.Element => {
+    const toggleSelection = (itemId: string): void => {
         setSelectedIds(previous =>
             previous.includes(itemId) ? previous.filter(id => id !== itemId) : [...previous, itemId]
         );

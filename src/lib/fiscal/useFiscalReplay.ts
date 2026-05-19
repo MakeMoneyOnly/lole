@@ -6,7 +6,7 @@
 import { useEffect, useRef } from 'react';
 import { logger } from '@/lib/logger';
 
-export function useFiscalReplay(enabled: boolean = true) {
+export function useFiscalReplay(enabled: boolean = true): void {
     const replayInProgress = useRef(false);
 
     useEffect(() => {

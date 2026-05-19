@@ -14,6 +14,9 @@ import type { loleEvent } from '@/lib/events/contracts';
 import { enqueueNotification } from '@/lib/notifications/queue';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { writeAuditLog } from '@/lib/api/audit';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('[events/notification-processor]');
 
 // =========================================================
 // Event Payload Types
@@ -133,7 +136,7 @@ async function handleOrderStatusChanged(
     const { payload } = event;
 
     if (!payload.guest_phone) {
-        console.warn('[notification-processor] No guest phone for order, skipping notification');
+        log.warn('No guest phone for order, skipping notification');
         return { success: true }; // Not an error - just no notification needed
     }
 
@@ -170,7 +173,7 @@ async function handleOrderStatusChanged(
             return { success: true };
         }
 
-        console.error('[notification-processor] Failed to enqueue order notification:', error);
+        log.error('Failed to enqueue order notification:', error);
         return { success: false, error: errorMessage };
     }
 }
@@ -211,7 +214,7 @@ async function handleWaitlistNotify(
             return { success: true };
         }
 
-        console.error('[notification-processor] Failed to enqueue waitlist notification:', error);
+        log.error('Failed to enqueue waitlist notification:', error);
         return { success: false, error: errorMessage };
     }
 }
@@ -259,24 +262,17 @@ async function handleReservationReminder(
         });
 
         return { success: true, notificationId };
-    } catch (error) {
+} catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
 
         if (errorMessage.includes('DUPLICATE_NOTIFICATION')) {
             return { success: true };
         }
 
-        console.error(
-            '[notification-processor] Failed to enqueue reservation notification:',
-            error
-        );
+        log.error('Failed to enqueue reservation notification:', error);
         return { success: false, error: errorMessage };
     }
 }
-
-// =========================================================
-// Main Consumer
-// =========================================================
 
 /**
  * Process a notification-related event
@@ -343,7 +339,7 @@ async function _logNotificationProcessing(
             },
         });
     } catch (auditError) {
-        console.error('[notification-processor] Failed to write audit log:', auditError);
+        log.error('Failed to write audit log:', auditError);
         // Don't fail the notification processing if audit fails
     }
 }

@@ -28,7 +28,7 @@ const NotifyStatusSchema = z.object({
 export async function POST(
     request: Request,
     routeContext: { params: Promise<{ orderId: string }> }
-) {
+): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;

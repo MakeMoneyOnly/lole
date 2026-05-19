@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { acceptInvite } from '@/app/(auth)/invite/actions';
+import { logger } from '@/lib/logger';
 
 export function InviteAcceptButton({ code }: { code: string }): React.ReactElement {
     const [loading, setLoading] = useState(false);
@@ -22,7 +23,7 @@ export function InviteAcceptButton({ code }: { code: string }): React.ReactEleme
             }
         } catch (e) {
             toast.error('An unexpected error occurred. Please try again.');
-            console.error(e);
+            logger.error('Error accepting invite', e);
         } finally {
             setLoading(false);
         }

@@ -129,7 +129,7 @@ async function checkRedisReadiness(): Promise<{
  *   timeoutSeconds: 5
  *   failureThreshold: 3
  */
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export async function GET(_request: NextRequest): Promise<NextResponse> {
     const startTime = Date.now();
 
     // Run checks in parallel

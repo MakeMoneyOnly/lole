@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 /**
  * Error Boundary for Dashboard Routes
@@ -20,7 +21,7 @@ export default function DashboardError({
 
     useEffect(() => {
         // Log the error to an error reporting service
-        console.error('[Dashboard Error Boundary]:', error);
+        logger.error('[Dashboard Error Boundary]', error);
     }, [error]);
 
     return (

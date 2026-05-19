@@ -212,7 +212,7 @@ export function getTenantContextForLogging(): Record<string, unknown> {
 /**
  * Express/Next.js middleware helper to set tenant context
  */
-export function createTenantContextMiddleware(): React.JSX.Element {
+export function createTenantContextMiddleware() {
     return async (
         req: { headers: Record<string, string | undefined> },
         res: unknown,

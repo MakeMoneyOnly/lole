@@ -5,7 +5,7 @@
 // Placeholder - GraphQL API will be served via Apollo Router
 // See router/ directory for the federated gateway configuration
 
-export async function createApolloServer() {
+export async function createApolloServer(): Promise<null> {
     // Disabled - GraphQL federation is handled by Apollo Router
     // The subgraph schemas are in graphql/subgraphs/ and published to Apollo GraphOS
     return null;

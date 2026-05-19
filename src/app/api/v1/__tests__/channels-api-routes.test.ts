@@ -25,13 +25,13 @@ const getAuthenticatedUserMock = vi.mocked(getAuthenticatedUser);
 const getAuthorizedRestaurantContextMock = vi.mocked(getAuthorizedRestaurantContext);
 const writeAuditLogMock = vi.mocked(writeAuditLog);
 
-function setAuthUnauthorized(): React.JSX.Element {
+function setAuthUnauthorized(): void {
     getAuthenticatedUserMock.mockResolvedValue({
         ok: false,
         response: apiError('Unauthorized', 401, 'UNAUTHORIZED'),
     } as any);
 }
-function setAuthAndContextOk(): React.JSX.Element | void {
+function setAuthAndContextOk(db?: any): void {
     getAuthenticatedUserMock.mockResolvedValue({
         ok: true,
         user: { id: 'user-1' },
@@ -40,7 +40,7 @@ function setAuthAndContextOk(): React.JSX.Element | void {
     getAuthorizedRestaurantContextMock.mockResolvedValue({
         ok: true,
         restaurantId: 'resto-1',
-        supabase,
+        supabase: db,
     } as any);
 }
 

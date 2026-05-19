@@ -1,5 +1,4 @@
 import type { GatewaySessionClaims } from '@/lib/auth/gateway-session';
-import { logger } from '@/lib/logger';
 
 interface TopicTenant {
     restaurantId: string;
@@ -55,9 +54,7 @@ export function authorizePublish(topic: string, claims: GatewaySessionClaims | n
 
     const deviceType = claims.deviceType ?? 'unknown';
     const topicGroup = topic.split('/')[6] ?? '';
-    const kdsGroups = ['kds', 'cooking', 'expedite'];
     const posGroups = ['orders', 'tables', 'sessions'];
-    const isKdsGroup = kdsGroups.some(g => topicGroup.startsWith(g));
     const isPosGroup = posGroups.some(g => topicGroup.startsWith(g));
 
     if (deviceType === 'kds' && isPosGroup) {

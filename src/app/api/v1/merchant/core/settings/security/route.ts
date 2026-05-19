@@ -10,7 +10,7 @@ const SecuritySettingsSchema = z.object({
     alert_on_suspicious_login: z.boolean().optional(),
 });
 
-export async function GET(request: Request): Promise<Response> {
+export async function GET(_request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;

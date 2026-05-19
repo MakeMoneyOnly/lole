@@ -6,7 +6,7 @@ import {
 } from '@/lib/payments/webhooks';
 import { apiSuccess, apiError } from '@/lib/api/response';
 
-export async function GET(request: Request): Promise<Response> {
+export async function GET(_request: Request): Promise<Response> {
     // Chapa browser redirects may still hit old callback expectations.
     // We acknowledge the request but only POST deliveries trigger state changes.
     return apiSuccess({ received: true, ignored: true });

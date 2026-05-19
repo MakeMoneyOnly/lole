@@ -17,6 +17,7 @@
  */
 
 import type { Histogram, Counter, Gauge } from 'prom-client';
+import { logger } from '@/lib/logger';
 
 type PromClient = typeof import('prom-client');
 
@@ -96,7 +97,7 @@ if (!isEdge) {
             }),
         };
     } catch (error) {
-        console.error('[Prometheus] Failed to initialize prom-client:', error);
+        logger.error('[Prometheus] Failed to initialize prom-client:', error);
     }
 }
 

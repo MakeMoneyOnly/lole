@@ -27,9 +27,9 @@ export function MiniNavbar(): React.JSX.Element {
     const [headerShapeClass, setHeaderShapeClass] = useState('rounded-full');
     const shapeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    const toggleMenu = (): React.JSX.Element => {
-        setIsOpen(!isOpen);
-    };
+const toggleMenu = (): void => {
+         setIsOpen(!isOpen);
+     };
 
     useEffect(() => {
         if (shapeTimeoutRef.current) {

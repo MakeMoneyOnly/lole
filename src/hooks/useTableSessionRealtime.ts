@@ -26,7 +26,7 @@ export function useTableSessionRealtime(input: {
     restaurantId: string;
     enabled?: boolean;
     onEvent?: (event: TableSessionRealtimeEvent) => void;
-}) {
+}): void {
     const trackerRef = useRef(new LocalGatewaySequenceTracker());
 
     useEffect(() => {
@@ -115,5 +115,5 @@ export function useTableSessionRealtime(input: {
                 void closeLanMqttClient(client).catch(() => undefined);
             }
         };
-    }, [input.enabled, input.onEvent, input.restaurantId]);
+    }, [input]);
 }

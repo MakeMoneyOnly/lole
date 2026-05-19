@@ -5,7 +5,7 @@ type DbErrorLike = {
 
 const SCHEMA_NOT_READY_CODES = new Set(['42P01', '42703', 'PGRST204', 'PGRST205']);
 
-export function isSchemaNotReadyError(error: DbErrorLike | null | undefined) {
+export function isSchemaNotReadyError(error: DbErrorLike | null | undefined): boolean {
     if (!error) return false;
     if (error.code && SCHEMA_NOT_READY_CODES.has(error.code)) {
         return true;

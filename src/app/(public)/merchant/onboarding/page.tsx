@@ -95,7 +95,17 @@ const slideVariants = {
 };
 
 // ─── Step Components ──────────────────────────────────────────────────────────
-function InputField(): React.JSX.Element | void {
+function InputField(props: {
+    label: string;
+    icon: React.ElementType;
+    required?: boolean;
+    type?: string;
+    value?: string;
+    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    placeholder?: string;
+    autoFocus?: boolean;
+}): React.JSX.Element {
+    const { label, icon: Icon, required, ...rest } = props;
     return (
         <div className="space-y-1.5">
             <label className="text-sm font-bold text-gray-700">
@@ -105,7 +115,7 @@ function InputField(): React.JSX.Element | void {
             <div className="group relative">
                 <Icon className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-[#0D3B40]" />
                 <input
-                    {...props}
+                    {...rest}
                     className="w-full rounded-xl border border-gray-200 bg-white py-3.5 pr-4 pl-11 text-sm font-medium text-gray-900 shadow-sm transition-all outline-none placeholder:text-gray-400 focus:border-[#0D3B40] focus:ring-4 focus:ring-[#0D3B40]/8"
                 />
             </div>
@@ -441,7 +451,7 @@ function StepBrand({
 }
 
 // Step 4: Go Live
-function StepGoLive(): React.JSX.Element | void {
+function StepGoLive({ data, loading }: { data: OnboardingData; loading: boolean }): React.JSX.Element {
     const checks = [
         { label: 'Restaurant profile created', done: true },
         { label: 'Merchant payout account connected', done: true },
@@ -528,7 +538,7 @@ export default function OnboardingPage(): React.JSX.Element {
         settlement_account_number: '',
     });
 
-    const merge = (patch: Partial<OnboardingData>): React.JSX.Element => setData(prev => ({ ...prev, ...patch }));
+    const merge = (patch: Partial<OnboardingData>): void => setData(prev => ({ ...prev, ...patch }));
 
     useEffect(() => {
         let cancelled = false;
@@ -586,7 +596,7 @@ export default function OnboardingPage(): React.JSX.Element {
         return false;
     }, [step, data, loadingBanks]);
 
-    const go = (newStep: number): React.JSX.Element => {
+    const go = (newStep: number): void => {
         setDirection(newStep > step ? 1 : -1);
         setStep(newStep);
     };

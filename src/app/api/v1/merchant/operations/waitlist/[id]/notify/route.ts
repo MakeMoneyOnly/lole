@@ -22,7 +22,7 @@ function getWaitlistId(params: { id: string }): string {
  * POST /api/waitlist/:id/notify
  * Notify a guest that their table is ready
  */
-export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;

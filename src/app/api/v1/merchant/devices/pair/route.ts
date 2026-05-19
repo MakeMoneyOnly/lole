@@ -1,5 +1,6 @@
 import { apiError, apiSuccess } from '@/lib/api/response';
 import { parseJsonBody } from '@/lib/api/validation';
+import type { PostgrestSingleResponse } from '@supabase/postgrest-js';
 import {
     HardwareDeviceTypeSchema,
     DeviceProfileSchema,
@@ -38,7 +39,7 @@ export async function POST(request:  Request): Promise<Response> {
     }
 
     const adminClient = createServiceRoleClient();
-    const fetchEnterpriseDevice = (): React.JSX.Element =>
+    const fetchEnterpriseDevice = async (): Promise<PostgrestSingleResponse<Record<string, unknown> | null>> =>
         adminClient
             .from('hardware_devices')
             .select(

@@ -32,9 +32,9 @@ export const GuestMenuCategoryChips: React.FC<GuestMenuCategoryChipsProps> = ({
                             key={category.id}
                             onClick={() => onCategoryChange(category.id)}
                             className={cn(
-                                'flex h-[46px] items-center justify-center rounded-[20px] px-6 text-[14px] whitespace-nowrap shadow-sm shadow-black/5 transition-all active:scale-95',
-                                !isActive && 'bg-[#FFFFFF] font-medium text-[#1A1A1A]',
-                                isActive && 'bg-[#1A1A1A] font-semibold text-[#FFFFFF]'
+                                'flex h-[46px] items-center justify-center rounded-[20px] px-6 text-[14px] tracking-[-0.04em] whitespace-nowrap shadow-sm shadow-black/5 transition-all active:scale-95',
+                                !isActive && 'bg-[#FFFFFF] font-medium text-[#1A1C1E]',
+                                isActive && 'bg-[#1A1C1E] font-bold text-[#FFFFFF]'
                             )}
                         >
                             {category.name}

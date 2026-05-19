@@ -14,7 +14,7 @@ const AckPayloadSchema = z.object({
 export async function POST(
     request: Request,
     routeContext: { params: Promise<{ externalOrderId: string }> }
-) {
+): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;

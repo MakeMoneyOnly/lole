@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { MapPin, Phone, Info, Navigation } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
 import { isAbortError } from '@/hooks/useSafeFetch';
+import { logger } from '@/lib/logger';
 
 interface LocationMapProps {
     latitude: number;
@@ -17,7 +18,7 @@ interface LocationMapProps {
 // Lazy load map component to avoid SSR issues
 const LocationMap = dynamic<LocationMapProps>(
     () =>
-        import('react').then(mod => ({
+        import('react').then((_mod) => ({
             default: function LocationMapFallback() {
                 return null;
             },
@@ -111,7 +112,7 @@ function RestaurantInfoContent(): React.JSX.Element {
                 setRestaurant(data as RestaurantInfo);
             } catch (err) {
                 if (isAbortError(err)) return;
-                console.error('Error fetching restaurant:', err);
+                logger.error('Error fetching restaurant', err);
                 setError(err instanceof Error ? err.message : 'Failed to load restaurant');
             } finally {
                 setLoading(false);

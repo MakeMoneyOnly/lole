@@ -203,19 +203,22 @@ export class Logger {
     }
 
     /**
-     * Output JSON format for production
-     */
+      * Output JSON format for production
+      */
     private outputJson(entry: LogEntry): void {
         const output = JSON.stringify(entry);
         switch (entry.level) {
             case 'fatal':
             case 'error':
+                // eslint-disable-next-line no-console
                 console.error(output);
                 break;
             case 'warn':
+                // eslint-disable-next-line no-console
                 console.warn(output);
                 break;
             default:
+                // eslint-disable-next-line no-console
                 console.warn(output);
         }
     }
@@ -236,15 +239,19 @@ export class Logger {
         switch (entry.level) {
             case 'fatal':
             case 'error':
+                // eslint-disable-next-line no-console
                 console.error('\x1b[31m%s\x1b[0m', output);
                 break;
             case 'warn':
+                // eslint-disable-next-line no-console
                 console.warn('\x1b[33m%s\x1b[0m', output);
                 break;
             case 'debug':
+                // eslint-disable-next-line no-console
                 console.warn('\x1b[90m%s\x1b[0m', output);
                 break;
             default:
+                // eslint-disable-next-line no-console
                 console.warn('\x1b[36m%s\x1b[0m', output);
         }
     }

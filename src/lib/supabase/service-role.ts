@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { logServiceRoleAudit, type ServiceRoleAuditParams } from '@/lib/audit';
 import { logger } from '@/lib/logger';
 
@@ -17,7 +18,7 @@ const log = logger.child('supabase:service-role');
 export function createAuditedServiceRoleClient(
     source: string,
     defaultParams?: Partial<Omit<ServiceRoleAuditParams, 'action' | 'description' | 'success'>>
-) {
+): SupabaseClient {
     const supabase = createServiceRoleClient();
 
     // Return a proxy that wraps operations with audit logging

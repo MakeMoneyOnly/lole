@@ -69,7 +69,12 @@ const DEFAULT_REFRESH_THRESHOLD = 300; // 5 minutes before expiry
  * }
  * ```
  */
-export function useSessionRefresh(config: SessionRefreshConfig = {}) {
+export function useSessionRefresh(config: SessionRefreshConfig = {}): {
+    getSessionInfo: () => Promise<SessionInfo | null>;
+    refreshSession: () => Promise<boolean>;
+    checkAndRefresh: () => Promise<void>;
+    readonly isRefreshing: boolean;
+} {
     const {
         checkIntervalMs = DEFAULT_CHECK_INTERVAL,
         refreshThresholdSeconds = DEFAULT_REFRESH_THRESHOLD,
@@ -257,7 +262,9 @@ export function useSessionRefresh(config: SessionRefreshConfig = {}) {
  * }
  * ```
  */
-export function useSessionState(options: { redirectTo?: string } = {}) {
+export function useSessionState(options: { redirectTo?: string } = {}): {
+    checkSession: () => Promise<{ isAuthenticated: boolean; userId: string | null; expiresAt?: number }>;
+} {
     void options; // Options reserved for future use (e.g., redirect behavior)
     const supabase = getSupabaseClient();
 

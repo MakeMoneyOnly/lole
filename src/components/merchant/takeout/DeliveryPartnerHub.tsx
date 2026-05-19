@@ -63,7 +63,7 @@ function CustomSelect({
     options: { value: string; label: string }[];
     placeholder?: string;
     ariaLabel?: string;
-}) {
+}): React.JSX.Element {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
 
@@ -129,7 +129,7 @@ export function DeliveryPartnerHub({
     acknowledgingId,
     onConnect,
     onAcknowledge,
-}: DeliveryPartnerHubProps) {
+}: DeliveryPartnerHubProps): React.ReactElement {
     const displayNameId = 'delivery-provider-display-name';
     const [providerToConnect, setProviderToConnect] = useState<
         'beu' | 'deliver_addis' | 'zmall' | 'esoora' | 'custom_local'

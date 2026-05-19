@@ -20,7 +20,7 @@ const log = logger.child('merchant-operations/orders/items/override-price');
 export async function POST(
     request: NextRequest,
     { params }: { params: Promise<{ orderId: string; itemId: string }> }
-) {
+): Promise<Response> {
     try {
         const { orderId, itemId } = await params;
         const cookieStore = await cookies();

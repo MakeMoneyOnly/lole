@@ -1,13 +1,14 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies, headers } from 'next/headers';
 import type { Database } from '@/types/database';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import {
     isE2EBypassAllowed,
     isValidE2EBypassSecret,
     logE2ESecurityEvent,
 } from '@/lib/security/e2e-validation';
 
-export async function createClient() {
+export async function createClient(): Promise<SupabaseClient<Database>> {
     const cookieStore = await cookies();
     const headersList = await headers();
 
@@ -103,66 +104,92 @@ export async function createClient() {
         // Helper to create chainable mock methods.
         // NOTE: data is the list-level result; maybeSingle returns null (no row found)
         // unless overridden by a table-specific mock below.
-        const createChainableMock = (data: unknown, singleData: unknown = null): any => ({
-            data,
-            error: null,
-            eq: function () {
-                return this;
-            },
-            neq: function () {
-                return this;
-            },
-            gt: function () {
-                return this;
-            },
-            gte: function () {
-                return this;
-            },
-            lt: function () {
-                return this;
-            },
-            lte: function () {
-                return this;
-            },
-            like: function () {
-                return this;
-            },
-            ilike: function () {
-                return this;
-            },
-            is: function () {
-                return this;
-            },
-            in: function () {
-                return this;
-            },
-            contains: function () {
-                return this;
-            },
-            containedBy: function () {
-                return this;
-            },
-            overlaps: function () {
-                return this;
-            },
-            or: function () {
-                return this;
-            },
-            order: function () {
-                return this;
-            },
-            limit: function () {
-                return this;
-            },
-            range: function () {
-                return this;
-            },
-            single: async () => ({ data: singleData, error: null }),
-            maybeSingle: async () => ({ data: singleData, error: null }),
-            then: function (resolve: (value: unknown) => void) {
-                return resolve({ data, error: null, count: null });
-            },
-        });
+        type ChainableMock<T> = {
+            data: T;
+            error: null;
+            eq: () => ChainableMock<T>;
+            neq: () => ChainableMock<T>;
+            gt: () => ChainableMock<T>;
+            gte: () => ChainableMock<T>;
+            lt: () => ChainableMock<T>;
+            lte: () => ChainableMock<T>;
+            like: () => ChainableMock<T>;
+            ilike: () => ChainableMock<T>;
+            is: () => ChainableMock<T>;
+            in: () => ChainableMock<T>;
+            contains: () => ChainableMock<T>;
+            containedBy: () => ChainableMock<T>;
+            overlaps: () => ChainableMock<T>;
+            or: () => ChainableMock<T>;
+            order: () => ChainableMock<T>;
+            limit: () => ChainableMock<T>;
+            range: () => ChainableMock<T>;
+            single: () => Promise<{ data: T | null; error: null }>;
+            maybeSingle: () => Promise<{ data: T | null; error: null }>;
+            then: (resolve: (value: { data: T; error: null; count: null }) => void) => void;
+        };
+
+        const createChainableMock = <T = unknown>(data: T, singleData: T | null = null): ChainableMock<T> =>
+            ({
+                data,
+                error: null,
+                eq: function () {
+                    return this;
+                },
+                neq: function () {
+                    return this;
+                },
+                gt: function () {
+                    return this;
+                },
+                gte: function () {
+                    return this;
+                },
+                lt: function () {
+                    return this;
+                },
+                lte: function () {
+                    return this;
+                },
+                like: function () {
+                    return this;
+                },
+                ilike: function () {
+                    return this;
+                },
+                is: function () {
+                    return this;
+                },
+                in: function () {
+                    return this;
+                },
+                contains: function () {
+                    return this;
+                },
+                containedBy: function () {
+                    return this;
+                },
+                overlaps: function () {
+                    return this;
+                },
+                or: function () {
+                    return this;
+                },
+                order: function () {
+                    return this;
+                },
+                limit: function () {
+                    return this;
+                },
+                range: function () {
+                    return this;
+                },
+                single: async () => ({ data: singleData, error: null }),
+                maybeSingle: async () => ({ data: singleData, error: null }),
+                then: function (resolve: (value: { data: T; error: null; count: null }) => void) {
+                    return resolve({ data, error: null, count: null });
+                },
+            });
 
         // E2E mock restaurant_staff row — satisfies resolveRestaurantId()
         // Must include user_id to match the query: .eq('user_id', user.id)

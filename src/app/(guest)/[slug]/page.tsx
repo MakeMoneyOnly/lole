@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { MenuClientContent } from './menu-client';
 import type { Metadata } from 'next';
 import { generateRestaurantMetadata } from '@/lib/seo';
+import { logger } from '@/lib/logger';
 
 /**
  * Dynamic metadata for SEO - fetches restaurant information based on slug
@@ -39,7 +40,7 @@ export async function generateMetadata({
             path: 'menu',
         });
     } catch (error) {
-        console.error('Error generating metadata:', error);
+        logger.error('Error generating metadata', error);
         return {
             title: 'Restaurant Menu | lole',
             description: 'Order food online from the best restaurants in Addis Ababa',
@@ -50,7 +51,7 @@ export async function generateMetadata({
 /**
  * Default export - Server Component that renders the client menu content
  */
-export default async function MenuPage() {
+export default async function MenuPage(): Promise<React.ReactElement> {
     return (
         <Suspense
             fallback={

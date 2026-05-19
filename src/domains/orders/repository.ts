@@ -275,8 +275,13 @@ export class OrdersRepository {
         error_message_am: string | null;
     } | null> {
         try {
-            // Cast to any for custom RPC function not in generated types
-            const client = getRepositoryClient() as any;
+            // Cast for custom RPC function not in generated types
+            const client = getRepositoryClient() as unknown as {
+                rpc: (name: string, params: Record<string, unknown>) => Promise<{
+                    data: unknown;
+                    error: { message: string; code?: string } | null;
+                }>;
+            };
             const { data, error } = await client.rpc('validate_required_modifiers', {
                 p_menu_item_id: menuItemId,
                 p_selected_modifier_ids: selectedModifierIds,

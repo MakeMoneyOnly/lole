@@ -42,9 +42,13 @@ export function OfflineIndicator({
     position: _position = 'top',
     showSyncStatus = true,
     className,
-}: OfflineIndicatorProps) {
+}: OfflineIndicatorProps): React.JSX.Element | null {
     const { operatingMode, pendingCount, isSyncing, lastSyncAt, sync, bootstrapStatus } =
         useSyncStatus();
+
+    const handleRetry = useCallback(() => {
+        void sync();
+    }, [sync]);
 
     // Don't show the banner if we are fully online and synced
     if (operatingMode === 'online') {
@@ -53,10 +57,6 @@ export function OfflineIndicator({
 
     const mode = MODE_STYLES[operatingMode];
     const Icon = mode.icon;
-
-    const handleRetry = useCallback(() => {
-        void sync();
-    }, [sync]);
 
     return (
         <div
@@ -97,7 +97,13 @@ export function OfflineIndicator({
     );
 }
 
-export function useNetworkStatus(): React.JSX.Element {
+export function useNetworkStatus(): {
+    isOnline: boolean;
+    isSyncing: boolean;
+    pendingCount: number;
+    operatingMode: string;
+    triggerSync: () => Promise<void>;
+} {
     const { isOnline, isSyncing, pendingCount, sync, operatingMode } = useSyncStatus();
 
     return {
@@ -109,7 +115,15 @@ export function useNetworkStatus(): React.JSX.Element {
     };
 }
 
-export function useOfflineSync(): React.JSX.Element {
+export function useOfflineSync(): {
+    isOffline: boolean;
+    isOnline: boolean;
+    isSyncing: boolean;
+    pendingCount: number;
+    operatingMode: string;
+    triggerSync: () => Promise<void>;
+    hasPendingOperations: boolean;
+} {
     const { isOnline, isSyncing, pendingCount, sync, operatingMode } = useSyncStatus();
 
     return {

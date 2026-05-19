@@ -103,11 +103,14 @@ export type BEUOrderStatus =
 // =========================================================
 
 interface BEUConfig {
-    baseUrl: string;
-    apiKey: string;
-    apiSecret: string;
-    partnerId: string;
-}
+     baseUrl: string;
+     apiKey: string;
+     apiSecret: string;
+     partnerId: string;
+     name: string;
+     color: string;
+     orderPrefix: string;
+ }
 
 /**
  * Get BEU configuration for a restaurant
@@ -132,15 +135,18 @@ export async function getBEUConfig(
     const settings = (partner.settings_json ?? {}) as Record<string, unknown>;
     const credentials = (partner.credentials_ref ?? {}) as Record<string, unknown>;
 
-    return {
-        baseUrl:
-            (settings.base_url as string) ||
-            process.env.BEU_API_BASE_URL ||
-            'https://api.beu.delivery/v1',
-        apiKey: (credentials.api_key as string) || process.env.BEU_API_KEY || '',
-        apiSecret: (credentials.api_secret as string) || process.env.BEU_API_SECRET || '',
-        partnerId: partner.id,
-    };
+return {
+         baseUrl:
+             (settings.base_url as string) ||
+             process.env.BEU_API_BASE_URL ||
+             'https://api.beu.delivery/v1',
+         apiKey: (credentials.api_key as string) || process.env.BEU_API_KEY || '',
+         apiSecret: (credentials.api_secret as string) || process.env.BEU_API_SECRET || '',
+         partnerId: partner.id,
+         name: 'BEU',
+         color: '#FF6B35',
+         orderPrefix: 'BEU-',
+     };
 }
 
 // =========================================================
@@ -257,7 +263,7 @@ export async function updateOrderStatus(
         return { success: true };
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.error('[BEU] updateOrderStatus error:', errorMessage);
+        log.error('updateOrderStatus error', { message: errorMessage });
         return { success: false, error: errorMessage };
     }
 }
@@ -326,7 +332,7 @@ export async function getDeliveryFee(
         };
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.error('[BEU] getDeliveryFee error:', errorMessage);
+        log.error('getDeliveryFee error', { message: errorMessage });
         return {
             success: false,
             distance_km: 0,
@@ -375,19 +381,15 @@ export async function sendStatusWebhook(
         }
 
         return { success: true };
-    } catch (error) {
+} catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.error('[BEU] sendStatusWebhook error:', errorMessage);
+        log.error('sendStatusWebhook error', { message: errorMessage });
         return { success: false, error: errorMessage };
     }
 }
 
-// =========================================================
-// Webhook Handler
-// =========================================================
-
 /**
- * Verify webhook signature from BEU
+ * Webhook Handler
  */
 export function verifyWebhookSignature(
     rawBody: string,
@@ -432,7 +434,7 @@ export function parseWebhookEvent(rawBody: string): {
             data: payload,
         };
     } catch {
-        console.error('[BEU] Failed to parse webhook:', rawBody);
+        log.error('[BEU] Failed to parse webhook:', { rawBody });
         return null;
     }
 }

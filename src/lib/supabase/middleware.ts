@@ -9,7 +9,7 @@ import { logger } from '@/lib/logger';
 
 const log = logger.child('middleware');
 
-export async function updateSession(request: NextRequest) {
+export async function updateSession(request: NextRequest): Promise<NextResponse> {
     let supabaseResponse = NextResponse.next({
         request,
     });

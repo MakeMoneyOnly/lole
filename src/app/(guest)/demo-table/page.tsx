@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase';
 import { CartProvider, useCart } from '@/context/CartContext';
 import { FOOD_ITEMS } from '@/lib/constants';
+import { logger } from '@/lib/logger';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -82,11 +83,11 @@ const DEMO_CONTEXT = {
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 function DemoMenuContent(): React.JSX.Element {
-    const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'food' | 'drinks'>('food');
-    const [activeCategoryId, setActiveCategoryId] = useState('all');
+    const [_loading, setLoading] = useState(true);
+    const [_activeTab, _setActiveTab] = useState<'food' | 'drinks'>('food');
+    const [_activeCategoryId, _setActiveCategoryId] = useState('all');
     const [realItems, setRealItems] = useState<MenuItem[]>([]);
-    const { addToCart, count } = useCart();
+    const { addToCart: _addToCart, count: _count } = useCart();
 
     useEffect(() => {
         async function fetchDemoMenu(): Promise<void> {
@@ -213,7 +214,7 @@ function DemoMenuContent(): React.JSX.Element {
 
                 setRealItems(formattedItems);
             } catch (error) {
-                console.error('Demo menu error:', error);
+                logger.error('Demo menu error', error);
                 setRealItems([]);
             } finally {
                 setLoading(false);
@@ -223,10 +224,10 @@ function DemoMenuContent(): React.JSX.Element {
         fetchDemoMenu();
     }, []);
 
-    const filteredItems = realItems.filter(item => {
-        if (item.categories?.section !== activeTab) return false;
-        if (activeCategoryId === 'all') return true;
-        return item.categories?.name?.toLowerCase() === activeCategoryId.toLowerCase();
+    const _filteredItems = realItems.filter(item => {
+        if (item.categories?.section !== _activeTab) return false;
+        if (_activeCategoryId === 'all') return true;
+        return item.categories?.name?.toLowerCase() === _activeCategoryId.toLowerCase();
     });
 
     // ── Canvas ────────────────────────────────────────────────────────────────
@@ -237,10 +238,10 @@ function DemoMenuContent(): React.JSX.Element {
              *   BLANK CANVAS — DEMO TABLE DESIGN GOES HERE
              * ════════════════════════════════════════════════════
              *
-             *  Available: loading, activeTab, setActiveTab,
-             *             activeCategoryId, setActiveCategoryId,
-             *             filteredItems, realItems, count, addToCart
-             *             DEMO_CONTEXT (restaurant_id, table, slug)
+*  Available: loading, activeTab, setActiveTab,
+              *             activeCategoryId, setActiveCategoryId,
+              *             filteredItems, realItems, _count, _addToCart
+              *             DEMO_CONTEXT (restaurant_id, table, slug)
              */}
             <p className="text-sm text-white/20 select-none">[ Demo Table — Design starts here ]</p>
         </main>

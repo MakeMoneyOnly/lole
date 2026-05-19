@@ -8,7 +8,7 @@ const TransferSessionSchema = z.object({
     notes: z.string().max(500).optional().nullable(),
 });
 
-export async function POST(request: Request, context: { params: Promise<{ sessionId: string }> }) {
+export async function POST(request: Request, context: { params: Promise<{ sessionId: string }> }): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;

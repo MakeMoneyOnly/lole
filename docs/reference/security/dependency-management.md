@@ -67,8 +67,8 @@ engine-strict=true
 ```json
 {
   "engines": {
-    "node": ">=20.0.0",
-    "pnpm": ">=9.0.0"
+    "node": ">=22.0.0",
+    "pnpm": ">=10.0.0"
   },
   "pnpm": {
     "overrides": { ... },

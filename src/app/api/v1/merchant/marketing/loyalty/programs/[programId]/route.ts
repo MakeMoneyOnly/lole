@@ -16,7 +16,7 @@ const UpdateProgramSchema = z.object({
 export async function PATCH(
     request: Request,
     { params }: { params: Promise<{ programId: string }> }
-) {
+): Promise<Response> {
     const { programId } = await params;
     const auth = await getAuthenticatedUser();
     if (!auth.ok) return auth.response;
@@ -89,7 +89,7 @@ export async function PATCH(
 export async function DELETE(
     request: Request,
     { params }: { params: Promise<{ programId: string }> }
-) {
+): Promise<Response> {
     const { programId } = await params;
 
     const auth = await getAuthenticatedUser();

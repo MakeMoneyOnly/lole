@@ -65,6 +65,7 @@ class Logger {
         };
     }
 
+    /* eslint-disable no-console */
     private logToConsole(entry: LogEntry): void {
         const prefix = `[${entry.timestamp}] [${entry.level.toUpperCase()}] [${entry.source}]`;
         const requestId = entry.requestId ? ` [${entry.requestId}]` : '';
@@ -91,6 +92,7 @@ class Logger {
                 break;
         }
     }
+    /* eslint-enable no-console */
 
     /**
      * Log debug message (only in development)

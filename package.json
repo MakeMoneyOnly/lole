@@ -102,6 +102,7 @@
         "react-swipeable": "^7.0.2",
         "recharts": "^3.8.0",
         "resend": "^6.9.3",
+        "swiper": "^12.1.4",
         "tailwind-merge": "^3.5.0",
         "three": "^0.183.2",
         "vaul": "^1.1.2",

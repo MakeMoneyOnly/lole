@@ -32,14 +32,14 @@ let anonClient: SupabaseClient | null = null;
 let adminClient: SupabaseClient | null = null;
 let testsShouldRun = false;
 
-function randomOrderNumber(): React.JSX.Element {
+function randomOrderNumber(): string {
     return `TEST-${Math.floor(Math.random() * 1_000_000_000)}`;
 }
 
-function randomUuidLike(): React.JSX.Element {
+function randomUuidLike(): string {
     return crypto.randomUUID();
 }
-function buildValidOrderPayload(): React.JSX.Element | void {
+function buildValidOrderPayload(fingerprint: string, note: string): any {
     return {
         restaurant_id: restaurantId,
         order_number: randomOrderNumber(),

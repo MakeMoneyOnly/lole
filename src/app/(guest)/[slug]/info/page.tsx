@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { generateRestaurantMetadata } from '@/lib/seo';
 import RestaurantInfoClient from './info-client';
+import { logger } from '@/lib/logger';
 
 /**
  * Dynamic metadata for SEO - fetches restaurant information for info page
@@ -37,7 +38,7 @@ export async function generateMetadata({
             path: 'info',
         });
     } catch (error) {
-        console.error('Error generating metadata:', error);
+        logger.error('Error generating metadata', error);
         return {
             title: 'Restaurant Info | lole',
             description: 'View restaurant location, hours, and contact information',

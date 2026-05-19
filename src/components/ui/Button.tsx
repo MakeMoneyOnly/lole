@@ -69,6 +69,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         // Icon-only buttons MUST have an aria-label for accessibility
         if (size === 'icon' && !ariaLabel) {
             if (process.env.NODE_ENV === 'development') {
+                // eslint-disable-next-line no-console
                 console.warn(
                     'Button: ariaLabel is required for icon-only buttons (size="icon") for accessibility. ' +
                         'Please provide an ariaLabel prop describing the button action.'

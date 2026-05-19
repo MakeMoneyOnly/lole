@@ -56,7 +56,7 @@ export function formatCurrency(
         locale?: string;
     } = {}
 ): string {
-    const { showCurrency = true, currencySymbol = 'ETB', decimals = 0, locale = 'en-ET' } = options;
+    const { showCurrency = true, currencySymbol = 'Br.', decimals = 0, locale = 'en-ET' } = options;
 
     if (santim === null || santim === undefined || !Number.isFinite(santim)) {
         return showCurrency ? `${currencySymbol} 0` : '0';
@@ -235,4 +235,16 @@ export function createMonetaryValue(
     return {
         santim: toSantim(value, unit === 'birr'),
     };
+}
+
+/**
+ * Removes "Monday Special – ", "Tuesday Special – ", etc. prefix from food item names
+ * @param title - The raw food item name
+ * @returns Cleaned food item name
+ */
+export function cleanItemTitle(title: string | null | undefined): string {
+    if (!title) return '';
+    return title
+        .replace(/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Weekend|Weekday|Daily|Weekly)\s+Special\s*([-–—\s]\s*)?/i, '')
+        .trim();
 }

@@ -29,7 +29,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ name, icon, active, 
             >
                 {icon}
             </div>
-            <span className="text-[13px] font-bold tracking-tight">{name}</span>
+            <span className="text-[13px] font-bold tracking-[-0.04em]">{name}</span>
         </button>
     );
 };

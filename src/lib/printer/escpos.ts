@@ -49,9 +49,9 @@ function padLeft(value: string, width: number): string {
     return value.length >= width ? value.slice(0, width) : value.padStart(width, ' ');
 }
 
-function money(value: number, currency: string): string {
-    return `Br ${value.toFixed(2)}`;
-}
+function money(value: number, _currency: string): string {
+     return `Br ${value.toFixed(2)}`;
+ }
 
 function qrStoreBytes(data: string): number[] {
     const payload = textBytes(data);

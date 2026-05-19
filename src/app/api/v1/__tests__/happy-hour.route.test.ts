@@ -10,13 +10,13 @@ vi.mock('@/lib/api/authz', () => ({
 const getAuthenticatedUserMock = vi.mocked(getAuthenticatedUser);
 const getAuthorizedRestaurantContextMock = vi.mocked(getAuthorizedRestaurantContext);
 
-function setAuthUnauthorized(): React.JSX.Element {
+function setAuthUnauthorized(): void {
     getAuthenticatedUserMock.mockResolvedValue({
         ok: false,
         response: apiError('Unauthorized', 401, 'UNAUTHORIZED'),
     } as any);
 }
-function setAuthAndContextOk(): React.JSX.Element | void {
+function setAuthAndContextOk(): void {
     getAuthenticatedUserMock.mockResolvedValue({
         ok: true,
         user: { id: 'user-1' },
@@ -25,11 +25,11 @@ function setAuthAndContextOk(): React.JSX.Element | void {
     getAuthorizedRestaurantContextMock.mockResolvedValue({
         ok: true,
         restaurantId: 'resto-1',
-        supabase,
+        supabase: {},
     } as any);
 }
 
-function _makeHappyHourSupabase(): React.JSX.Element {
+function _makeHappyHourSupabase(): any {
     const happyHourChain: any = {
         select: vi.fn(() => Promise.resolve({ data: [], error: null })),
         insert: vi.fn(() => Promise.resolve({ data: { id: 'hh-1' }, error: null })),
