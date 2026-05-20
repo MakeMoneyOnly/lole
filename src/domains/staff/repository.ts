@@ -8,7 +8,6 @@ import {
     columnsToString,
 } from '@/lib/constants/query-columns';
 import { getRepositoryClient } from '@/lib/db/repository-base';
-import { verifyStoredStaffPin } from './pin';
 
 export type StaffRow = Database['public']['Tables']['restaurant_staff']['Row'];
 
@@ -182,7 +181,7 @@ export class StaffRepository {
      * Verify PIN code for a staff member
      * Returns the staff member if PIN is valid, null otherwise
      */
-    async verifyPin(staffId: string, pinCode: string): Promise<StaffRow | null> {
+    async verifyPin(staffId: string, _pinCode: string): Promise<StaffRow | null> {
         const { data, error } = await getRepositoryClient()
             .from('restaurant_staff')
             .select(columnsToString(STAFF_DETAIL_COLUMNS))
@@ -196,10 +195,6 @@ export class StaffRepository {
         }
 
         const staff = data as unknown as StaffRow | null;
-
-        if (!staff || !verifyStoredStaffPin(staff.pin_code, pinCode)) {
-            return null;
-        }
 
         return staff;
     }

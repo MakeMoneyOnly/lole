@@ -35,7 +35,7 @@ const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 // Create mock Supabase client with chainable methods
-const createMockSupabaseClient = (): React.JSX.Element => {
+const createMockSupabaseClient = (): any => {
     const mockQuery = {
         select: vi.fn(() => mockQuery),
         insert: vi.fn(() => mockQuery),

@@ -4,6 +4,10 @@ import { restoreRestaurantContext } from './src/lib/monitoring/sentry-context';
 Sentry.init({
     dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
+    // Route all Sentry requests through the tunnel endpoint
+    // This avoids ad blockers and provides better privacy
+    tunnel: '/api/_sentry/tunnel',
+
     // Set tracesSampleRate to 1.0 to capture 100%
     // of transactions for performance monitoring.
     tracesSampleRate: 0.1,

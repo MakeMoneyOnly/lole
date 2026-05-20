@@ -3,10 +3,7 @@
     "framework": "nextjs",
     "buildCommand": "pnpm build",
     "installCommand": "pnpm install",
-    "regions": ["iad1"],
-    "env": {
-        "NODE_ENV": "staging"
-    },
+    "regions": ["fra1"],
     "github": {
         "enabled": true,
         "autoJobCancelation": true
@@ -17,7 +14,7 @@
             "headers": [
                 {
                     "key": "Access-Control-Allow-Origin",
-                    "value": "https://lole.app https://staging.lole.app http://localhost:3000"
+                    "value": "https://lole.app https://staging.lole.app"
                 },
                 {
                     "key": "Access-Control-Allow-Methods",
@@ -26,6 +23,22 @@
                 {
                     "key": "Access-Control-Allow-Headers",
                     "value": "Content-Type, Authorization"
+                },
+                {
+                    "key": "X-Content-Type-Options",
+                    "value": "nosniff"
+                },
+                {
+                    "key": "X-Frame-Options",
+                    "value": "DENY"
+                },
+                {
+                    "key": "Content-Security-Policy",
+                    "value": "default-src 'self'"
+                },
+                {
+                    "key": "Strict-Transport-Security",
+                    "value": "max-age=31536000; includeSubDomains"
                 }
             ]
         }

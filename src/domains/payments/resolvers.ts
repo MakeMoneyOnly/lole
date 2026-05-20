@@ -9,6 +9,7 @@ import { paymentsRepository } from './repository';
 import { paymentsService } from './service';
 import { PaymentStatus } from './repository';
 import { logger } from '@/lib/logger';
+import { PAYMENT_STATUSES } from '@/types/status';
 
 export const paymentsResolvers = {
     Query: {
@@ -128,15 +129,7 @@ export const paymentsResolvers = {
                 const authContext = requireAuth(context);
 
                 // Validate status
-                const validStatuses = [
-                    'pending',
-                    'processing',
-                    'captured',
-                    'failed',
-                    'refunded',
-                    'cancelled',
-                ];
-                if (!validStatuses.includes(args.status)) {
+                if (!PAYMENT_STATUSES.includes(args.status as typeof PAYMENT_STATUSES[number])) {
                     return {
                         ...createErrorResult('VALIDATION_ERROR', `Invalid status: ${args.status}`),
                         payment: null,

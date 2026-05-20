@@ -14,7 +14,7 @@ const PaymentLifecycleEventPayloadSchema = z.object({
     order_id: uuidPattern.nullable(),
     payment_id: uuidPattern.nullable(),
     payment_session_id: uuidPattern.nullable().optional(),
-    provider: z.literal('chapa'),
+    provider: z.enum(['chapa', 'telebirr']),
     provider_transaction_id: z.string().min(1),
     idempotency_key: z.string().min(1),
     status: z.enum(['completed', 'failed']),
@@ -159,7 +159,7 @@ export interface PaymentLifecycleEventPayload {
     order_id: string | null;
     payment_id: string | null;
     payment_session_id?: string | null;
-    provider: 'chapa';
+    provider: 'chapa' | 'telebirr';
     provider_transaction_id: string;
     idempotency_key: string;
     status: PaymentEventStatus;

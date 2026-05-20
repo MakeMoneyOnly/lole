@@ -1,6 +1,8 @@
 import { createHmac, timingSafeEqual } from 'crypto';
+import bcrypt from 'bcryptjs';
 
 const HASH_PREFIX = 'h1:';
+const BCRYPT_WORK_FACTOR = 10;
 const DEFAULT_PIN_SECRET = 'local-dev-staff-pin-secret';
 const DEFAULT_SESSION_TTL_MINUTES = 8 * 60;
 
@@ -51,4 +53,37 @@ export function buildStaffSessionExpiry(
 ): string {
     const ttlMs = Math.max(1, ttlMinutes) * 60_000;
     return new Date(new Date(issuedAt).getTime() + ttlMs).toISOString();
+}
+
+// Bcrypt-based PIN hashing for new implementations
+export async function hashStaffPinBcrypt(pin: string): Promise<string> {
+    return bcrypt.hash(pin.trim(), BCRYPT_WORK_FACTOR);
+}
+
+export function isBcryptHashedPin(value: string | null | undefined): value is string {
+    return typeof value === 'string' && /^\$2[aby]\$\d{2}\$.{53}$/.test(value);
+}
+
+export async function verifyStoredStaffPinBcrypt(
+    storedPin: string | null | undefined,
+    candidatePin: string
+): Promise<boolean> {
+    if (!storedPin) {
+        return false;
+    }
+
+    // Handle bcrypt hashes
+    if (isBcryptHashedPin(storedPin)) {
+        return bcrypt.compare(candidatePin.trim(), storedPin);
+    }
+
+    // Handle legacy HMAC hashes for backward compatibility
+    if (isHashedStaffPin(storedPin)) {
+        const expected = toBuffer(storedPin);
+        const actual = toBuffer(hashStaffPin(candidatePin));
+        return expected.length === actual.length && timingSafeEqual(expected, actual);
+    }
+
+    // Legacy plaintext comparison (for unhashed values)
+    return storedPin === candidatePin.trim();
 }

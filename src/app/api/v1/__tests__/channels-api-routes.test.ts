@@ -52,7 +52,7 @@ describe('Channels API routes', () => {
     it('GET /api/v1/merchant/marketing/channels/summary returns 401 when unauthorized', async () => {
         setAuthUnauthorized();
 
-        const response = await getChannelsSummary();
+        const response = await getChannelsSummary(new Request('http://localhost/api/v1/merchant/marketing/channels/summary'));
 
         expect(response.status).toBe(401);
     });
@@ -77,7 +77,7 @@ describe('Channels API routes', () => {
     it('GET /api/v1/merchant/marketing/channels/online-ordering/settings returns 401 when unauthorized', async () => {
         setAuthUnauthorized();
 
-        const response = await getOnlineOrderingSettings();
+        const response = await getOnlineOrderingSettings(new Request('http://localhost/api/v1/merchant/marketing/channels/online-ordering/settings'));
 
         expect(response.status).toBe(401);
     });

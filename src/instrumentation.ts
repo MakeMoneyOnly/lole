@@ -1,9 +1,3 @@
-/**
- * Next.js Instrumentation
- *
- * Runs once at server startup. Validates all required secrets before
- * the application starts accepting traffic.
- */
 import { logger } from '@/lib/logger';
 
 export async function register(): Promise<void> {

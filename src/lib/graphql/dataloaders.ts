@@ -92,6 +92,23 @@ export interface Restaurant {
 }
 
 /**
+ * HIGH-021: Staff types for DataLoader
+ */
+export interface Staff {
+    id: string;
+    restaurant_id: string;
+    user_id: string | null;
+    name: string;
+    email: string | null;
+    phone: string | null;
+    role: string;
+    is_active: boolean;
+    pin_code: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+/**
  * DataLoaders interface for GraphQL context
  * Each loader handles a specific entity type with batched loading
  */
@@ -120,6 +137,10 @@ export interface DataLoaders {
     paymentsByOrder: DataLoader<string, Payment[]>;
     /** HIGH-021: Load restaurants by ID - returns null if not found */
     restaurants: DataLoader<string, Restaurant | null>;
+    /** HIGH-021: Load staff by ID - returns null if not found */
+    staff: DataLoader<string, Staff | null>;
+    /** HIGH-021: Load staff by restaurant ID - returns empty array if none */
+    staffByRestaurant: DataLoader<string, Staff[]>;
 }
 
 /**
@@ -420,6 +441,71 @@ export function createDataLoaders(tenantContext: TenantContext): DataLoaders {
 
             const restaurantMap = new Map(data?.map(r => [r.id, r as Restaurant]));
             return ids.map(id => restaurantMap.get(id) ?? null);
+        }),
+
+        /**
+         * HIGH-021: Staff loader - batches requests for staff by ID
+         * Returns the staff member or null if not found
+         * HIGH-014: Includes tenant verification
+         */
+        staff: new DataLoader<string, Staff | null>(async (ids: readonly string[]) => {
+            // Direct query to get full staff details (STAFF_DETAIL_COLUMNS)
+            const supabase = createServiceRoleClient();
+            const { data, error } = await supabase
+                .from('restaurant_staff')
+                .select('id, restaurant_id, user_id, name, email, phone, role, is_active, pin_code, created_at, updated_at')
+                .in('id', [...ids]);
+
+            if (error) {
+                log.error('Error loading staff', { message: error.message });
+                return ids.map(() => null);
+            }
+
+            return verifyTenantOwnership(data as Staff[], ids, s => s.id);
+        }),
+
+        /**
+         * HIGH-021: Staff by Restaurant loader - batches requests for staff by restaurant ID
+         * Returns an array of staff for each restaurant (empty if none)
+         * Note: No tenant verification needed - caller's restaurantId is already the requested one
+         */
+        staffByRestaurant: new DataLoader<string, Staff[]>(async (restaurantIds: readonly string[]) => {
+            if (restaurantIds.length === 0) return [];
+
+            // Batch load all staff for the given restaurants at once
+            const supabase = createServiceRoleClient();
+            const { data, error } = await supabase
+                .from('restaurant_staff')
+                .select('id, restaurant_id, user_id, name, email, phone, role, is_active, pin_code, created_at, updated_at')
+                .in('restaurant_id', [...restaurantIds]);
+
+            if (error) {
+                log.error('Error loading staff by restaurant', { message: error.message });
+                return restaurantIds.map(() => []);
+            }
+
+            // Group by restaurant_id
+            const staffByRestaurant = new Map<string, Staff[]>();
+            for (const staff of data ?? []) {
+                const staffItem: Staff = {
+                    id: staff.id,
+                    restaurant_id: staff.restaurant_id,
+                    user_id: staff.user_id,
+                    name: staff.name,
+                    email: staff.email,
+                    phone: staff.phone,
+                    role: staff.role,
+                    is_active: staff.is_active ?? true,
+                    pin_code: staff.pin_code,
+                    created_at: staff.created_at,
+                    updated_at: staff.updated_at,
+                };
+                const existing = staffByRestaurant.get(staff.restaurant_id) || [];
+                existing.push(staffItem);
+                staffByRestaurant.set(staff.restaurant_id, existing);
+            }
+
+            return restaurantIds.map(id => staffByRestaurant.get(id) ?? []);
         }),
     };
 }

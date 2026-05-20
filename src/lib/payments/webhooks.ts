@@ -7,10 +7,11 @@ import {
     createAuditedServiceRoleClient,
 } from '@/lib/supabase/service-role';
 import { logger } from '@/lib/logger';
+import { verifyTelebirrWebhookSignature as telebirrVerifySignature } from './telebirr';
 
 const log = logger.child('webhook');
 
-type PaymentProvider = 'chapa';
+type PaymentProvider = 'chapa' | 'telebirr';
 
 type PaymentContext = {
     restaurant_id: string;
@@ -143,6 +144,11 @@ export function verifyChapaWebhookSignature(
     return compareSignature(secret, providedSignature, rawBody);
 }
 
+export function verifyTelebirrWebhookSignature(rawBody: string, signature: string | null): boolean {
+    const appKey = process.env.TELEBIRR_APP_KEY ?? '';
+    return telebirrVerifySignature(rawBody, signature ?? '', appKey);
+}
+
 export function parseChapaWebhook(
     rawBody: string,
     searchParams?: URLSearchParams
@@ -174,6 +180,35 @@ export function parseChapaWebhook(
         amount: getAmount(body, 'amount') ?? getAmount(data, 'amount'),
         currency: getString(body, 'currency') ?? getString(data, 'currency'),
         metadata: meta,
+        raw_payload: body,
+    };
+}
+
+export function parseTelebirrWebhook(
+    rawBody: string,
+    searchParams?: URLSearchParams
+): ParsedWebhookPayload {
+    const body = safeJsonParse(rawBody);
+
+    const outTradeNo =
+        getString(body, 'outTradeNo', 'tradeNo', 'transactionNo') ??
+        searchParams?.get('outTradeNo') ??
+        searchParams?.get('tradeNo');
+
+    if (!outTradeNo) {
+        throw new Error('Missing Telebirr transaction reference');
+    }
+
+    const tradeStatus = getString(body, 'tradeStatus', 'status', 'result');
+    const status = statusFromRaw(tradeStatus);
+
+    return {
+        provider: 'telebirr',
+        provider_transaction_id: outTradeNo,
+        status,
+        amount: getAmount(body, 'totalAmount', 'amount', 'money'),
+        currency: getString(body, 'currency', 'currencyCode') ?? 'ETB',
+        metadata: body,
         raw_payload: body,
     };
 }
@@ -297,7 +332,7 @@ async function resolvePaymentContext(
     const { data: order } = await admin
         .from('orders')
         .select('id, restaurant_id')
-        .eq('chapa_tx_ref', providerTransactionId)
+        .or(`chapa_tx_ref.eq.${providerTransactionId},telebirr_tx_ref.eq.${providerTransactionId}`)
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();

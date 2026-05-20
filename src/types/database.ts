@@ -3044,6 +3044,30 @@ export type Database = {
                     },
                 ];
             };
+            role_permissions: {
+                Row: {
+                    id: string;
+                    permission: string;
+                    role: string;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    permission: string;
+                    role: string;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    permission?: string;
+                    role?: string;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Relationships: [];
+            };
             restaurants: {
                 Row: {
                     brand_color: string | null;

@@ -85,7 +85,7 @@ vi.mock('@/lib/payments/payment-sessions', async () => {
     };
 });
 
-function createSupabaseQueryClient(): React.JSX.Element {
+function createSupabaseQueryClient(): Record<string, unknown> {
     return {
         from(table: string) {
             if (table === 'restaurants') {
@@ -111,7 +111,7 @@ function createSupabaseQueryClient(): React.JSX.Element {
     };
 }
 
-function createAdminClient(): React.JSX.Element {
+function createAdminClient(): Record<string, unknown> {
     const orderInsertSingle = vi.fn().mockResolvedValue({
         data: {
             id: 'order-1',

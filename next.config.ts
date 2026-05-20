@@ -218,6 +218,12 @@ const nextConfig: NextConfig = {
                 source: '/api/v1/:path*',
                 destination: '/api/:path*',
             },
+            {
+                // Sentry tunnel - proxy Sentry requests through the app
+                // Avoids ad blockers and provides better privacy
+                source: '/api/_sentry/tunnel',
+                destination: '/api/_sentry/tunnel',
+            },
         ];
     },
 

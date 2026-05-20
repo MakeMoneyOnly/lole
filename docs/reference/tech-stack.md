@@ -22,7 +22,7 @@ The lole Restaurant Operating System utilizes a modern, resilient technology sta
 | React        | React        | 19.x    | UI component library | Concurrent features     |
 | TypeScript   | TypeScript   | 5.5+    | Type safety          | Strict mode enabled     |
 | Tailwind CSS | Tailwind CSS | 4.x     | Utility-first CSS    | Custom design system    |
-| Zustand      | Zustand      | 4.5+    | State management     | Lightweight alternative |
+| Zustand      | Zustand      | 5.x     | State management     | Lightweight alternative |
 
 ### Build & Bundling
 

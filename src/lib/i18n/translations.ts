@@ -362,6 +362,7 @@ const enTranslations = {
         pendingSync: '{count} items pending sync',
         syncComplete: 'All data synced',
         syncFailed: 'Sync failed. Will retry automatically.',
+        slowNetwork: 'Slow network connection detected. Some features may load slower.',
     },
 };
 
@@ -562,6 +563,7 @@ const amTranslations: DeepPartial<typeof enTranslations> = {
         pendingSync: '{count} እቃዎች በመላክ ላይ',
         syncComplete: 'ሁሉም ውሂብ ተመሳስሏል',
         syncFailed: 'ማመሳሰል አልተሳካም። በራስ-ሰር ይሞክራል።',
+        slowNetwork: 'የአውታረ መረብ ግንዛቢ ደብተሎች ተገኙ። አንዳንድ ባህሪያት የተቀናጀ ሊደርሱ ይችላሉ።',
     },
     reports: {
         title: 'ሪፖርቶች',

@@ -30,7 +30,7 @@ describe('gateway bootstrap payload', () => {
             healthPort: 8787,
         });
 
-        expect(payload.session.claims.deviceId).toBe('device-1');
+        expect(payload.session.deviceId).toBe('device-1');
         expect(payload.discovery.gatewayId).toBe('gw-1');
         expect(payload.health.operatingMode).toBe('offline-local');
         expect(payload.endpoints.bootstrap).toBe('http://127.0.0.1:8787/bootstrap');

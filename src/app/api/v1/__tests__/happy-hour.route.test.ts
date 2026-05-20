@@ -52,7 +52,7 @@ describe('Happy Hour API', () => {
         const { GET } = await import('@/app/api/v1/merchant/marketing/happy-hour/route');
         setAuthUnauthorized();
 
-        const response = await GET();
+        const response = await GET(new Request('http://localhost/api/v1/merchant/marketing/happy-hour'));
 
         expect(response.status).toBe(401);
     });

@@ -192,13 +192,13 @@ components:
           $ref: '#/components/schemas/UUID'
         table_id:
           $ref: '#/components/schemas/UUID'
-          nullable: true
+nullable: true
         order_number:
           type: integer
           description: Human-readable sequential order number
         status:
           type: string
-          enum: [pending, confirmed, preparing, ready, served, completed, cancelled]
+          enum: [pending, confirmed, preparing, ready, served, cancelled]
         order_type:
           type: string
           enum: [dine_in, takeaway, delivery]
@@ -262,12 +262,12 @@ components:
           $ref: '#/components/schemas/UUID'
         course_number:
           type: integer
-        name:
+name:
           type: string
           enum: [appetizers, mains, desserts, drinks]
         status:
           type: string
-          enum: [pending, preparing, ready, served]
+          enum: [pending, fired, preparing, ready, served, cancelled]
         due_at:
           $ref: '#/components/schemas/Timestamp'
 
@@ -282,12 +282,12 @@ components:
           $ref: '#/components/schemas/UUID'
         amount_santim:
           $ref: '#/components/schemas/Santim'
-        method:
+method:
           type: string
           enum: [cash, telebirr, chappa, card, gift_card]
         status:
           type: string
-          enum: [pending, completed, failed, refunded]
+          enum: [pending, processing, captured, failed, refunded, cancelled]
         reference:
           type: string
         created_at:
@@ -309,12 +309,12 @@ components:
         email:
           type: string
           format: email
-        phone:
-          type: string
-        role:
-          type: string
-          enum: [owner, manager, waiter, kitchen]
-        permissions:
+phone:
+                  type: string
+                role:
+                  type: string
+                  enum: [owner, admin, manager, waiter, kitchen, bar]
+                permissions:
           type: array
           items:
             type: string
@@ -561,11 +561,11 @@ paths:
           application/json:
             schema:
               type: object
-              properties:
+properties:
                 status:
                   type: string
-                  enum: [pending, confirmed, preparing, ready, served, completed, cancelled]
-      responses:
+                  enum: [pending, confirmed, preparing, ready, served, cancelled]
+              responses:
         '200':
           description: Order updated
           content:
@@ -684,9 +684,9 @@ paths:
                   type: string
                 phone:
                   type: string
-                role:
-                  type: string
-                  enum: [owner, manager, waiter, kitchen]
+role:
+                   type: string
+                   enum: [owner, admin, manager, waiter, kitchen, bar]
                 permissions:
                   type: array
                   items:

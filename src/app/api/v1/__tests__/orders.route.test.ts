@@ -67,7 +67,7 @@ vi.mock('@/lib/security', () => ({
     },
 }));
 
-const mockSupabaseClient = (restaurantId: string | null): React.JSX.Element => {
+const mockSupabaseClient = (restaurantId: string | null): void => {
     mocks.from.mockImplementation(() => ({
         select: () => ({
             eq: () => ({

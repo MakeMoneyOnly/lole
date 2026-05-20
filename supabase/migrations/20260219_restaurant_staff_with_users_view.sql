@@ -23,6 +23,10 @@ SELECT
 FROM public.restaurant_staff rs
 LEFT JOIN auth.users u ON rs.user_id = u.id;
 
+-- Set security_invoker to ensure view runs with caller's privileges
+-- This prevents unauthorized access to auth.users data
+ALTER VIEW public.restaurant_staff_with_users SET (security_invoker = on);
+
 -- Grant appropriate permissions
 -- Service role can already access this via superuser privileges
 -- Regular users should access through the API which uses service role

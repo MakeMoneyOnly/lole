@@ -107,7 +107,7 @@ class QueryBuilder {
     }
 }
 
-function createHarness(): React.JSX.Element {
+function createHarness(): { store: TableStore; supabase: any; } {
     const store: TableStore = {
         tables: [
             {

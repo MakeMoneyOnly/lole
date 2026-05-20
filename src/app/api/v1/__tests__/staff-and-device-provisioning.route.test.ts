@@ -24,7 +24,7 @@ const getAuthorizedRestaurantContextMock = vi.mocked(getAuthorizedRestaurantCont
 const createServiceRoleClientMock = vi.mocked(createServiceRoleClient);
 const writeAuditLogMock = vi.mocked(writeAuditLog);
 
-function setAuthContextOk(): React.JSX.Element {
+function setAuthContextOk(): void {
     getAuthenticatedUserMock.mockResolvedValue({
         ok: true,
         user: { id: 'user-1' },
@@ -101,7 +101,7 @@ describe('staff and device provisioning routes', () => {
             from: fromMock,
         } as any);
 
-        const response = await getStaff();
+        const response = await getStaff(new Request('http://localhost/api/v1/merchant/core/staff'));
         const body = await response.json();
 
         expect(response.status).toBe(200);

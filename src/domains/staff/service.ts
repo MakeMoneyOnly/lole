@@ -1,34 +1,29 @@
 // Staff Domain - Service Layer
-// Business logic layer - PIN hashing, role validation, etc.
-import { staffRepository, StaffRow, StaffListOptions } from './repository';
-import { hashStaffPin } from './pin';
+// Business logic layer - PIN hashing, role validation, tenant isolation
+import { StaffRow, StaffListOptions } from './repository';
+import { staffCrudService, CreateStaffInput, UpdateStaffInput } from './crud-service';
 import { STAFF_ROLES, StaffRole } from '@/types/status';
 import { logger } from '@/lib/logger';
+import { pinService } from './pin-service';
+import { roleService } from './role-service';
+import { permissionService } from './permission-service';
 
-export interface CreateStaffInput {
-    restaurantId: string;
-    userId?: string;
-    name: string;
-    email?: string;
-    role: string;
-    pinCode?: string;
-    phone?: string;
-}
+export type { CreateStaffInput, UpdateStaffInput } from './crud-service';
 
-export interface UpdateStaffInput {
-    name?: string;
-    email?: string;
-    role?: string;
-    pinCode?: string;
-    phone?: string;
-    isActive?: boolean;
-}
-
-/**
- * Check if a role is valid
- */
-export function isValidRole(role: string): role is StaffRole {
-    return STAFF_ROLES.includes(role as StaffRole);
+export function checkTenantIsolation(
+    entity: StaffRow | null,
+    expectedRestaurantId: string | undefined,
+    context: string
+): StaffRow | null {
+    if (entity && expectedRestaurantId && entity.restaurant_id !== expectedRestaurantId) {
+        logger.error(
+            `Tenant isolation violation: ${context}`,
+            undefined,
+            { source: '[staff/service]' }
+        );
+        return null;
+    }
+    return entity;
 }
 
 export class StaffService {
@@ -36,19 +31,12 @@ export class StaffService {
      * Get a single staff member by ID with tenant validation
      */
     async getStaffMember(id: string, expectedRestaurantId?: string): Promise<StaffRow | null> {
-        const staff = await staffRepository.getStaffMember(id);
-
-        // Tenant isolation check
-        if (staff && expectedRestaurantId && staff.restaurant_id !== expectedRestaurantId) {
-            logger.error(
-                `Tenant isolation violation: Attempted to access staff ${id} from restaurant ${expectedRestaurantId}`,
-                undefined,
-                { source: '[staff/service]' }
-            );
-            return null;
-        }
-
-        return staff;
+        const staff = await staffCrudService.getStaffMember(id);
+        return checkTenantIsolation(
+            staff,
+            expectedRestaurantId,
+            `Attempted to access staff ${id} from restaurant ${expectedRestaurantId}`
+        );
     }
 
     /**
@@ -58,26 +46,19 @@ export class StaffService {
         userId: string,
         expectedRestaurantId?: string
     ): Promise<StaffRow | null> {
-        const staff = await staffRepository.getStaffByUserId(userId);
-
-        // Tenant isolation check
-        if (staff && expectedRestaurantId && staff.restaurant_id !== expectedRestaurantId) {
-            logger.error(
-                `Tenant isolation violation: Attempted to access staff by user ${userId} from restaurant ${expectedRestaurantId}`,
-                undefined,
-                { source: '[staff/service]' }
-            );
-            return null;
-        }
-
-        return staff;
+        const staff = await staffCrudService.getStaffByUserId(userId);
+        return checkTenantIsolation(
+            staff,
+            expectedRestaurantId,
+            `Attempted to access staff by user ${userId} from restaurant ${expectedRestaurantId}`
+        );
     }
 
     /**
      * Get paginated staff list for a restaurant
      */
     async getStaff(restaurantId: string, options: StaffListOptions = {}): Promise<StaffRow[]> {
-        return staffRepository.getStaff(restaurantId, options);
+        return staffCrudService.getStaff(restaurantId, options);
     }
 
     /**
@@ -85,26 +66,18 @@ export class StaffService {
      */
     async createStaffMember(input: CreateStaffInput): Promise<StaffRow> {
         // Validate role
-        if (!isValidRole(input.role)) {
+        if (!roleService.isValidRole(input.role)) {
             throw new Error(
                 `Invalid role: ${input.role}. Valid roles are: ${STAFF_ROLES.join(', ')}`
             );
         }
 
-        // TODO: In production, hash the PIN code with bcrypt
-        // For now, store as-is (the repository will handle it)
-        // import bcrypt from 'bcryptjs';
-        // const hashedPin = input.pinCode ? await bcrypt.hash(input.pinCode, 10) : null;
+        // Hash the PIN code with bcrypt
+        const hashedPin = input.pinCode ? await pinService.hash(input.pinCode) : undefined;
 
-        return staffRepository.createStaffMember({
-            restaurant_id: input.restaurantId,
-            user_id: input.userId,
-            name: input.name,
-            email: input.email,
-            role: input.role,
-            pin_code: input.pinCode ? hashStaffPin(input.pinCode) : undefined,
-            phone: input.phone,
-            is_active: true,
+        return staffCrudService.createStaffMember({
+            ...input,
+            pinCode: hashedPin,
         });
     }
 
@@ -123,22 +96,18 @@ export class StaffService {
         }
 
         // Validate role if provided
-        if (input.role && !isValidRole(input.role)) {
+        if (input.role && !roleService.isValidRole(input.role)) {
             throw new Error(
                 `Invalid role: ${input.role}. Valid roles are: ${STAFF_ROLES.join(', ')}`
             );
         }
 
-        // TODO: Hash PIN if provided
-        // const hashedPin = input.pinCode ? await bcrypt.hash(input.pinCode, 10) : undefined;
+        // Hash PIN if provided
+        const hashedPin = input.pinCode ? await pinService.hash(input.pinCode) : undefined;
 
-        return staffRepository.updateStaffMember(id, {
-            name: input.name,
-            email: input.email,
-            role: input.role,
-            pin_code: input.pinCode ? hashStaffPin(input.pinCode) : undefined,
-            phone: input.phone,
-            is_active: input.isActive,
+        return staffCrudService.updateStaffMember(id, {
+            ...input,
+            pinCode: hashedPin,
         });
     }
 
@@ -152,7 +121,7 @@ export class StaffService {
             throw new Error(`Staff member ${id} not found or access denied`);
         }
 
-        return staffRepository.deactivateStaffMember(id);
+        return staffCrudService.deactivateStaffMember(id);
     }
 
     /**
@@ -164,60 +133,35 @@ export class StaffService {
         pinCode: string,
         expectedRestaurantId?: string
     ): Promise<StaffRow | null> {
-        // TODO: In production, use bcrypt.compare for hashed PINs
-        // const staff = await staffRepository.getStaffMember(staffId);
-        // if (!staff || !staff.pin_code) return null;
-        // const isValid = await bcrypt.compare(pinCode, staff.pin_code);
-
-        const staff = await staffRepository.verifyPin(staffId, pinCode);
-
-        // Tenant isolation check
-        if (staff && expectedRestaurantId && staff.restaurant_id !== expectedRestaurantId) {
-            logger.error(
-                `Tenant isolation violation: PIN verification for staff ${staffId} from restaurant ${expectedRestaurantId}`,
-                undefined,
-                { source: '[staff/service]' }
-            );
+        const staff = await staffCrudService.getStaffMember(staffId);
+        if (!staff || !staff.pin_code) {
             return null;
         }
 
-        return staff;
+        const isValid = await pinService.verify(staff.pin_code, pinCode);
+        if (!isValid) {
+            return null;
+        }
+
+        return checkTenantIsolation(
+            staff,
+            expectedRestaurantId,
+            `PIN verification for staff ${staffId} from restaurant ${expectedRestaurantId}`
+        );
     }
 
     /**
      * Check if user has permission for an action
      */
-    hasPermission(staff: StaffRow, permission: string): boolean {
-        const rolePermissions: Record<StaffRole, string[]> = {
-            owner: ['all'],
-            admin: [
-                'staff:read',
-                'staff:write',
-                'orders:read',
-                'orders:write',
-                'menu:read',
-                'menu:write',
-                'reports:read',
-            ],
-            manager: [
-                'staff:read',
-                'staff:write',
-                'orders:read',
-                'orders:write',
-                'menu:read',
-                'menu:write',
-                'reports:read',
-            ],
-            kitchen: ['orders:read', 'orders:update:status'],
-            waiter: ['orders:read', 'orders:create', 'orders:update'],
-            bar: ['orders:read', 'orders:update:status'],
-        };
-
-        const permissions = rolePermissions[staff.role as StaffRole] || [];
-        return permissions.includes('all') || permissions.includes(permission);
+    async hasPermission(staff: StaffRow, permission: string): Promise<boolean> {
+        return permissionService.hasPermission(staff, permission);
     }
 }
 
 export const staffService = new StaffService();
 
-export { hashStaffPin } from './pin';
+export { hashStaffPinBcrypt, verifyStoredStaffPinBcrypt } from './pin';
+
+export function isValidRole(role: string): role is StaffRole {
+    return roleService.isValidRole(role);
+}
