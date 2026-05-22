@@ -106,3 +106,10 @@ A task is not done until all applicable items pass:
 - **Performance**: No regressions against SLO/CWV expectations.
 - **Tests**: Appropriate unit/integration/e2e coverage updated.
 - **Docs**: Relevant docs updated for behavior changes.
+
+## Development Commands
+
+- **Type-check**: `npm run type-check`
+- **Lint**: `npm run lint`
+- **Test**: `npm run test`
+- **Test specific file**: `npm run test -- path/to/file.test.ts`

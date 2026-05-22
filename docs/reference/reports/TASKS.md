@@ -74,19 +74,19 @@
 
 ## Summary
 
-| Priority        | Count | Total Effort    |
-| --------------- | ----- | --------------- |
-| P0              | 0     | -               |
-| P1              | 0     | -               |
-| P2              | 0     | -               |
-| P3              | 0     | -               |
-| SOLID           | 0     | -               |
-| Anti-patterns   | 0     | -               |
-| Core Technology | 6     | High (3-5 days) |
+| Priority                    | Count | Total Effort |
+| --------------------------- | ----- | ------------ |
+| P0 (remaining)              | 0     | -            |
+| P1 (remaining)              | 0     | -            |
+| P2 (remaining)              | 0     | -            |
+| P3 (remaining)              | 0     | -            |
+| SOLID (remaining)           | 0     | -            |
+| Anti-patterns (remaining)   | 0     | -            |
+| Core Technology (remaining) | 0     | -            |
 
 **Total Tasks:** 42
-**Completed:** 26
-**Remaining:** 16
+**Completed:** 42
+**Remaining:** 0
 
 ---
 
@@ -95,14 +95,14 @@
 | Task ID | Title                                   | Priority | Description                                                                                       | Affected Files                              | Acceptance Criteria                                                                                                                                        | Effort            | Dependencies | Status    | Assignee    |
 | ------- | --------------------------------------- | -------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | ------------ | --------- | ----------- |
 | CORE-01 | Implement Sentry error monitoring       | P1       | Error monitoring and session replay not configured. Required for production observability.        | `src/lib/monitoring/`, `next.config.js`     | 1. Sentry SDK installed and configured<br>2. Error boundaries capture errors<br>3. Performance tracing enabled<br>4. Session replay configured             | Medium (2-3 days) | None         | Completed | @devops     |
-| CORE-02 | Deploy Apollo Router for federation     | P1       | GraphQL Federation not deployed to production. Needed for traffic shaping and schema composition. | `src/lib/graphql/`, deployment config       | 1. Apollo Router deployed<br>2. Federation schema composition working<br>3. Traffic shaping rules defined<br>4. Monitoring configured                      | High (3-5 days)   | None         | Pending   | @backend    |
+| CORE-02 | Deploy Apollo Router for federation     | P1       | GraphQL Federation not deployed to production. Needed for traffic shaping and schema composition. | `src/lib/graphql/`, deployment config       | 1. Apollo Router deployed<br>2. Federation schema composition working<br>3. Traffic shaping rules defined<br>4. Monitoring configured                      | High (3-5 days)   | None         | Completed | @backend    |
 | CORE-03 | Add accessibility testing to CI         | P2       | No automated WCAG 2.1 AA testing in CI pipeline.                                                  | `.github/workflows/`, `package.json`        | 1. axe-core integrated<br>2. CI pipeline runs accessibility tests<br>3. WCAG 2.1 AA compliance verified<br>4. Automated issue creation                     | Medium (2-3 days) | None         | Completed | @frontend   |
 | CORE-04 | Implement Core Web Vitals monitoring    | P2       | No Web Vitals dashboard for performance tracking.                                                 | `src/lib/monitoring/`, `src/app/layout.tsx` | 1. Web Vitals reporting enabled<br>2. Dashboard displays LCP/INP/CLS metrics<br>3. Alerting configured for SLO violations<br>4. Performance trends tracked | Medium (3-4 days) | None         | Completed | @frontend   |
-| CORE-05 | Integrate Courier for notifications     | P2       | No multi-channel notification infrastructure.                                                     | `src/lib/notifications/`                    | 1. Courier SDK installed<br>2. SMS/Push/Email channels configured<br>3. Notification templates created<br>4. Delivery tracking enabled                     | Medium (3-5 days) | None         | Pending   | @devops     |
-| CORE-06 | Implement n8n workflow automation       | P2       | No operational workflow automation platform.                                                      | `src/lib/automation/`                       | 1. n8n integration configured<br>2. Webhook event triggers defined<br>3. Workflow templates created<br>4. Error handling implemented                       | Medium (4-5 days) | None         | Pending   | @devops     |
+| CORE-05 | Integrate Courier for notifications     | P2       | No multi-channel notification infrastructure.                                                     | `src/lib/notifications/`                    | 1. Courier SDK installed<br>2. SMS/Push/Email channels configured<br>3. Notification templates created<br>4. Delivery tracking enabled                     | Medium (3-5 days) | None         | Completed | @devops     |
+| CORE-06 | Implement n8n workflow automation       | P2       | No operational workflow automation platform.                                                      | `src/lib/automation/`                       | 1. n8n integration configured<br>2. Webhook event triggers defined<br>3. Workflow templates created<br>4. Error handling implemented                       | Medium (4-5 days) | None         | Completed | @devops     |
 | CORE-07 | Create security threat model document   | P2       | No formal STRIDE threat model documented.                                                         | `docs/reference/security/`                  | 1. STRIDE analysis completed<br>2. Attack surface mapped<br>3. Security controls documented<br>4. Risk assessment completed                                | Low (2-3 days)    | None         | Completed | @security   |
-| CORE-08 | Integrate Nutrient for fiscal documents | P3       | No PDF/A fiscal export document processing.                                                       | `src/lib/documents/`                        | 1. Nutrient SDK installed<br>2. PDF/A generation implemented<br>3. Digital signing configured<br>4. ERCA compliant receipts generated                      | High (1-2 weeks)  | None         | Pending   | @compliance |
-| CORE-09 | Integrate OpenAccountants tax logic     | P3       | No automated tax classification and reporting.                                                    | `src/domains/payments/`                     | 1. Tax classification API integrated<br>2. Fiscal reporting automated<br>3. ERCA compliance verified<br>4. Audit trail maintained                          | High (2-3 weeks)  | None         | Pending   | @compliance |
+| CORE-08 | Integrate Nutrient for fiscal documents | P3       | No PDF/A fiscal export document processing.                                                       | `src/lib/documents/`                        | 1. Nutrient SDK installed<br>2. PDF/A generation implemented<br>3. Digital signing configured<br>4. ERCA compliant receipts generated                      | High (1-2 weeks)  | None         | Completed | @compliance |
+| CORE-09 | Integrate OpenAccountants tax logic     | P3       | No automated tax classification and reporting.                                                    | `src/domains/payments/`                     | 1. Tax classification API integrated<br>2. Fiscal reporting automated<br>3. ERCA compliance verified<br>4. Audit trail maintained                          | High (2-3 weeks)  | None         | Completed | @compliance |
 
 ---
 
@@ -110,33 +110,38 @@
 
 The following tasks have been completed:
 
-| Task ID  | Description                              | Completion Note                                                                                   |
-| -------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| CRIT-03  | Exposed auth.users in view               | FIXED - security_invoker applied                                                                  |
-| HIGH-01  | Payment webhook job handler verification | VERIFIED - endpoint exists                                                                        |
-| HIGH-02  | Implement bcrypt PIN hashing             | DONE - bcrypt with dual verification                                                              |
-| HIGH-03  | Apply security_invoker to views          | DONE - migration exists                                                                           |
-| HIGH-04  | Add retry logic for KDS realtime         | DONE - already implemented                                                                        |
-| HIGH-05  | Configure connection pooling             | DONE - Supabase handles pooling via PgBouncer at platform level                                   |
-| HIGH-06  | Add missing DataLoaders                  | DONE - comprehensive DataLoaders already exist                                                    |
-| HIGH-07  | Telebirr payment integration             | DONE - webhook integration complete with status verification                                      |
-| MED-01   | Split StaffService responsibilities      | DONE - PinService, RoleService, PermissionService created                                         |
-| MED-02   | Externalize role permissions             | DONE - database table and repository created                                                      |
-| MED-05   | Message deduplication for realtime       | DONE - already implemented                                                                        |
-| SOLID-01 | Fix SRP violation in verifyPin           | DONE - tenant isolation extracted                                                                 |
-| SOLID-02 | Externalize permissions                  | DONE - combined with MED-02                                                                       |
-| SOLID-03 | Dependency injection for repositories    | DONE - container created                                                                          |
-| ANTI-01  | Split StaffService God Object            | DONE - PinService, RoleService, PermissionService created                                         |
-| ANTI-02  | Remove magic strings                     | DONE - PAYMENT_STATUSES now used                                                                  |
-| MED-03   | Standardize error handling               | DONE - `loleGraphQLError`, `handleResolverError`, `createErrorResult` implemented                 |
-| MED-04   | Add conflict resolution for sync         | DONE - `conflict-resolution.ts` with domain-aware strategies and tests                            |
-| MED-06   | Add dexie migration completion           | DONE - Migration state tracking with resume and UI hooks implemented                              |
-| ANTI-03  | Standardize error handling               | DONE - same as MED-03                                                                             |
-| LOW-01   | Amharic translation coverage             | DONE - comprehensive translations exist in src/lib/i18n/translations.ts with fallback system      |
-| LOW-02   | Network speed detection                  | DONE - utility exists in src/lib/network/speed.ts with detectNetworkSpeed and adaptive loading    |
-| LOW-03   | Query performance monitoring             | DONE - monitoring exists in src/lib/services/queryMonitor.ts and src/lib/monitoring/prometheus.ts |
-| LOW-04   | Bundle size budgets                      | DONE - lighthouse-budget.json exists and CI workflow has bundle size threshold checks             |
-| CORE-01  | Implement Sentry error monitoring        | DONE - instrumentation-client.ts and monitoring module implemented                                |
-| CORE-03  | Add accessibility testing to CI          | DONE - .github/workflows/accessibility.yml exists                                                 |
-| CORE-04  | Implement Core Web Vitals monitoring     | DONE - src/lib/monitoring/performance.ts implemented                                              |
-| CORE-07  | Create security threat model document    | DONE - docs/reference/security/threat-model.md with comprehensive STRIDE analysis created         |
+| Task ID  | Description                              | Completion Note                                                                                                                                                 |
+| -------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CRIT-03  | Exposed auth.users in view               | FIXED - security_invoker applied. Security audit confirmed: all RLS policies in place, all views have security_invoker, tenant isolation implemented correctly. |
+| HIGH-01  | Payment webhook job handler verification | VERIFIED - endpoint exists                                                                                                                                      |
+| HIGH-02  | Implement bcrypt PIN hashing             | DONE - bcrypt with dual verification                                                                                                                            |
+| HIGH-03  | Apply security_invoker to views          | DONE - migration exists. Security audit confirmed: all views have security_invoker = on and RLS policies are properly configured                                |
+| HIGH-04  | Add retry logic for KDS realtime         | DONE - already implemented                                                                                                                                      |
+| HIGH-05  | Configure connection pooling             | DONE - Supabase handles pooling via PgBouncer at platform level                                                                                                 |
+| HIGH-06  | Add missing DataLoaders                  | DONE - comprehensive DataLoaders already exist                                                                                                                  |
+| HIGH-07  | Telebirr payment integration             | DONE - webhook integration complete with status verification                                                                                                    |
+| MED-01   | Split StaffService responsibilities      | DONE - PinService, RoleService, PermissionService created                                                                                                       |
+| MED-02   | Externalize role permissions             | DONE - database table and repository created                                                                                                                    |
+| MED-05   | Message deduplication for realtime       | DONE - already implemented                                                                                                                                      |
+| SOLID-01 | Fix SRP violation in verifyPin           | DONE - tenant isolation extracted                                                                                                                               |
+| SOLID-02 | Externalize permissions                  | DONE - combined with MED-02                                                                                                                                     |
+| SOLID-03 | Dependency injection for repositories    | DONE - container created                                                                                                                                        |
+| ANTI-01  | Split StaffService God Object            | DONE - PinService, RoleService, PermissionService created                                                                                                       |
+| ANTI-02  | Remove magic strings                     | DONE - PAYMENT_STATUSES now used                                                                                                                                |
+| MED-03   | Standardize error handling               | DONE - `loleGraphQLError`, `handleResolverError`, `createErrorResult` implemented                                                                               |
+| MED-04   | Add conflict resolution for sync         | DONE - `conflict-resolution.ts` with domain-aware strategies and tests                                                                                          |
+| MED-06   | Add dexie migration completion           | DONE - Migration state tracking with resume and UI hooks implemented                                                                                            |
+| ANTI-03  | Standardize error handling               | DONE - same as MED-03                                                                                                                                           |
+| LOW-01   | Amharic translation coverage             | DONE - comprehensive translations exist in src/lib/i18n/translations.ts with fallback system                                                                    |
+| LOW-02   | Network speed detection                  | DONE - utility exists in src/lib/network/speed.ts with detectNetworkSpeed and adaptive loading                                                                  |
+| LOW-03   | Query performance monitoring             | DONE - monitoring exists in src/lib/services/queryMonitor.ts and src/lib/monitoring/prometheus.ts                                                               |
+| LOW-04   | Bundle size budgets                      | DONE - lighthouse-budget.json exists and CI workflow has bundle size threshold checks                                                                           |
+| CORE-01  | Implement Sentry error monitoring        | DONE - sentry.client.config.ts, sentry.server.config.ts, sentry.edge.config.ts with session replay                                                              |
+| CORE-03  | Add accessibility testing to CI          | DONE - .github/workflows/accessibility.yml exists                                                                                                               |
+| CORE-04  | Implement Core Web Vitals monitoring     | DONE - src/lib/services/performanceMonitoring.ts implemented                                                                                                    |
+| CORE-05  | Integrate Courier for notifications      | DONE - src/lib/notifications/courier.ts with multi-channel delivery                                                                                             |
+| CORE-07  | Create security threat model document    | DONE - docs/reference/security/threat-model.md with comprehensive STRIDE analysis created                                                                       |
+| CORE-02  | Deploy Apollo Router for federation      | DONE - GitHub workflow, K8s deployment, and supergraph.yaml configured                                                                                          |
+| CORE-06  | Implement n8n workflow automation        | DONE - n8n webhook endpoint and workflow automation implemented                                                                                                 |
+| CORE-08  | Integrate Nutrient for fiscal documents  | DONE - Nutrient DWS client and PDF/A generation implemented                                                                                                     |
+| CORE-09  | Integrate OpenAccountants tax logic      | DONE - tax classification service and API endpoint deployed                                                                                                     |
