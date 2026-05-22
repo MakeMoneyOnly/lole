@@ -1,0 +1,49 @@
+{
+  "bundles": {
+    "main": {
+      "maxSize": "250KB",
+      "warningSize": "200KB",
+      "description": "Primary application bundle containing core logic"
+    },
+    "vendor": {
+      "maxSize": "500KB",
+      "warningSize": "400KB",
+      "description": "Third-party dependencies bundle"
+    },
+    "polyfills": {
+      "maxSize": "50KB",
+      "warningSize": "40KB",
+      "description": "Browser polyfill code"
+    },
+    "styles": {
+      "maxSize": "100KB",
+      "warningSize": "80KB",
+      "description": "CSS and styling assets"
+    },
+    "webpack-runtime": {
+      "maxSize": "10KB",
+      "warningSize": "8KB",
+      "description": "Webpack runtime code"
+    },
+    "framework": {
+      "maxSize": "150KB",
+      "warningSize": "120KB",
+      "description": "Next.js framework code"
+    },
+    "app": {
+      "maxSize": "200KB",
+      "warningSize": "160KB",
+      "description": "Application-specific code"
+    },
+    "shared": {
+      "maxSize": "100KB",
+      "warningSize": "80KB",
+      "description": "Shared modules between routes"
+    }
+  },
+  "total": {
+    "maxSize": "1MB",
+    "warningSize": "800KB",
+    "description": "Total JavaScript bundle size for initial load"
+  }
+}

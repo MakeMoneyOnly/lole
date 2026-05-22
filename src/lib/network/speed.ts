@@ -5,12 +5,13 @@
  * Integrates with the i18n system for localized messages.
  *
  * Features:
- * - Connection speed detection (fast, slow, offline)
+ * - Connection speed detection (slow, medium, fast, unknown)
  * - Adaptive loading strategies based on network conditions
  * - Effective connection type detection
  * - Bandwidth estimation via performance APIs
  */
 
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { t } from '@/lib/i18n/translations';
 import type { AppLocale } from '@/lib/i18n/locale';
 
@@ -19,12 +20,12 @@ import type { AppLocale } from '@/lib/i18n/locale';
 // ============================================
 
 /**
- * Network speed classification
+ * Network speed classification for adaptive loading
  */
-export type NetworkSpeed = 'fast' | 'slow' | 'offline';
+export type NetworkSpeed = 'slow' | 'medium' | 'fast' | 'unknown';
 
 /**
- * Connection quality with additional metadata
+ * Connection information from Network Information API
  */
 export interface ConnectionInfo {
     speed: NetworkSpeed;
@@ -33,6 +34,27 @@ export interface ConnectionInfo {
     rtt?: number;
     saveData?: boolean;
 }
+
+// ============================================
+// CONSTANTS
+// ============================================
+
+/**
+ * Speed thresholds in Mbps
+ */
+const SPEED_THRESHOLDS = {
+    SLOW: 1.5,
+    FAST: 10,
+    MEDIUM: 10,
+} as const;
+
+/**
+ * RTT thresholds in ms for additional detection
+ */
+const RTT_THRESHOLDS = {
+    FAST: 100,
+    SLOW: 300,
+} as const;
 
 /**
  * Options for adaptive loading
@@ -49,26 +71,6 @@ export interface AdaptiveLoadingOptions {
 export type LoadingStrategy = 'full' | 'reduced' | 'minimal';
 
 // ============================================
-// CONSTANTS
-// ============================================
-
-/**
- * Speed thresholds in Mbps
- */
-const SPEED_THRESHOLDS = {
-    FAST: 10,
-    SLOW: 1.5,
-} as const;
-
-/**
- * RTT thresholds in ms for additional detection
- */
-const RTT_THRESHOLDS = {
-    FAST: 100,
-    SLOW: 300,
-} as const;
-
-// ============================================
 // NETWORK SPEED DETECTION
 // ============================================
 
@@ -77,7 +79,7 @@ const RTT_THRESHOLDS = {
  */
 export function detectNetworkSpeed(): ConnectionInfo {
     if (typeof window === 'undefined') {
-        return { speed: 'offline' };
+        return { speed: 'unknown' };
     }
 
     const navigator = window.navigator as Navigator & {
@@ -155,18 +157,13 @@ export function estimateBandwidth(): number | null {
 
     // Get recent resources to estimate bandwidth
     const recentEntries = entries.slice(-10);
-    const validEntries = recentEntries.filter(
-        (entry) => entry.transferSize && entry.duration > 0
-    );
+    const validEntries = recentEntries.filter(entry => entry.transferSize && entry.duration > 0);
 
     if (validEntries.length === 0) {
         return null;
     }
 
-    const totalBytes = validEntries.reduce(
-        (sum, entry) => sum + (entry.transferSize || 0),
-        0
-    );
+    const totalBytes = validEntries.reduce((sum, entry) => sum + (entry.transferSize || 0), 0);
     const totalTime = validEntries.reduce((sum, entry) => sum + entry.duration, 0);
 
     if (totalTime === 0) {
@@ -189,6 +186,115 @@ export function isOnline(): boolean {
 }
 
 // ============================================
+// NETWORK SPEED DETECTION (ENHANCED)
+// ============================================
+
+const TEST_IMAGE_URL =
+    'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
+/**
+ * Network Information API interface
+ */
+interface NetworkInformation {
+    effectiveType?: string;
+    downlink?: number;
+    rtt?: number;
+    saveData?: boolean;
+}
+
+/**
+ * Get network speed from Network Information API
+ */
+export function getNetworkInfoSpeed(): NetworkSpeed {
+    if (typeof navigator === 'undefined') return 'unknown';
+
+    const connection =
+        (navigator as Navigator & { connection?: NetworkInformation }).connection ||
+        (navigator as unknown as { mozConnection?: NetworkInformation }).mozConnection ||
+        (navigator as unknown as { webkitConnection?: NetworkInformation }).webkitConnection;
+
+    if (!connection) return 'unknown';
+
+    const { effectiveType, downlink } = connection;
+
+    if (downlink !== undefined) {
+        const speedBps = (downlink * 1000 * 1000) / 8;
+        if (speedBps < SPEED_THRESHOLDS.SLOW * 1024 * 1024) return 'slow';
+        if (speedBps < SPEED_THRESHOLDS.MEDIUM * 1024 * 1024) return 'medium';
+        return 'fast';
+    }
+
+    switch (effectiveType) {
+        case 'slow-2g':
+        case '2g':
+            return 'slow';
+        case '3g':
+            return 'medium';
+        case '4g':
+        case '5g':
+        case 'slow-3g':
+            return 'fast';
+        default:
+            return 'unknown';
+    }
+}
+
+/**
+ * Measure connection speed using download timing
+ */
+async function measureDownloadSpeed(timeoutMs = 5000): Promise<NetworkSpeed> {
+    if (typeof window === 'undefined' || typeof fetch === 'undefined') return 'unknown';
+
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+        const response = await fetch(TEST_IMAGE_URL, {
+            method: 'GET',
+            cache: 'no-cache',
+            signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) return 'unknown';
+
+        const startTime = performance.now();
+        await response.arrayBuffer();
+        const endTime = performance.now();
+
+        const duration = endTime - startTime;
+        const bytesLoaded = 67;
+        const speedBps = (bytesLoaded * 8) / (duration / 1000);
+        const speedMbps = speedBps / (1024 * 1024);
+
+        if (speedMbps < SPEED_THRESHOLDS.SLOW) return 'slow';
+        if (speedMbps < SPEED_THRESHOLDS.MEDIUM) return 'medium';
+        return 'fast';
+    } catch {
+        return 'unknown';
+    }
+}
+
+/**
+ * Detect current network speed
+ * Uses Network Information API if available, falls back to timing measurement
+ */
+export async function detectNetworkSpeedAsync(timeoutMs?: number): Promise<NetworkSpeed> {
+    const apiSpeed = getNetworkInfoSpeed();
+    if (apiSpeed !== 'unknown') return apiSpeed;
+    return measureDownloadSpeed(timeoutMs);
+}
+
+/**
+ * Check if high quality assets should be loaded
+ * Returns true for 'fast' or 'medium' network speeds
+ */
+export function shouldLoadHighQualityAssets(speed: NetworkSpeed): boolean {
+    return speed === 'fast' || speed === 'medium';
+}
+
+// ============================================
 // ADAPTIVE LOADING STRATEGIES
 // ============================================
 
@@ -199,10 +305,12 @@ export function getLoadingStrategy(speed: NetworkSpeed): LoadingStrategy {
     switch (speed) {
         case 'fast':
             return 'full';
+        case 'medium':
+            return 'full';
         case 'slow':
             return 'reduced';
-        case 'offline':
-            return 'minimal';
+        case 'unknown':
+            return 'reduced';
     }
 }
 
@@ -217,9 +325,7 @@ export function getAdaptiveLoadingStrategy(): LoadingStrategy {
 /**
  * Execute a callback with loading strategy applied
  */
-export function withAdaptiveLoading<T>(
-    callback: (strategy: LoadingStrategy) => T
-): T {
+export function withAdaptiveLoading<T>(callback: (strategy: LoadingStrategy) => T): T {
     const strategy = getAdaptiveLoadingStrategy();
     return callback(strategy);
 }
@@ -241,11 +347,11 @@ export function setupNetworkMonitoring(options?: AdaptiveLoadingOptions): () => 
 
     const { onSpeedChange, pollingInterval = 30000 } = options || {};
 
-    const checkSpeed = () => {
+    const checkSpeed = (): void => {
         const info = detectNetworkSpeed();
         if (info.speed !== currentSpeed) {
             currentSpeed = info.speed;
-            speedCallbacks.forEach((cb) => cb(currentSpeed, info));
+            speedCallbacks.forEach(cb => cb(currentSpeed, info));
             onSpeedChange?.(currentSpeed, info);
         }
     };
@@ -261,8 +367,15 @@ export function setupNetworkMonitoring(options?: AdaptiveLoadingOptions): () => 
     const intervalId = setInterval(checkSpeed, pollingInterval);
 
     // Listen for connection change events
-    const connection = (navigator as Navigator & { connection?: { addEventListener?: (type: string, listener: () => void) => void; removeEventListener?: (type: string, listener: () => void) => void } }).connection;
-    const connectionListener = () => checkSpeed();
+    const connection = (
+        navigator as Navigator & {
+            connection?: {
+                addEventListener?: (type: string, listener: () => void) => void;
+                removeEventListener?: (type: string, listener: () => void) => void;
+            };
+        }
+    ).connection;
+    const connectionListener = (): void => checkSpeed();
     connection?.addEventListener?.('change', connectionListener);
 
     // Cleanup function
@@ -282,7 +395,7 @@ export function subscribeToSpeedChanges(
 ): () => void {
     speedCallbacks.push(callback);
     return () => {
-        speedCallbacks = speedCallbacks.filter((cb) => cb !== callback);
+        speedCallbacks = speedCallbacks.filter(cb => cb !== callback);
     };
 }
 
@@ -294,10 +407,11 @@ export function subscribeToSpeedChanges(
  * Get localized message for network speed
  */
 export function getNetworkSpeedMessage(speed: NetworkSpeed, locale?: AppLocale): string {
-    const messages = {
+    const messages: Record<NetworkSpeed, string> = {
         fast: t('status.online', locale),
+        medium: t('status.online', locale),
         slow: t('offline.slowNetwork', locale),
-        offline: t('offline.title', locale),
+        unknown: t('status.unknown', locale),
     };
     return messages[speed];
 }
@@ -307,7 +421,7 @@ export function getNetworkSpeedMessage(speed: NetworkSpeed, locale?: AppLocale):
  */
 export function isNetworkSuitableForMedia(): boolean {
     const { speed } = detectNetworkSpeed();
-    return speed === 'fast';
+    return speed === 'fast' || speed === 'medium';
 }
 
 /**
@@ -315,7 +429,7 @@ export function isNetworkSuitableForMedia(): boolean {
  */
 export function shouldEnablePrefetching(): boolean {
     const { speed } = detectNetworkSpeed();
-    return speed === 'fast';
+    return speed === 'fast' || speed === 'medium';
 }
 
 /**
@@ -325,10 +439,12 @@ export function getImageQualityForSpeed(speed: NetworkSpeed): number {
     switch (speed) {
         case 'fast':
             return 90;
+        case 'medium':
+            return 75;
         case 'slow':
             return 60;
-        case 'offline':
-            return 40;
+        case 'unknown':
+            return 60;
     }
 }
 
@@ -339,10 +455,12 @@ export function getBatchSizeForSpeed(speed: NetworkSpeed): number {
     switch (speed) {
         case 'fast':
             return 50;
+        case 'medium':
+            return 30;
         case 'slow':
             return 10;
-        case 'offline':
-            return 5;
+        case 'unknown':
+            return 10;
     }
 }
 
@@ -377,11 +495,86 @@ export function initNetworkSpeedDetection(options?: AdaptiveLoadingOptions): Net
 }
 
 // ============================================
+// REACT HOOK
+// ============================================
+
+/**
+ * React hook for network speed detection
+ *
+ * @param options Configuration options
+ * @param options.pollIntervalMs Interval for re-checking network speed (default: 30000)
+ * @param options.enableMeasurement Whether to use download timing as fallback (default: true)
+ * @param options.timeoutMs Timeout for speed measurement in ms (default: 5000)
+ *
+ * @example
+ * ```tsx
+ * function ImageComponent() {
+ *   const { speed, isMeasuring } = useNetworkSpeed();
+ *
+ *   const imageQuality = shouldLoadHighQualityAssets(speed) ? 'high' : 'low';
+ *
+ *   return <img src={`/images/photo-${imageQuality}.jpg`} alt="Photo" />;
+ * }
+ * ```
+ */
+export function useNetworkSpeed(options?: {
+    pollIntervalMs?: number;
+    enableMeasurement?: boolean;
+    timeoutMs?: number;
+}): {
+    speed: NetworkSpeed;
+    isMeasuring: boolean;
+    measureNow: () => Promise<NetworkSpeed>;
+} {
+    const { pollIntervalMs = 30000, enableMeasurement = true, timeoutMs = 5000 } = options ?? {};
+
+    const [speed, setSpeed] = useState<NetworkSpeed>('unknown');
+    const [isMeasuring, setIsMeasuring] = useState(false);
+
+    const measureSpeed = useCallback(async (): Promise<NetworkSpeed> => {
+        setIsMeasuring(true);
+
+        try {
+            const apiSpeed = getNetworkInfoSpeed();
+            if (apiSpeed !== 'unknown') {
+                setSpeed(apiSpeed);
+                return apiSpeed;
+            }
+
+            if (enableMeasurement) {
+                const measuredSpeed = await measureDownloadSpeed(timeoutMs);
+                setSpeed(measuredSpeed);
+                return measuredSpeed;
+            }
+
+            setSpeed('unknown');
+            return 'unknown';
+        } finally {
+            setIsMeasuring(false);
+        }
+    }, [enableMeasurement, timeoutMs]);
+
+    useEffect(() => {
+        measureSpeed();
+
+        const intervalId = setInterval(measureSpeed, pollIntervalMs);
+        return () => clearInterval(intervalId);
+    }, [measureSpeed, pollIntervalMs]);
+
+    return {
+        speed,
+        isMeasuring,
+        measureNow: measureSpeed,
+    };
+}
+
+// ============================================
 // EXPORTS
 // ============================================
 
 export const NetworkSpeedUtils = {
     detectNetworkSpeed,
+    detectNetworkSpeedAsync,
     estimateBandwidth,
     isOnline,
     getLoadingStrategy,
@@ -394,6 +587,9 @@ export const NetworkSpeedUtils = {
     getImageQualityForSpeed,
     getBatchSizeForSpeed,
     initNetworkSpeedDetection,
+    shouldLoadHighQualityAssets,
 };
 
 export default NetworkSpeedUtils;
+
+export { detectNetworkSpeed as getConnectionSpeed };
