@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { handleApiError, generateRequestId, safeParseJson } from './errorHandler';
-import { AppError } from './errors';
+import { AppError as NewAppError, ValidationError, NotFoundError } from './api/errors';
+import { AppError as LegacyAppError } from './errors';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -28,13 +29,8 @@ describe('generateRequestId', () => {
 });
 
 describe('handleApiError', () => {
-    it('should handle AppError correctly', () => {
-        const appError = new AppError(
-            404,
-            'Resource not found',
-            'The requested item does not exist in the database',
-            'NOT_FOUND'
-        );
+    it('should handle new AppError (API) correctly', () => {
+        const appError = new NewAppError('NOT_FOUND', 'Resource not found', 404);
 
         const response = handleApiError(appError, 'Test Context');
 
@@ -42,21 +38,40 @@ describe('handleApiError', () => {
         expect(response.status).toBe(404);
     });
 
-    it('should return sanitized error for AppError', async () => {
-        const appError = new AppError(
-            500,
-            'Something went wrong',
-            'Internal database connection failed',
-            'DB_ERROR'
-        );
+    it('should return sanitized error for new AppError with details', async () => {
+        const appError = new NewAppError('INTERNAL_ERROR', 'Something went wrong', 500, {
+            query: 'SELECT * FROM users',
+        });
 
         const response = handleApiError(appError, 'Test Context');
         const data = await response.json();
 
         expect(data.error).toBe('Something went wrong');
-        expect(data.code).toBe('DB_ERROR');
+        expect(data.code).toBe('INTERNAL_ERROR');
         expect(data.requestId).toBeDefined();
-        expect(data.internalMessage).toBeUndefined(); // Should not leak internal details
+        expect(data.details).toEqual({ query: 'SELECT * FROM users' });
+    });
+
+    it('should handle ValidationError from API errors', async () => {
+        const validationError = new ValidationError('Invalid input', [
+            { path: 'email', message: 'Invalid email' },
+        ]);
+
+        const response = handleApiError(validationError, 'Test Context');
+        const data = await response.json();
+
+        expect(response.status).toBe(400);
+        expect(data.error).toBe('Invalid input');
+        expect(data.code).toBe('VALIDATION_ERROR');
+        expect(data.details).toEqual([{ path: 'email', message: 'Invalid email' }]);
+    });
+
+    it('should handle NotFoundError from API errors', () => {
+        const notFoundError = new NotFoundError('User', '123');
+
+        const response = handleApiError(notFoundError, 'Test Context');
+
+        expect(response.status).toBe(404);
     });
 
     it('should handle Zod validation errors', async () => {
@@ -107,7 +122,7 @@ describe('handleApiError', () => {
 
     it('should include requestId in all error responses', async () => {
         const errors = [
-            new AppError(400, 'Bad Request'),
+            new NewAppError('VALIDATION_ERROR', 'Bad Request'),
             new Error('Generic error'),
             'string error',
             null,
@@ -120,6 +135,23 @@ describe('handleApiError', () => {
             expect(data.requestId).toBeDefined();
             expect(typeof data.requestId).toBe('string');
         }
+    });
+
+    it('should handle legacy AppError for backward compatibility', async () => {
+        const legacyError = new LegacyAppError(
+            403,
+            'Access denied',
+            'User lacks permission',
+            'FORBIDDEN'
+        );
+
+        const response = handleApiError(legacyError, 'Legacy Test');
+        const data = await response.json();
+
+        expect(response.status).toBe(403);
+        expect(data.error).toBe('Access denied');
+        expect(data.code).toBe('FORBIDDEN');
+        expect(data.requestId).toBeDefined();
     });
 });
 

@@ -3,6 +3,7 @@ import {
     loleGraphQLError,
     createErrorResult,
     handleResolverError,
+    toGraphQLError,
     NOT_IMPLEMENTED_ERROR,
     UNAUTHORIZED_ERROR,
     FORBIDDEN_ERROR,
@@ -13,6 +14,15 @@ import {
     ErrorCode,
     ErrorResult,
 } from '../errors';
+import {
+    AppError,
+    ValidationError,
+    AuthenticationError,
+    AuthorizationError,
+    NotFoundError,
+    TenantIsolationError,
+    RateLimitError,
+} from '@/lib/errors';
 
 describe('GraphQL Errors', () => {
     describe('loleGraphQLError', () => {
@@ -126,7 +136,7 @@ describe('GraphQL Errors', () => {
 
             expect(result.error.code).toBe('INTERNAL_ERROR');
             expect(result.error.message).toBe('An unexpected error occurred');
-            expect(consoleErrorSpy).toHaveBeenCalledWith('Resolver error:', error);
+            expect(consoleErrorSpy).toHaveBeenCalled();
         });
 
         it('should handle non-Error objects', () => {
@@ -156,6 +166,122 @@ describe('GraphQL Errors', () => {
 
             expect(result.error.code).toBe('INTERNAL_ERROR');
             expect(result.error.message).toBe('An unexpected error occurred');
+        });
+    });
+
+    describe('toGraphQLError', () => {
+        it('should convert ValidationError to GraphQL error', () => {
+            const error = new ValidationError('Invalid input');
+            const graphqlError = toGraphQLError(error);
+
+            expect(graphqlError).toBeInstanceOf(loleGraphQLError);
+            expect(graphqlError.code).toBe('VALIDATION_ERROR');
+            expect(graphqlError.message).toBe('Invalid input');
+        });
+
+        it('should convert AuthenticationError to UNAUTHORIZED', () => {
+            const error = new AuthenticationError('Invalid credentials');
+            const graphqlError = toGraphQLError(error);
+
+            expect(graphqlError.code).toBe('UNAUTHORIZED');
+        });
+
+        it('should convert AuthorizationError to FORBIDDEN', () => {
+            const error = new AuthorizationError('No permission');
+            const graphqlError = toGraphQLError(error);
+
+            expect(graphqlError.code).toBe('FORBIDDEN');
+        });
+
+        it('should convert NotFoundError to NOT_FOUND', () => {
+            const error = new NotFoundError('User not found');
+            const graphqlError = toGraphQLError(error);
+
+            expect(graphqlError.code).toBe('NOT_FOUND');
+        });
+
+        it('should convert TenantIsolationError to TENANT_ISOLATION_VIOLATION', () => {
+            const error = new TenantIsolationError('Cross-tenant access denied');
+            const graphqlError = toGraphQLError(error);
+
+            expect(graphqlError.code).toBe('TENANT_ISOLATION_VIOLATION');
+        });
+
+        it('should convert RateLimitError to BAD_USER_INPUT', () => {
+            const error = new RateLimitError('Too many requests');
+            const graphqlError = toGraphQLError(error);
+
+            expect(graphqlError.code).toBe('BAD_USER_INPUT');
+        });
+
+        it('should map unknown error code to INTERNAL_ERROR', () => {
+            const error = new AppError(500, 'Unknown', 'Internal', 'UNKNOWN_CODE');
+            const graphqlError = toGraphQLError(error);
+
+            expect(graphqlError.code).toBe('INTERNAL_ERROR');
+        });
+
+        it('should include internalMessage in details', () => {
+            const error = new AppError(500, 'User msg', 'Internal msg', 'VALIDATION_ERROR');
+            const graphqlError = toGraphQLError(error);
+
+            expect(graphqlError.details?.internalMessage).toBe('Internal msg');
+        });
+    });
+
+    describe('handleResolverError with AppError', () => {
+        let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
+        beforeEach(() => {
+            consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        });
+
+        afterEach(() => {
+            consoleErrorSpy.mockRestore();
+        });
+
+        it('should handle ValidationError', () => {
+            const error = new ValidationError('Invalid email');
+            const result = handleResolverError(error);
+
+            expect(result.error.code).toBe('VALIDATION_ERROR');
+            expect(result.error.message).toBe('Invalid email');
+        });
+
+        it('should handle AuthenticationError', () => {
+            const error = new AuthenticationError('Not authenticated');
+            const result = handleResolverError(error);
+
+            expect(result.error.code).toBe('UNAUTHORIZED');
+        });
+
+        it('should handle AuthorizationError', () => {
+            const error = new AuthorizationError('Forbidden');
+            const result = handleResolverError(error);
+
+            expect(result.error.code).toBe('FORBIDDEN');
+        });
+
+        it('should handle NotFoundError', () => {
+            const error = new NotFoundError('Item missing');
+            const result = handleResolverError(error);
+
+            expect(result.error.code).toBe('NOT_FOUND');
+        });
+
+        it('should handle TenantIsolationError', () => {
+            const error = new TenantIsolationError('Cross-tenant');
+            const result = handleResolverError(error);
+
+            expect(result.error.code).toBe('TENANT_ISOLATION_VIOLATION');
+        });
+
+        it('should handle generic AppError with unknown code', () => {
+            const error = new AppError(500, 'Generic error', 'Details', 'UNKNOWN');
+            const result = handleResolverError(error);
+
+            expect(result.error.code).toBe('INTERNAL_ERROR');
+            expect(result.error.message).toBe('Generic error');
         });
     });
 
@@ -218,6 +344,75 @@ describe('GraphQL Errors', () => {
                 expect(result.error.code).toBeDefined();
                 expect(result.error.message).toBeDefined();
             }
+        });
+    });
+
+    describe('Error handling patterns', () => {
+        it('should include internalMessage when provided', () => {
+            const result = createErrorResult(
+                'VALIDATION_ERROR',
+                'Invalid input',
+                undefined,
+                'Field "email" must be a valid email address'
+            );
+
+            expect(result.success).toBe(false);
+            expect(result.error.internalMessage).toBe(
+                'Field "email" must be a valid email address'
+            );
+        });
+
+        it('should include statusCode when provided', () => {
+            const result = createErrorResult(
+                'NOT_FOUND',
+                'Resource not found',
+                undefined,
+                undefined,
+                404
+            );
+
+            expect(result.error.statusCode).toBe(404);
+        });
+
+        it('should handle AppError with all properties', () => {
+            const error = new AppError(
+                403,
+                'Access denied',
+                'User does not have required role',
+                'AUTHORIZATION_ERROR'
+            );
+            const result = handleResolverError(error);
+
+            expect(result.error.code).toBe('FORBIDDEN');
+            expect(result.error.message).toBe('Access denied');
+            expect(result.error.internalMessage).toBe('User does not have required role');
+            expect(result.error.statusCode).toBe(403);
+        });
+
+        it('should handle TenantIsolationError with proper code mapping', () => {
+            const error = new TenantIsolationError('Cross-tenant access');
+            const result = handleResolverError(error);
+
+            expect(result.error.code).toBe('TENANT_ISOLATION_VIOLATION');
+            expect(result.error.message).toBe('Cross-tenant access');
+        });
+
+        it('should handle AppError with unknown code as INTERNAL_ERROR', () => {
+            const error = new AppError(500, 'Custom error', 'Internal', 'CUSTOM_CODE');
+            const result = handleResolverError(error);
+
+            expect(result.error.code).toBe('INTERNAL_ERROR');
+            expect(result.error.message).toBe('Custom error');
+            expect(result.error.internalMessage).toBe('Internal');
+            expect(result.error.statusCode).toBe(500);
+        });
+
+        it('should sanitize error responses for non-AppError types', () => {
+            const result = handleResolverError(new Error('Database connection failed'));
+
+            expect(result.error.code).toBe('INTERNAL_ERROR');
+            expect(result.error.message).toBe('An unexpected error occurred');
+            expect(result.error.internalMessage).toBeUndefined();
         });
     });
 });

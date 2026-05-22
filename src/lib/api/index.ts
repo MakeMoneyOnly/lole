@@ -93,7 +93,7 @@ export { enforcePilotAccess } from './pilotGate';
 export { getRequestOrigin } from './requestOrigin';
 
 // Validation
-export { parseJsonBody } from './validation';
+export { parseQuery } from './validation';
 
 // Rate Limit Policies
 export { resolveRateLimitPolicy, API_RATE_LIMIT_POLICIES } from './rateLimitPolicies';
@@ -101,3 +101,12 @@ export type { RouteRateLimitPolicy } from './rateLimitPolicies';
 
 // Audit
 export { writeAuditLog } from './audit';
+
+// Middleware
+export {
+    withValidation,
+    withErrorHandler,
+    parseQueryParams,
+    parsePathParams,
+    checkRateLimitMiddleware,
+} from './middleware';

@@ -1,5 +1,8 @@
 import { GraphQLError } from 'graphql';
 import { logger } from '@/lib/logger';
+import type { AppError as ApiAppError } from '@/lib/api/errors';
+import { isAppError as isApiAppError } from '@/lib/api/errors';
+import type { AppError as LegacyAppError } from '@/lib/errors';
 
 const log = logger.child('[graphql/errors]');
 
@@ -15,6 +18,26 @@ export type ErrorCode =
     | 'INTERNAL_ERROR'
     | 'NOT_IMPLEMENTED'
     | 'BAD_USER_INPUT';
+
+/**
+ * Mapping from AppError codes to GraphQL error codes
+ * Supports both legacy (userMessage/internalMessage) and new (code/message) patterns
+ */
+const APP_ERROR_TO_GRAPHQL_CODE: Record<string, ErrorCode> = {
+    // Legacy error codes from @/lib/errors
+    VALIDATION_ERROR: 'VALIDATION_ERROR',
+    AUTHENTICATION_ERROR: 'UNAUTHORIZED',
+    AUTHORIZATION_ERROR: 'FORBIDDEN',
+    NOT_FOUND: 'NOT_FOUND',
+    TENANT_ISOLATION_VIOLATION: 'TENANT_ISOLATION_VIOLATION',
+    RATE_LIMIT: 'BAD_USER_INPUT',
+    // New API error codes from @/lib/api/errors
+    UNAUTHORIZED: 'UNAUTHORIZED',
+    FORBIDDEN: 'FORBIDDEN',
+    CONFLICT: 'BAD_USER_INPUT',
+    INTERNAL_ERROR: 'INTERNAL_ERROR',
+    RATE_LIMITED: 'BAD_USER_INPUT',
+};
 
 /**
  * Custom GraphQL error class with structured error codes and details
@@ -35,6 +58,32 @@ export class loleGraphQLError extends GraphQLError {
 }
 
 /**
+ * Bridge function to convert AppError to loleGraphQLError
+ * Used in resolvers to maintain consistent error handling
+ * Supports both legacy and new error patterns
+ */
+export function toGraphQLError(error: LegacyAppError | ApiAppError): loleGraphQLError {
+    // Handle legacy error pattern (has userMessage property)
+    if (
+        'userMessage' in error &&
+        typeof (error as { userMessage: unknown }).userMessage === 'string'
+    ) {
+        const legacyError = error as LegacyAppError;
+        const code = APP_ERROR_TO_GRAPHQL_CODE[legacyError.code ?? ''] ?? 'INTERNAL_ERROR';
+        return new loleGraphQLError(legacyError.userMessage, code, {
+            internalMessage: legacyError.internalMessage,
+            statusCode: legacyError.statusCode,
+        });
+    }
+
+    // Handle new API error pattern (code is the first param, message is the second)
+    const code = APP_ERROR_TO_GRAPHQL_CODE[(error as ApiAppError).code] ?? 'INTERNAL_ERROR';
+    return new loleGraphQLError(error.message, code, {
+        statusCode: (error as ApiAppError).statusCode,
+    });
+}
+
+/**
  * Standard error result shape for mutation responses
  */
 export interface ErrorResult {
@@ -42,7 +91,9 @@ export interface ErrorResult {
     error: {
         code: ErrorCode;
         message: string;
-        messageAm?: string; // Amharic translation for localization
+        messageAm?: string;
+        internalMessage?: string;
+        statusCode?: number;
     };
 }
 
@@ -52,7 +103,9 @@ export interface ErrorResult {
 export function createErrorResult(
     code: ErrorCode,
     message: string,
-    messageAm?: string
+    messageAm?: string,
+    internalMessage?: string,
+    statusCode?: number
 ): ErrorResult {
     return {
         success: false,
@@ -60,6 +113,8 @@ export function createErrorResult(
             code,
             message,
             messageAm,
+            internalMessage,
+            statusCode,
         },
     };
 }
@@ -67,14 +122,54 @@ export function createErrorResult(
 /**
  * Helper to convert unknown errors to ErrorResult
  * Logs unexpected errors and returns a safe internal error message
+ * Handles both AppError and standard Error types
  */
 export function handleResolverError(error: unknown): ErrorResult {
+    // Handle loleGraphQLError first (already formatted)
     if (error instanceof loleGraphQLError) {
         return createErrorResult(error.code, error.message);
     }
 
+    // Handle API AppError (new pattern from @/lib/api/errors)
+    if (isApiAppError(error)) {
+        const graphqlCode = APP_ERROR_TO_GRAPHQL_CODE[error.code] ?? 'INTERNAL_ERROR';
+        log.error('Resolver AppError (API pattern)', {
+            code: error.code,
+            message: error.message,
+        });
+        return createErrorResult(
+            graphqlCode,
+            error.message,
+            undefined,
+            undefined,
+            error.statusCode
+        );
+    }
+
+    // Handle legacy AppError pattern (has userMessage property)
+    if (
+        error instanceof Error &&
+        'code' in error &&
+        'userMessage' in error &&
+        typeof (error as LegacyAppError).userMessage === 'string'
+    ) {
+        const legacyError = error as LegacyAppError;
+        const graphqlCode = APP_ERROR_TO_GRAPHQL_CODE[legacyError.code ?? ''] ?? 'INTERNAL_ERROR';
+        log.error('Resolver AppError (legacy pattern)', {
+            code: legacyError.code,
+            message: legacyError.internalMessage || legacyError.userMessage,
+        });
+        return createErrorResult(
+            graphqlCode,
+            legacyError.userMessage,
+            undefined,
+            legacyError.internalMessage,
+            legacyError.statusCode
+        );
+    }
+
+    // Handle standard Error
     if (error instanceof Error) {
-        // Log unexpected errors
         log.error('Resolver error', error);
         return createErrorResult('INTERNAL_ERROR', 'An unexpected error occurred');
     }

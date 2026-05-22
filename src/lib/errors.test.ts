@@ -6,6 +6,13 @@ import {
     AuthorizationError,
     NotFoundError,
     RateLimitError,
+    TenantIsolationError,
+    isAppError,
+    isNotFoundError,
+    isValidationError,
+    isAuthenticationError,
+    isAuthorizationError,
+    isTenantIsolationError,
 } from './errors';
 
 describe('AppError', () => {
@@ -152,5 +159,81 @@ describe('RateLimitError', () => {
     it('should be an instance of AppError', () => {
         const error = new RateLimitError();
         expect(error).toBeInstanceOf(AppError);
+    });
+});
+
+describe('TenantIsolationError', () => {
+    it('should create a TenantIsolationError with default message', () => {
+        const error = new TenantIsolationError();
+
+        expect(error.statusCode).toBe(403);
+        expect(error.userMessage).toBe('Access denied: resource belongs to a different restaurant');
+        expect(error.code).toBe('TENANT_ISOLATION_VIOLATION');
+        expect(error.name).toBe('TenantIsolationError');
+    });
+
+    it('should create a TenantIsolationError with custom message', () => {
+        const error = new TenantIsolationError('Cannot access this restaurant');
+
+        expect(error.userMessage).toBe('Cannot access this restaurant');
+    });
+
+    it('should be an instance of AppError', () => {
+        const error = new TenantIsolationError();
+        expect(error).toBeInstanceOf(AppError);
+    });
+});
+
+describe('Type guards', () => {
+    describe('isAppError', () => {
+        it('should return true for AppError instances', () => {
+            expect(isAppError(new AppError(400, 'Error'))).toBe(true);
+            expect(isAppError(new ValidationError())).toBe(true);
+            expect(isAppError(new NotFoundError())).toBe(true);
+        });
+
+        it('should return false for non-AppError errors', () => {
+            expect(isAppError(new Error('Generic error'))).toBe(false);
+            expect(isAppError(null)).toBe(false);
+            expect(isAppError(undefined)).toBe(false);
+        });
+    });
+
+    describe('isNotFoundError', () => {
+        it('should return true for NotFoundError', () => {
+            expect(isNotFoundError(new NotFoundError())).toBe(true);
+        });
+
+        it('should return false for other errors', () => {
+            expect(isNotFoundError(new AppError(400, 'Error'))).toBe(false);
+        });
+    });
+
+    describe('isValidationError', () => {
+        it('should return true for ValidationError', () => {
+            expect(isValidationError(new ValidationError())).toBe(true);
+        });
+
+        it('should return false for other errors', () => {
+            expect(isValidationError(new AppError(400, 'Error'))).toBe(false);
+        });
+    });
+
+    describe('isAuthenticationError', () => {
+        it('should return true for AuthenticationError', () => {
+            expect(isAuthenticationError(new AuthenticationError())).toBe(true);
+        });
+    });
+
+    describe('isAuthorizationError', () => {
+        it('should return true for AuthorizationError', () => {
+            expect(isAuthorizationError(new AuthorizationError())).toBe(true);
+        });
+    });
+
+    describe('isTenantIsolationError', () => {
+        it('should return true for TenantIsolationError', () => {
+            expect(isTenantIsolationError(new TenantIsolationError())).toBe(true);
+        });
     });
 });

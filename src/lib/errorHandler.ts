@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { AppError } from './errors';
+import { AppError as NewAppError } from './api/errors';
 import { z } from 'zod';
 import { logger } from './logger';
 
@@ -12,27 +12,54 @@ export function generateRequestId(): string {
 
 /**
  * Handle API errors in a standardized way
- * Logs full error details server-side but returns sanitized response to client
+ * Uses the newer AppError from @/lib/api/errors when available,
+ * falls back to legacy AppError from @/lib/errors for backward compatibility.
  */
 export function handleApiError(error: unknown, context: string): NextResponse {
     const requestId = generateRequestId();
 
-    // Log full error server-side for debugging
-    if (error instanceof AppError) {
+    // Handle newer AppError from @/lib/api/errors
+    if (error instanceof NewAppError) {
         logger.error(`[${requestId}] ${context}`, error, {
             statusCode: error.statusCode,
-            userMessage: error.userMessage,
-            internalMessage: error.internalMessage,
             code: error.code,
+            details: error.details,
         });
 
         return NextResponse.json(
             {
-                error: error.userMessage,
+                error: error.message,
                 requestId,
                 code: error.code,
+                ...(error.details !== undefined && { details: error.details }),
             },
             { status: error.statusCode }
+        );
+    }
+
+    // Handle legacy AppError from @/lib/errors for backward compatibility
+    if (error instanceof Error && 'userMessage' in error && 'statusCode' in error) {
+        const legacyError = error as unknown as {
+            statusCode: number;
+            userMessage: string;
+            internalMessage?: string;
+            code?: string;
+        };
+
+        logger.error(`[${requestId}] ${context}`, error, {
+            statusCode: legacyError.statusCode,
+            userMessage: legacyError.userMessage,
+            internalMessage: legacyError.internalMessage,
+            code: legacyError.code,
+        });
+
+        return NextResponse.json(
+            {
+                error: legacyError.userMessage,
+                requestId,
+                code: legacyError.code,
+            },
+            { status: legacyError.statusCode }
         );
     }
 
