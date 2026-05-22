@@ -26,6 +26,13 @@ if (!runtimeStatus || !platformLabel || !profileLabel || !launchPath || !nextSte
         ? 'Native runtime detected. Device plugins are available to the shell.'
         : 'Running in fallback mode. Capacitor will load this bundle until a native target is attached.';
 
+    if (isNative && capacitor.getServerUrl) {
+        const serverUrl = capacitor.getServerUrl?.();
+        if (serverUrl) {
+            runtimeStatus.innerHTML = `Connected to <code>${serverUrl}</code>. Loading remote app...`;
+        }
+    }
+
     if (storedSession) {
         profileLabel.textContent =
             storedSession.device_profile ?? storedSession.device_type ?? 'paired';
