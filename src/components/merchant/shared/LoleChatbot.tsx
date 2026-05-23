@@ -12,11 +12,11 @@ interface AutoResizeOptions {
 
 // ─── Auto-resize textarea hook ───────────────────────────────────────────────
 function useAutoResizeTextarea(options?: AutoResizeOptions): {
-     textareaRef: React.RefObject<HTMLTextAreaElement | null>;
-     adjustHeight: (reset?: boolean) => void;
- } {
-     const { minHeight = 44, maxHeight = 120 } = options || {};
-     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+    textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+    adjustHeight: (reset?: boolean) => void;
+} {
+    const { minHeight = 44, maxHeight = 120 } = options || {};
+    const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
     const adjustHeight = useCallback(
         (reset?: boolean) => {
@@ -156,7 +156,7 @@ export function LoleChatbot(): React.JSX.Element {
             role: 'assistant',
             content:
                 "Hi! I'm **lole**, your AI restaurant operating agent. Ask me anything about your orders, sales, staff, or operations.",
-            ts: new Date(),
+            ts: new Date('2026-05-23T00:00:00.000Z'),
         },
     ]);
     const [value, setValue] = useState('');

@@ -1,8 +1,8 @@
 import React from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { ChevronDown, ArrowRight } from 'lucide-react';
+import { ViewTransitionLink } from '@/components/transitions/ViewTransitionLink';
 
 const MegaMenuDropdown = dynamic(
     () => import('./MegaMenuDropdown').then(mod => mod.MegaMenuDropdown),
@@ -15,7 +15,11 @@ interface HeaderProps {
     setIsFeaturesOpen: (open: boolean) => void;
 }
 
-export function Header({ isScrolled, isFeaturesOpen, setIsFeaturesOpen }: HeaderProps): React.JSX.Element {
+export function Header({
+    isScrolled,
+    isFeaturesOpen,
+    setIsFeaturesOpen,
+}: HeaderProps): React.JSX.Element {
     return (
         <div
             className={`fixed top-0 right-0 left-0 z-50 flex w-full justify-center transition-all duration-500 ease-in-out ${
@@ -43,9 +47,10 @@ export function Header({ isScrolled, isFeaturesOpen, setIsFeaturesOpen }: Header
                     {/* Left: Logo & Links */}
                     <div className="flex items-center gap-8 md:gap-12">
                         {/* Logo */}
-                        <Link
+                        <ViewTransitionLink
                             href="/"
                             className="relative flex h-8 w-24 translate-x-[20px] items-center transition-opacity hover:opacity-90 md:h-10 md:w-32"
+                            transitionName="logo"
                         >
                             <Image
                                 src="/logo.svg"
@@ -54,7 +59,7 @@ export function Header({ isScrolled, isFeaturesOpen, setIsFeaturesOpen }: Header
                                 height={90}
                                 className="absolute top-1/2 left-0 h-[74px] w-auto max-w-none origin-left -translate-y-1/2 md:h-[90px]"
                             />
-                        </Link>
+                        </ViewTransitionLink>
 
                         {/* Desktop Nav Links */}
                         <nav
@@ -79,7 +84,7 @@ export function Header({ isScrolled, isFeaturesOpen, setIsFeaturesOpen }: Header
                             </div>
                             {['Business types', 'Resources', 'Pricing', 'About'].map(
                                 (item, idx) => (
-                                    <Link
+                                    <ViewTransitionLink
                                         key={idx}
                                         href="#"
                                         className={`flex items-center gap-1 text-[14px] leading-[21px] font-medium transition-colors ${
@@ -94,7 +99,7 @@ export function Header({ isScrolled, isFeaturesOpen, setIsFeaturesOpen }: Header
                                                 className={`h-3.5 w-3.5 ${isFeaturesOpen ? 'text-gray-500' : 'text-white/70'}`}
                                             />
                                         )}
-                                    </Link>
+                                    </ViewTransitionLink>
                                 )
                             )}
                         </nav>
@@ -102,36 +107,39 @@ export function Header({ isScrolled, isFeaturesOpen, setIsFeaturesOpen }: Header
 
                     {/* Right: Actions */}
                     <div className="hidden items-center gap-4 md:flex">
-                        <Link
+                        <ViewTransitionLink
                             href="/login"
                             className={`text-[14px] leading-[21px] font-medium transition-colors ${
                                 isFeaturesOpen
                                     ? 'text-gray-800 hover:text-black'
                                     : 'text-white hover:text-white/80'
                             }`}
+                            transitionType="push"
                         >
                             Log in
-                        </Link>
+                        </ViewTransitionLink>
                         <div
                             className={`h-3.5 w-px transition-colors ${isFeaturesOpen ? 'bg-gray-300' : 'bg-white/30'}`}
                         ></div>
-                        <Link
+                        <ViewTransitionLink
                             href="/auth/signup"
                             className={`text-[14px] leading-[21px] font-medium transition-colors ${
                                 isFeaturesOpen
                                     ? 'text-gray-800 hover:text-black'
                                     : 'text-white hover:text-white/80'
                             }`}
+                            transitionType="push"
                         >
                             Get started
-                        </Link>
-                        <Link
+                        </ViewTransitionLink>
+                        <ViewTransitionLink
                             href="/signup"
                             className="flex items-center gap-1.5 rounded-[16px] bg-[#DDF853] px-6 py-3 text-[14px] leading-[21px] font-medium text-black transition-colors hover:brightness-105"
+                            transitionType="push"
                         >
                             Book a demo
                             <ArrowRight className="h-4 w-4" />
-                        </Link>
+                        </ViewTransitionLink>
                     </div>
                 </div>
 

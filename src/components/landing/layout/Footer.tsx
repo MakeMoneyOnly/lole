@@ -1,7 +1,7 @@
 import React from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
 import { Instagram, Facebook, Linkedin, Youtube, Globe, ChevronDown } from 'lucide-react';
+import { ViewTransitionLink } from '@/components/transitions/ViewTransitionLink';
 
 export function Footer(): React.JSX.Element {
     return (
@@ -12,7 +12,7 @@ export function Footer(): React.JSX.Element {
                     <div className="flex flex-col justify-between gap-12 lg:gap-0">
                         <div className="flex translate-y-[45px] flex-col gap-14">
                             <div className="flex flex-col gap-4">
-                                <Link
+                                <ViewTransitionLink
                                     href="/"
                                     className="relative block h-[90px] w-[300px] -translate-x-[25px] transition-opacity hover:opacity-90"
                                 >
@@ -23,31 +23,31 @@ export function Footer(): React.JSX.Element {
                                         height={350}
                                         className="absolute top-1/2 left-0 h-[350px] w-auto max-w-none origin-left -translate-y-1/2"
                                     />
-                                </Link>
+                                </ViewTransitionLink>
                             </div>
                             <div className="flex w-[350px] max-w-full -translate-x-[25px] items-center justify-center gap-5">
-                                <Link
+                                <ViewTransitionLink
                                     href="#"
                                     aria-label="Instagram"
                                     className="text-white transition-colors hover:text-white/80"
                                 >
                                     <Instagram className="h-5 w-5" />
-                                </Link>
-                                <Link
+                                </ViewTransitionLink>
+                                <ViewTransitionLink
                                     href="#"
                                     aria-label="Facebook"
                                     className="text-white transition-colors hover:text-white/80"
                                 >
                                     <Facebook className="h-5 w-5" />
-                                </Link>
-                                <Link
+                                </ViewTransitionLink>
+                                <ViewTransitionLink
                                     href="#"
                                     aria-label="LinkedIn"
                                     className="text-white transition-colors hover:text-white/80"
                                 >
                                     <Linkedin className="h-5 w-5" />
-                                </Link>
-                                <Link
+                                </ViewTransitionLink>
+                                <ViewTransitionLink
                                     href="#"
                                     aria-label="TikTok"
                                     className="text-white transition-colors hover:text-white/80"
@@ -63,14 +63,14 @@ export function Footer(): React.JSX.Element {
                                     >
                                         <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path>
                                     </svg>
-                                </Link>
-                                <Link
+                                </ViewTransitionLink>
+                                <ViewTransitionLink
                                     href="#"
                                     aria-label="YouTube"
                                     className="text-white transition-colors hover:text-white/80"
                                 >
                                     <Youtube className="h-6 w-6" />
-                                </Link>
+                                </ViewTransitionLink>
                             </div>
                         </div>
 
@@ -102,13 +102,14 @@ export function Footer(): React.JSX.Element {
                                     'Quick Service',
                                     'Events & Venues',
                                 ].map(link => (
-                                    <Link
+                                    <ViewTransitionLink
                                         key={link}
                                         href="#"
                                         className="text-[14px] font-medium text-white/80 transition-colors hover:text-white"
+                                        transitionType="push"
                                     >
                                         {link}
-                                    </Link>
+                                    </ViewTransitionLink>
                                 ))}
                             </div>
                         </div>
@@ -126,13 +127,14 @@ export function Footer(): React.JSX.Element {
                                     'Inventory',
                                     'Insights',
                                 ].map(link => (
-                                    <Link
+                                    <ViewTransitionLink
                                         key={link}
                                         href="#"
                                         className="text-[14px] font-medium text-white/80 transition-colors hover:text-white"
+                                        transitionType="push"
                                     >
                                         {link}
-                                    </Link>
+                                    </ViewTransitionLink>
                                 ))}
                             </div>
                         </div>
@@ -143,13 +145,14 @@ export function Footer(): React.JSX.Element {
                             <div className="flex flex-col gap-2.5">
                                 {['About', 'Pricing', 'Blog', 'Careers', 'Refer a friend'].map(
                                     link => (
-                                        <Link
+                                        <ViewTransitionLink
                                             key={link}
                                             href="#"
                                             className="text-[14px] font-medium text-white/80 transition-colors hover:text-white"
+                                            transitionType="push"
                                         >
                                             {link}
-                                        </Link>
+                                        </ViewTransitionLink>
                                     )
                                 )}
                             </div>
@@ -167,13 +170,14 @@ export function Footer(): React.JSX.Element {
                                     'Support',
                                     'Status',
                                 ].map(link => (
-                                    <Link
+                                    <ViewTransitionLink
                                         key={link}
                                         href="#"
                                         className="text-[14px] font-medium text-white/80 transition-colors hover:text-white"
+                                        transitionType="push"
                                     >
                                         {link}
-                                    </Link>
+                                    </ViewTransitionLink>
                                 ))}
                             </div>
                         </div>
@@ -186,12 +190,12 @@ export function Footer(): React.JSX.Element {
                         <span className="text-xs font-normal">
                             © {new Date().getFullYear()} Lole Inc.
                         </span>
-                        <Link
+                        <ViewTransitionLink
                             href="#"
                             className="text-[11px] font-normal transition-colors hover:text-white"
                         >
                             Cookie Settings
-                        </Link>
+                        </ViewTransitionLink>
                     </div>
                 </div>
             </footer>

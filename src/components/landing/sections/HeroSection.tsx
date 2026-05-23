@@ -1,5 +1,5 @@
 import React from 'react';
-import Link from 'next/link';
+import { ViewTransitionLink } from '@/components/transitions/ViewTransitionLink';
 import { ArrowRight } from 'lucide-react';
 
 export function HeroSection(): React.JSX.Element {
@@ -28,19 +28,21 @@ export function HeroSection(): React.JSX.Element {
                         so you can run smoother service and plan with confidence.
                     </p>
                     <div className="flex w-full flex-col items-center justify-center gap-4 sm:w-auto sm:flex-row">
-                        <Link
+                        <ViewTransitionLink
                             href="/signup"
                             className="flex w-full items-center justify-center gap-1.5 rounded-[16px] bg-[#DDF853] px-6 py-3 text-[14px] leading-[21px] font-medium text-black transition-colors hover:brightness-105 sm:w-auto"
+                            transitionType="push"
                         >
                             Book a demo
                             <ArrowRight className="h-4 w-4" />
-                        </Link>
-                        <Link
+                        </ViewTransitionLink>
+                        <ViewTransitionLink
                             href="/signup"
                             className="flex w-full items-center justify-center rounded-[16px] border border-white/40 bg-transparent px-6 py-3 text-[14px] leading-[21px] font-medium text-white transition-colors hover:bg-white/10 sm:w-auto"
+                            transitionType="push"
                         >
                             Get started
-                        </Link>
+                        </ViewTransitionLink>
                     </div>
                 </div>
             </div>

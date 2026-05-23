@@ -9,7 +9,7 @@ export { SkipLink } from './SkipLink';
 export { Theme } from './theme';
 export { PriceBurst, ScallopBg } from './shapes';
 
-// Export new Modal components
+// Export new Modal components (with asChild support)
 export {
     Modal,
     ModalTrigger,

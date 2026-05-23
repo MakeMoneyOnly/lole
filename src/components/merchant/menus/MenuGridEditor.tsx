@@ -1,10 +1,17 @@
-'use client';
-
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { Edit2, Image as ImageIcon, Loader2, Plus, Save, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatCurrencyCompact } from '@/lib/utils/monetary';
+import {
+    Modal,
+    ModalContent,
+    ModalHeader,
+    ModalFooter,
+    ModalTitle,
+    ModalDescription,
+    ModalClose,
+} from '@/components/ui';
 import type { CategoryWithItems, MenuItemSummary } from '@/lib/services/dashboardDataService';
 
 export interface InlineMenuItemPatch {
@@ -72,24 +79,24 @@ export function MenuGridEditor({
         setSelectedIds([]);
     }, [category.id]);
 
-const startInlineEdit = (item: MenuItemSummary): void => {
-         if (readOnly) return;
-         setEditingItemId(item.id);
-         setFieldError(null);
-         setFormState({
-             name: item.name,
-             price: (item.price ?? 0).toString(),
-             description: item.description ?? '',
-             is_available: item.is_available ?? true,
-         });
-     };
+    const startInlineEdit = (item: MenuItemSummary): void => {
+        if (readOnly) return;
+        setEditingItemId(item.id);
+        setFieldError(null);
+        setFormState({
+            name: item.name,
+            price: (item.price ?? 0).toString(),
+            description: item.description ?? '',
+            is_available: item.is_available ?? true,
+        });
+    };
 
-     const cancelInlineEdit = (): void => {
-         if (isSaving) return;
-         setEditingItemId(null);
-         setFormState(null);
-         setFieldError(null);
-     };
+    const cancelInlineEdit = (): void => {
+        if (isSaving) return;
+        setEditingItemId(null);
+        setFormState(null);
+        setFieldError(null);
+    };
 
     const validateInlineForm = (): InlineMenuItemPatch | null => {
         if (!formState) return null;
@@ -477,13 +484,19 @@ const startInlineEdit = (item: MenuItemSummary): void => {
             </div>
 
             {isBulkPriceModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-                    <div className="w-full max-w-xl space-y-4 rounded-2xl bg-white p-6 shadow-xl">
-                        <h3 className="text-lg font-bold text-gray-900">Bulk price update</h3>
-                        <p className="text-sm text-gray-600">
-                            Review price changes for {selectedCount} selected item(s) before
-                            applying.
-                        </p>
+                <Modal open={isBulkPriceModalOpen} onOpenChange={setIsBulkPriceModalOpen}>
+                    <ModalContent size="xl" className="w-full max-w-xl">
+                        <ModalHeader>
+                            <ModalTitle asChild>
+                                <h3 className="text-lg font-bold text-gray-900">
+                                    Bulk price update
+                                </h3>
+                            </ModalTitle>
+                            <ModalDescription>
+                                Review price changes for {selectedCount} selected item(s) before
+                                applying.
+                            </ModalDescription>
+                        </ModalHeader>
 
                         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                             <label className="space-y-1">
@@ -559,15 +572,16 @@ const startInlineEdit = (item: MenuItemSummary): void => {
                             </p>
                         )}
 
-                        <div className="flex items-center justify-end gap-2">
-                            <button
-                                type="button"
-                                onClick={() => setIsBulkPriceModalOpen(false)}
-                                disabled={isBulkSaving}
-                                className="h-10 rounded-xl bg-white px-4 text-sm font-semibold text-gray-700 shadow-none transition-shadow hover:shadow-none disabled:opacity-50"
-                            >
-                                Cancel
-                            </button>
+                        <ModalFooter>
+                            <ModalClose asChild>
+                                <button
+                                    type="button"
+                                    disabled={isBulkSaving}
+                                    className="h-10 rounded-xl bg-white px-4 text-sm font-semibold text-gray-700 shadow-none transition-shadow hover:shadow-none disabled:opacity-50"
+                                >
+                                    Cancel
+                                </button>
+                            </ModalClose>
                             <button
                                 type="button"
                                 onClick={applyBulkPriceUpdates}
@@ -577,9 +591,9 @@ const startInlineEdit = (item: MenuItemSummary): void => {
                                 {isBulkSaving && <Loader2 className="h-4 w-4 animate-spin" />}
                                 Apply Prices
                             </button>
-                        </div>
-                    </div>
-                </div>
+                        </ModalFooter>
+                    </ModalContent>
+                </Modal>
             )}
         </div>
     );
