@@ -2,11 +2,10 @@
 // Reduces boilerplate for individual subgraph routes
 
 import { NextRequest } from 'next/server';
-import { ApolloServer } from '@apollo/server';
 import { startServerAndCreateNextHandler } from '@as-integrations/next';
+import { createSubgraphServer } from './apollo-config';
 import type { GraphQLContext } from './context';
 import { createDataLoaders } from './dataloaders';
-import { graphqlConfig } from './config';
 import { STAFF_ROLES } from '@/types/status';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -29,11 +28,7 @@ function isValidStaffRole(role: string | null): role is (typeof STAFF_ROLES)[num
  * Creates a Next.js API handler for a GraphQL subgraph
  */
 export function createSubgraphHandler(config: SubgraphConfig): (req: NextRequest) => Promise<Response> {
-    const server = new ApolloServer<GraphQLContext>({
-        typeDefs: config.typeDefs,
-        resolvers: config.resolvers,
-        introspection: graphqlConfig.introspection,
-    });
+    const server = createSubgraphServer(config);
 
     return startServerAndCreateNextHandler<NextRequest, GraphQLContext>(server, {
         context: async (req: NextRequest): Promise<GraphQLContext> => {

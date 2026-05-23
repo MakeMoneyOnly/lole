@@ -319,6 +319,9 @@ export const STAFF_LIST_COLUMNS = [
     'is_active',
     'created_at',
     'updated_at',
+    'name',
+    'pin_code',
+    'assigned_zones',
 ] as const;
 
 /**
@@ -334,6 +337,7 @@ export const STAFF_DETAIL_COLUMNS = [
     'role',
     'is_active',
     'pin_code',
+    'assigned_zones',
     'created_at',
     'updated_at',
 ] as const;

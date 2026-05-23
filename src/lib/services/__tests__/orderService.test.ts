@@ -16,14 +16,14 @@ vi.mock('@/lib/supabase/queries', () => ({
 
 import { fetchItemsForValidation, getOrderByIdempotencyKey } from '@/lib/supabase/queries';
 
-const mockSupabaseFrom = (): React.JSX.Element => ({
+const mockSupabaseFrom = () => ({
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
     gt: vi.fn().mockReturnThis(),
     single: vi.fn().mockResolvedValue({ data: null, error: null }),
 });
 
-const _makeSupabase = (fromOverride?: Record<string, unknown>): React.JSX.Element => ({
+const _makeSupabase = (fromOverride?: Record<string, unknown>) => ({
     from: vi.fn().mockReturnValue({ ...mockSupabaseFrom(), ...(fromOverride ?? {}) }),
     auth: { getUser: vi.fn() },
 });

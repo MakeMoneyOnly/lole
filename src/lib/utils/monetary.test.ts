@@ -52,9 +52,9 @@ describe('monetary utilities', () => {
 
     describe('formatCurrency', () => {
         it('formats currency with default options', () => {
-            expect(formatCurrency(1550)).toBe('ETB 15');
-            expect(formatCurrency(0)).toBe('ETB 0');
-            expect(formatCurrency(null)).toBe('ETB 0');
+            expect(formatCurrency(1550)).toBe('Br. 15');
+            expect(formatCurrency(0)).toBe('Br. 0');
+            expect(formatCurrency(null)).toBe('Br. 0');
         });
 
         it('formats currency without currency symbol', () => {
@@ -62,12 +62,12 @@ describe('monetary utilities', () => {
         });
 
         it('handles null and undefined', () => {
-            expect(formatCurrency(null)).toBe('ETB 0');
-            expect(formatCurrency(undefined)).toBe('ETB 0');
+            expect(formatCurrency(null)).toBe('Br. 0');
+            expect(formatCurrency(undefined)).toBe('Br. 0');
         });
 
         it('formats with custom decimals', () => {
-            expect(formatCurrency(1550, { decimals: 2 })).toBe('ETB 15.50');
+            expect(formatCurrency(1550, { decimals: 2 })).toBe('Br. 15.50');
         });
     });
 

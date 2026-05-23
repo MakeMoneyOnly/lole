@@ -7,7 +7,7 @@ import type { createServiceRoleClient } from '@/lib/supabase/service-role';
 const createMockSupabaseClient = vi.hoisted(() => {
     // Create chainable query builder that returns empty array by default
     // This is important: verifyTenantOwnership expects an array, not null
-    const createQuery = (): React.JSX.Element => {
+    const createQuery = () => {
         const query = {
             select: vi.fn(() => query),
             insert: vi.fn(() => query),

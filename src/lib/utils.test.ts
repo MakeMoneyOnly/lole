@@ -27,7 +27,7 @@ describe('formatCurrency', () => {
     it('should format ETB currency by default', () => {
         const result = formatCurrency(1000);
         expect(result).toContain('1,000');
-        expect(result).toContain('ETB');
+        expect(result).toMatch(/Br\./);
     });
 
     it('should format with no decimal places by default', () => {

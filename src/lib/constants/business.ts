@@ -69,3 +69,10 @@ export const KDS = {
     /** Base delay for exponential backoff (ms) */
     RECONNECT_BASE_DELAY_MS: 1000,
 } as const;
+
+// ============================================================================
+// Security Constants (Session Management)
+// ============================================================================
+
+export const SESSION_TIMEOUT_SECONDS = 30 * 60; // 30 minutes
+export const MAX_SESSION_LIFETIME_MS = 8 * 60 * 60 * 1000; // 8 hours

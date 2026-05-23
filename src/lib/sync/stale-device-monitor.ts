@@ -13,6 +13,7 @@
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { Alerts, sendWarningAlert } from '@/lib/monitoring/alerts';
 import { logger } from '@/lib/logger';
+import { STALE_DEVICE_THRESHOLD_MS } from '@/lib/constants/kds';
 
 /**
  * Configuration for stale device detection
@@ -277,7 +278,7 @@ export async function getRestaurantSyncHealth(restaurantId: string): Promise<{
     }
 
     const now = Date.now();
-    const staleThreshold = 30 * 60 * 1000; // 30 minutes
+    const staleThreshold = STALE_DEVICE_THRESHOLD_MS;
 
     let onlineDevices = 0;
     let offlineDevices = 0;

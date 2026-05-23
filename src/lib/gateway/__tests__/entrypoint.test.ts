@@ -1,6 +1,11 @@
 import { existsSync, rmSync } from 'fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
+
+// Set required env var before importing the module
+process.env.DEVICE_TOKEN_SIGNATURE_SECRET = 'test-secret-key-that-is-long-enough-32ch';
+
+// Now import the module
 import { getStandaloneGatewayConfig, initPersistentStorage } from '@/lib/gateway/entrypoint';
 
 const testDir = join(process.cwd(), '.tmp-gateway-test');

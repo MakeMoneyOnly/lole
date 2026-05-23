@@ -1,4 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// Set required env var before importing the module
+process.env.DEVICE_TOKEN_SIGNATURE_SECRET = 'test-secret-key-that-is-long-enough-32ch';
+process.env.GATEWAY_SESSION_SECRET = 'test-gateway-secret-with-32-chars!!';
+
 import { createGatewayHttpServer } from '@/lib/gateway/http-server';
 
 vi.mock('@/lib/api/authz', () => ({
@@ -14,7 +19,6 @@ describe('gateway http server', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        process.env.GATEWAY_SESSION_SECRET = 'test-gateway-secret-with-32-chars!';
     });
 
     afterEach(async () => {
@@ -101,10 +105,10 @@ describe('gateway http server', () => {
         });
 
         const body = (await response.json()) as {
-            session: { claims: { deviceId: string } };
+            session: { claims?: { deviceId?: string } };
         };
 
         expect(response.status).toBe(200);
-        expect(body.session.claims.deviceId).toBe('device-1');
+        expect(body.session.claims?.deviceId).toBe('device-1');
     });
 });

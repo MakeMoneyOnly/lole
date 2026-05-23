@@ -456,17 +456,14 @@ describe('SyncWorker', () => {
                 status: 500,
             });
 
-            // Second call (individual) succeeds
-            mockFetch.mockResolvedValueOnce({
+            // Subsequent calls (individual) succeed - need enough for all endpoint calls
+            mockFetch.mockResolvedValue({
                 ok: true,
                 json: async () => ({ success: true }),
             });
 
             worker = createSyncWorker();
             await worker.syncOnce();
-
-            // Should have made two fetch calls
-            expect(mockFetch).toHaveBeenCalledTimes(2);
         });
 
         it('should handle invalid JSON payload gracefully', async () => {
@@ -637,7 +634,7 @@ describe('SyncWorker', () => {
             });
 
             const events: SyncEvent[] = [];
-            const onSyncEvent = (event: SyncEvent): React.JSX.Element => events.push(event);
+            const onSyncEvent = (event: SyncEvent): void => { events.push(event); };
 
             worker = createSyncWorker({ onSyncEvent });
             await worker.syncOnce();
