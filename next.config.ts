@@ -147,6 +147,8 @@ const nextConfig: NextConfig = {
     reactStrictMode: true,
     turbopack: {},
 
+    cacheComponents: true,
+
     // Performance: Enable experimental features for better optimization
     experimental: {
         // Optimize package imports to reduce bundle size

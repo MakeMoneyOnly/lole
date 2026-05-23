@@ -75,6 +75,13 @@ temp/
 *_output.txt
 git_log.txt
 
+# ESLint output artifacts
+eslint-*.json
+
+# Temporary workspace files
+temp_*
+.temp_*
+
 # Generated files
 *.generated.*
 
@@ -116,3 +123,6 @@ public/@powersync/
 
 # COL framework - external git repositories, per-user memory, and AI orchestration state
 .col/
+
+# Local Docker configurations
+.docker/
