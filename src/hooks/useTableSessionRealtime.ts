@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import {
     createLanMqttClient,
     closeLanMqttClient,
@@ -13,6 +13,35 @@ import {
     LocalGatewaySequenceTracker,
     getGatewayTopicsForScopes,
 } from '@/lib/gateway/local-events';
+import { logger } from '@/lib/logger';
+import { TOPIC_FILTER_TABLES_COMMANDS, DEFAULT_LOCATION_ID } from '@/lib/constants';
+
+/**
+ * SEC-04: Reconnection configuration for KDS realtime
+ */
+const RECONNECT_CONFIG = {
+    /** Maximum number of reconnection attempts */
+    maxRetries: 5,
+    /** Base delay in milliseconds for exponential backoff */
+    baseDelayMs: 1000,
+    /** Maximum delay in milliseconds */
+    maxDelayMs: 30000,
+    /** Jitter factor to prevent thundering herd (0-1) */
+    jitterFactor: 0.3,
+};
+
+/**
+ * Calculate exponential backoff delay with jitter
+ * Used for KDS realtime reconnection attempts
+ */
+export function calculateReconnectDelay(retryCount: number): number {
+    const delay = Math.min(
+        RECONNECT_CONFIG.baseDelayMs * Math.pow(2, retryCount),
+        RECONNECT_CONFIG.maxDelayMs
+    );
+    const jitter = delay * RECONNECT_CONFIG.jitterFactor * Math.random();
+    return delay + jitter;
+}
 
 export interface TableSessionRealtimeEvent {
     type: string;
@@ -22,36 +51,98 @@ export interface TableSessionRealtimeEvent {
     assignedStaffId?: string | null;
 }
 
+export interface UseTableSessionRealtimeResult {
+    isConnected: boolean;
+    reconnectionStatus: 'idle' | 'reconnecting' | 'failed';
+}
+
 export function useTableSessionRealtime(input: {
     restaurantId: string;
     enabled?: boolean;
     onEvent?: (event: TableSessionRealtimeEvent) => void;
-}): void {
+}): UseTableSessionRealtimeResult {
     const trackerRef = useRef(new LocalGatewaySequenceTracker());
+    const activeRef = useRef(true);
+    const retryCountRef = useRef(0);
+    const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const currentClientRef = useRef<ReturnType<typeof createLanMqttClient> | null>(null);
 
-    useEffect(() => {
-        if (!input.enabled || !input.restaurantId) {
+    const [isConnected, setIsConnected] = useState(false);
+    const [reconnectionStatus, setReconnectionStatus] = useState<
+        'idle' | 'reconnecting' | 'failed'
+    >('idle');
+
+    // Use refs to hold callbacks to avoid immutability issues
+    const startRef = useRef<() => Promise<void>>(async () => {});
+    const attemptReconnectRef = useRef<() => void>(() => {});
+
+    /**
+     * SEC-04: Attempt to reconnect with exponential backoff
+     */
+    const attemptReconnect = useCallback((): void => {
+        if (!activeRef.current) return;
+
+        const currentRetry = retryCountRef.current;
+
+        if (currentRetry >= RECONNECT_CONFIG.maxRetries) {
+            logger.error(
+                `[TableSessionRealtime] Max reconnection attempts (${RECONNECT_CONFIG.maxRetries}) reached`
+            );
+            setReconnectionStatus('failed');
+            setIsConnected(false);
             return;
         }
 
-        let active = true;
-        let client: ReturnType<typeof createLanMqttClient> | null = null;
+        const delay = calculateReconnectDelay(currentRetry);
+        logger.warn(
+            `[TableSessionRealtime] Scheduling reconnect attempt ${currentRetry + 1}/${RECONNECT_CONFIG.maxRetries} in ${Math.round(delay)}ms`
+        );
 
-        const start = async (): Promise<void> => {
+        setReconnectionStatus('reconnecting');
+        retryCountRef.current++;
+
+        reconnectTimeoutRef.current = setTimeout(async () => {
+            if (!activeRef.current) return;
+
             const session = await getStoredDeviceSession();
-            if (!active || !session?.gateway || session.gateway_bootstrap_status !== 'ready') {
-                return;
+            if (session?.gateway?.brokerUrl) {
+                startRef.current().catch(error => {
+                    logger.error('[TableSessionRealtime] Reconnection failed', error);
+                });
             }
+        }, delay);
+    }, []);
 
-            client = createLanMqttClient({
+    /**
+     * Start the MQTT connection for table sessions
+     */
+    const start = useCallback(async (): Promise<void> => {
+        const session = await getStoredDeviceSession();
+        if (
+            !activeRef.current ||
+            !session?.gateway ||
+            session.gateway_bootstrap_status !== 'ready'
+        ) {
+            setIsConnected(false);
+            return;
+        }
+
+        try {
+            const client = createLanMqttClient({
                 brokerUrl: session.gateway.brokerUrl,
                 clientId: `${session.device_token}-table-sub`,
                 clean: false,
+                reconnectPeriodMs: 0,
             });
+
+            currentClientRef.current = client;
+            setIsConnected(true);
+            setReconnectionStatus('idle');
+            retryCountRef.current = 0;
 
             const topics = getGatewayTopicsForScopes({
                 restaurantId: session.restaurant_id ?? input.restaurantId,
-                locationId: session.location_id ?? 'default-location',
+                locationId: session.location_id ?? DEFAULT_LOCATION_ID,
                 scopes: ['tables'],
             });
 
@@ -59,8 +150,37 @@ export function useTableSessionRealtime(input: {
                 await subscribeTopic(client, topic, 1);
             }
 
+            client.on('error', (error: Error) => {
+                logger.error('[TableSessionRealtime] MQTT client error', error);
+                if (activeRef.current && !reconnectTimeoutRef.current) {
+                    attemptReconnectRef.current();
+                }
+            });
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (client as any).on('offline', () => {
+                logger.warn('[TableSessionRealtime] MQTT client offline');
+                if (activeRef.current) {
+                    setIsConnected(false);
+                    if (!reconnectTimeoutRef.current) {
+                        attemptReconnectRef.current();
+                    }
+                }
+            });
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (client as any).on('close', () => {
+                logger.warn('[TableSessionRealtime] MQTT client closed');
+                if (activeRef.current) {
+                    setIsConnected(false);
+                    if (!reconnectTimeoutRef.current) {
+                        attemptReconnectRef.current();
+                    }
+                }
+            });
+
             registerLanMessageHandler(client, (topic, rawPayload) => {
-                if (!topic.includes('/tables/commands')) {
+                if (!topic.includes(TOPIC_FILTER_TABLES_COMMANDS)) {
                     return;
                 }
 
@@ -105,15 +225,51 @@ export function useTableSessionRealtime(input: {
                     notes: typeof event.payload.notes === 'string' ? event.payload.notes : null,
                 });
             });
-        };
-
-        void start();
-
-        return () => {
-            active = false;
-            if (client) {
-                void closeLanMqttClient(client).catch(() => undefined);
+        } catch (error) {
+            logger.error('[TableSessionRealtime] Failed to start', error);
+            setIsConnected(false);
+            if (activeRef.current && !reconnectTimeoutRef.current) {
+                attemptReconnectRef.current();
             }
-        };
+        }
     }, [input]);
+
+    // Set up refs after callbacks are defined
+    useEffect(() => {
+        startRef.current = start;
+        attemptReconnectRef.current = attemptReconnect;
+    }, [start, attemptReconnect]);
+
+    useEffect(() => {
+        if (!input.enabled || !input.restaurantId) {
+            return;
+        }
+
+        activeRef.current = true;
+        retryCountRef.current = 0;
+        setReconnectionStatus('idle');
+        void startRef.current();
+
+        // SEC-04: Cleanup function
+        return () => {
+            activeRef.current = false;
+            setReconnectionStatus('idle');
+
+            if (reconnectTimeoutRef.current) {
+                clearTimeout(reconnectTimeoutRef.current);
+                reconnectTimeoutRef.current = null;
+            }
+
+            if (currentClientRef.current) {
+                void closeLanMqttClient(currentClientRef.current).catch(() => undefined);
+                currentClientRef.current = null;
+            }
+            setIsConnected(false);
+        };
+    }, [input.enabled, input.restaurantId]);
+
+    return {
+        isConnected,
+        reconnectionStatus,
+    };
 }

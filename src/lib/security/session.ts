@@ -17,15 +17,14 @@ import {
     type SessionStore,
 } from './sessionStore';
 import { logger } from '@/lib/logger';
+import { SESSION_TIMEOUT_SECONDS, MAX_SESSION_LIFETIME_MS } from '@/lib/constants/business';
 
 // Re-export types
 export type { SessionData, SessionStore };
 export { initializeSessionStore, isUsingRedis, closeSessionStore };
 
-// Constants
-const SESSION_TIMEOUT_SECONDS = 30 * 60; // 30 minutes in seconds
-const MAX_SESSION_LIFETIME_MS = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
-const ACTIVITY_THRESHOLD_MS = 5 * 60 * 1000; // Check every 5 minutes
+/** Check every 5 minutes for session cleanup */
+const ACTIVITY_THRESHOLD_MS = 5 * 60 * 1000;
 
 /**
  * Create a new session

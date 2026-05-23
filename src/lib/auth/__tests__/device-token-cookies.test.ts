@@ -1,10 +1,14 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createHmac } from 'crypto';
+
+// Set required env var before importing the module
+process.env.DEVICE_TOKEN_SIGNATURE_SECRET = 'test-secret-key-that-is-long-enough-32ch';
+
 import {
     setDeviceTokenCookies,
     verifyDeviceTokenFromRequest,
     DeviceMetadata,
 } from '../device-token-cookies';
-import { createHmac } from 'crypto';
 
 // Mock next/headers
 vi.mock('next/headers', () => {
@@ -17,6 +21,11 @@ vi.mock('next/headers', () => {
 });
 
 describe('device-token-cookies', () => {
+    const TOKEN_SIGNATURE_SECRET =
+        process.env.DEVICE_TOKEN_SIGNATURE_SECRET ||
+        process.env.AUTH_SECRET ||
+        'development-secret-change-in-production';
+
     describe('setDeviceTokenCookies', () => {
         it('should set token, metadata, and signature cookies', async () => {
             const token = 'test-token-123';
@@ -49,11 +58,6 @@ describe('device-token-cookies', () => {
     });
 
     describe('verifyDeviceTokenFromRequest', () => {
-        const TOKEN_SIGNATURE_SECRET =
-            process.env.DEVICE_TOKEN_SIGNATURE_SECRET ||
-            process.env.AUTH_SECRET ||
-            'development-secret-change-in-production';
-
         it('should return valid=false when no cookie header is present', () => {
             const request = new Request('http://localhost');
             const result = verifyDeviceTokenFromRequest(request);

@@ -9,6 +9,7 @@
 
 import { env, hasRedis } from '@/lib/config/env';
 import { logger } from '@/lib/logger';
+import { SESSION_TIMEOUT_SECONDS, MAX_SESSION_LIFETIME_MS } from '@/lib/constants/business';
 
 const log = logger.child('[session-store]');
 
@@ -46,7 +47,7 @@ export class MemorySessionStore implements SessionStore {
     private sessions = new Map<string, { data: SessionData; expiresAt: number }>();
     private readonly defaultTTL: number;
 
-    constructor(defaultTTL: number = 30 * 60) {
+    constructor(defaultTTL: number = SESSION_TIMEOUT_SECONDS) {
         this.defaultTTL = defaultTTL;
         // Start cleanup interval
         setInterval(() => this.cleanup(), 5 * 60 * 1000);
@@ -135,7 +136,11 @@ export class RedisSessionStore implements SessionStore {
     private readonly keyPrefix: string;
     private readonly defaultTTL: number;
 
-    constructor(client: RedisClient, keyPrefix: string = 'session:', defaultTTL: number = 30 * 60) {
+    constructor(
+        client: RedisClient,
+        keyPrefix: string = 'session:',
+        defaultTTL: number = SESSION_TIMEOUT_SECONDS
+    ) {
         this.client = client;
         this.keyPrefix = keyPrefix;
         this.defaultTTL = defaultTTL;
@@ -204,8 +209,7 @@ export class RedisSessionStore implements SessionStore {
         for (const sessionId of keys) {
             const data = await this.get(sessionId);
             if (data) {
-                const maxLifetime = 8 * 60 * 60 * 1000; // 8 hours
-                if (Date.now() - data.createdAt > maxLifetime) {
+                if (Date.now() - data.createdAt > MAX_SESSION_LIFETIME_MS) {
                     await this.delete(sessionId);
                     cleaned++;
                 }
@@ -291,9 +295,9 @@ export async function initializeSessionStore(): Promise<void> {
             }
         }
 
-// Fall back to memory store
-         memoryStore = new MemorySessionStore();
-         log.warn('Using in-memory session store (not recommended for production)');
+        // Fall back to memory store
+        memoryStore = new MemorySessionStore();
+        log.warn('Using in-memory session store (not recommended for production)');
     })();
 
     return initializationPromise;

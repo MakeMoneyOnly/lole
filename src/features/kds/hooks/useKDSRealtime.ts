@@ -17,6 +17,8 @@ import {
 } from '@/lib/gateway/local-events';
 import { logger } from '@/lib/logger';
 
+// SEC-04: Reconnection configuration
+
 /**
  * HIGH-015: Reconnection configuration
  */
@@ -187,7 +189,10 @@ export function useKDSRealtime({
     onOrderDelete,
     onLocalSignal,
     enabled = true,
-}: UseKDSRealtimeOptions): { isConnected: boolean; reconnectionStatus: 'idle' | 'reconnecting' | 'failed' } {
+}: UseKDSRealtimeOptions): {
+    isConnected: boolean;
+    reconnectionStatus: 'idle' | 'reconnecting' | 'failed';
+} {
     const channelRef = useRef<RealtimeChannel | null>(null);
     const supabase = useMemo(() => createClient(), []);
     const mountedRef = useRef(false);
@@ -197,6 +202,11 @@ export function useKDSRealtime({
     // HIGH-015: Reconnection state
     const retryCountRef = useRef(0);
     const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // SEC-04: MQTT reconnection state for LAN gateway
+    const mqttRetryCountRef = useRef(0);
+    const mqttReconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
     const [reconnectionStatus, setReconnectionStatus] = useState<
         'idle' | 'reconnecting' | 'failed'
     >('idle');
@@ -286,11 +296,11 @@ export function useKDSRealtime({
             // MED-003: Check for duplicate messages
             const recordId = (payload.new?.id || payload.old?.id) as string;
             if (recordId && deduplicatorRef.current) {
-const messageId = generateMessageId(payload.table, payload.eventType, recordId);
-                 if (deduplicatorRef.current.isDuplicate(messageId)) {
-                     logger.warn(`[KDS Realtime] Skipping duplicate message: ${messageId}`);
-                     return;
-                 }
+                const messageId = generateMessageId(payload.table, payload.eventType, recordId);
+                if (deduplicatorRef.current.isDuplicate(messageId)) {
+                    logger.warn(`[KDS Realtime] Skipping duplicate message: ${messageId}`);
+                    return;
+                }
             }
 
             // For DELETE events, payload.new is empty; use payload.old for restaurant_id check
@@ -339,11 +349,11 @@ const messageId = generateMessageId(payload.table, payload.eventType, recordId);
             // MED-003: Check for duplicate messages
             const recordId = (payload.new?.id || payload.old?.id) as string;
             if (recordId && deduplicatorRef.current) {
-const messageId = generateMessageId(payload.table, payload.eventType, recordId);
-                 if (deduplicatorRef.current.isDuplicate(messageId)) {
-                     logger.warn(`[KDS Realtime] Skipping duplicate message: ${messageId}`);
-                     return;
-                 }
+                const messageId = generateMessageId(payload.table, payload.eventType, recordId);
+                if (deduplicatorRef.current.isDuplicate(messageId)) {
+                    logger.warn(`[KDS Realtime] Skipping duplicate message: ${messageId}`);
+                    return;
+                }
             }
 
             // For DELETE events, payload.new is empty; use payload.old for restaurant_id check
@@ -391,6 +401,7 @@ const messageId = generateMessageId(payload.table, payload.eventType, recordId);
 
     // HIGH-015: Refs to hold callback functions to avoid immutability errors
     const attemptReconnectRef = useRef<() => void>(() => {});
+    const attemptMqttReconnectRef = useRef<() => Promise<void>>(async () => {});
 
     /**
      * HIGH-015: Setup channel with reconnection handling
@@ -453,18 +464,18 @@ const messageId = generateMessageId(payload.table, payload.eventType, recordId);
 
         const currentRetry = retryCountRef.current;
 
-if (currentRetry >= RECONNECT_CONFIG.maxRetries) {
-                logger.error(
-                    `[KDS Realtime] Max reconnection attempts (${RECONNECT_CONFIG.maxRetries}) reached`
-                );
-                setReconnectionStatus('failed');
-                return;
-            }
-
-            const delay = calculateReconnectDelay(currentRetry);
-            logger.warn(
-                `[KDS Realtime] Scheduling reconnect attempt ${currentRetry + 1}/${RECONNECT_CONFIG.maxRetries} in ${Math.round(delay)}ms`
+        if (currentRetry >= RECONNECT_CONFIG.maxRetries) {
+            logger.error(
+                `[KDS Realtime] Max reconnection attempts (${RECONNECT_CONFIG.maxRetries}) reached`
             );
+            setReconnectionStatus('failed');
+            return;
+        }
+
+        const delay = calculateReconnectDelay(currentRetry);
+        logger.warn(
+            `[KDS Realtime] Scheduling reconnect attempt ${currentRetry + 1}/${RECONNECT_CONFIG.maxRetries} in ${Math.round(delay)}ms`
+        );
 
         setReconnectionStatus('reconnecting');
 
@@ -484,10 +495,93 @@ if (currentRetry >= RECONNECT_CONFIG.maxRetries) {
         }, delay);
     }, [setupChannel]);
 
+    // SEC-04: Attempt MQTT/LAN reconnection with exponential backoff
+    const attemptMqttReconnect = useCallback(async (): Promise<void> => {
+        if (!mountedRef.current) return;
+
+        const currentRetry = mqttRetryCountRef.current;
+
+        if (currentRetry >= RECONNECT_CONFIG.maxRetries) {
+            logger.error(
+                `[KDS Realtime] MQTT max reconnection attempts (${RECONNECT_CONFIG.maxRetries}) reached`
+            );
+            setReconnectionStatus('failed');
+            setIsConnected(false);
+            return;
+        }
+
+        const delay = calculateReconnectDelay(currentRetry);
+        logger.warn(
+            `[KDS Realtime] MQTT scheduling reconnect attempt ${currentRetry + 1}/${RECONNECT_CONFIG.maxRetries} in ${Math.round(delay)}ms`
+        );
+
+        setReconnectionStatus('reconnecting');
+        mqttRetryCountRef.current++;
+
+        mqttReconnectTimeoutRef.current = setTimeout(async () => {
+            if (!mountedRef.current) return;
+
+            const session = await getStoredDeviceSession();
+            if (session?.gateway?.brokerUrl && session.gateway_bootstrap_status === 'ready') {
+                try {
+                    const client = createLanMqttClient({
+                        brokerUrl: session.gateway.brokerUrl,
+                        clientId: `${session.device_token}-kds-local-reconnect`,
+                        clean: false,
+                        reconnectPeriodMs: 0,
+                    });
+
+                    client.on('error', () => {});
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (client as any).on('offline', () => {
+                        if (mountedRef.current && !mqttReconnectTimeoutRef.current) {
+                            void attemptMqttReconnectRef.current();
+                        }
+                    });
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (client as any).on('close', () => {
+                        if (mountedRef.current && !mqttReconnectTimeoutRef.current) {
+                            void attemptMqttReconnectRef.current();
+                        }
+                    });
+
+                    const topics = getGatewayTopicsForScopes({
+                        restaurantId: session.restaurant_id ?? restaurantId,
+                        locationId: session.location_id ?? 'default-location',
+                        scopes: ['orders', 'kds'],
+                    });
+
+                    for (const topic of topics) {
+                        await subscribeTopic(client, topic, 1);
+                    }
+
+                    registerLanMessageHandler(client, (topic, rawPayload) => {
+                        if (!mountedRef.current) return;
+                        void handleLocalGatewayMessage(topic, String(rawPayload));
+                    });
+
+                    setIsConnected(true);
+                    setReconnectionStatus('idle');
+                    mqttRetryCountRef.current = 0;
+                } catch (error) {
+                    logger.error('[KDS Realtime] MQTT reconnection failed', error);
+                    if (!mqttReconnectTimeoutRef.current) {
+                        void attemptMqttReconnectRef.current();
+                    }
+                }
+            } else {
+                if (!mqttReconnectTimeoutRef.current) {
+                    void attemptMqttReconnectRef.current();
+                }
+            }
+        }, delay);
+    }, [handleLocalGatewayMessage, restaurantId]);
+
     useEffect(() => {
-        // Set up the ref after both callbacks are defined
+        // Set up the refs after both callbacks are defined
         attemptReconnectRef.current = attemptReconnect;
-    }, [attemptReconnect]);
+        attemptMqttReconnectRef.current = attemptMqttReconnect;
+    }, [attemptReconnect, attemptMqttReconnect]);
 
     useEffect(() => {
         if (!enabled || !restaurantId) return;
@@ -537,15 +631,19 @@ if (currentRetry >= RECONNECT_CONFIG.maxRetries) {
 
         void bootstrapLocalGateway();
 
-        // HIGH-015: Cleanup function
+        // SEC-04: Cleanup function
         return () => {
             cancelled = true;
             mountedRef.current = false;
 
-            // Clear any pending reconnect timeout
+            // Clear any pending reconnect timeouts
             if (reconnectTimeoutRef.current) {
                 clearTimeout(reconnectTimeoutRef.current);
                 reconnectTimeoutRef.current = null;
+            }
+            if (mqttReconnectTimeoutRef.current) {
+                clearTimeout(mqttReconnectTimeoutRef.current);
+                mqttReconnectTimeoutRef.current = null;
             }
 
             if (channelRef.current) {
@@ -558,7 +656,7 @@ if (currentRetry >= RECONNECT_CONFIG.maxRetries) {
             setIsConnected(false);
             setReconnectionStatus('idle');
         };
-    }, [enabled, restaurantId, setupChannel, handleLocalGatewayMessage]);
+    }, [enabled, handleLocalGatewayMessage, restaurantId, setupChannel]);
 
     return {
         isConnected,

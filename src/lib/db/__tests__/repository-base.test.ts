@@ -3,6 +3,17 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
+// Mock environment variables before any imports
+vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://test.supabase.co');
+vi.stubEnv('SUPABASE_SECRET_KEY', 'test-secret-key');
+
+// Mock the Supabase client
+const mockCreateClient = vi.fn();
+vi.mock('@supabase/supabase-js', () => ({
+    createClient: (...args: unknown[]) => mockCreateClient(...args),
+}));
+
 import {
     getRepositoryClient,
     resetRepositoryClient,
@@ -12,25 +23,12 @@ import {
     type PaginationParams,
 } from '../repository-base';
 
-// Mock the Supabase client
-const mockCreateClient = vi.fn();
-vi.mock('@supabase/supabase-js', () => ({
-    createClient: (...args: unknown[]) => mockCreateClient(...args),
-}));
-
 describe('repository-base', () => {
-    const originalEnv = process.env;
+    const originalEnv = { ...process.env };
 
     beforeEach(() => {
         vi.clearAllMocks();
-        // Reset the singleton between tests
         resetRepositoryClient();
-        // Set up environment variables
-        process.env = {
-            ...originalEnv,
-            NEXT_PUBLIC_SUPABASE_URL: 'https://test.supabase.co',
-            SUPABASE_SECRET_KEY: 'test-secret-key',
-        };
     });
 
     afterEach(() => {
@@ -51,7 +49,7 @@ describe('repository-base', () => {
     describe('getRepositoryClient', () => {
         it('should create a Supabase client with correct config', () => {
             const mockClient = { from: vi.fn() };
-            mockCreateClient.mockReturnValue(mockClient);
+            mockCreateClient.mockReturnValueOnce(mockClient);
 
             const client = getRepositoryClient();
 
@@ -64,7 +62,7 @@ describe('repository-base', () => {
 
         it('should return the same client on subsequent calls (singleton)', () => {
             const mockClient = { from: vi.fn() };
-            mockCreateClient.mockReturnValue(mockClient);
+            mockCreateClient.mockReturnValueOnce(mockClient);
 
             const client1 = getRepositoryClient();
             const client2 = getRepositoryClient();
@@ -74,18 +72,26 @@ describe('repository-base', () => {
         });
 
         it('should throw when NEXT_PUBLIC_SUPABASE_URL is missing', () => {
+            const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
             delete process.env.NEXT_PUBLIC_SUPABASE_URL;
 
             expect(() => getRepositoryClient()).toThrow('Supabase configuration missing');
+
+            process.env.NEXT_PUBLIC_SUPABASE_URL = originalUrl;
         });
 
         it('should throw when SUPABASE_SECRET_KEY is missing', () => {
+            const originalKey = process.env.SUPABASE_SECRET_KEY;
             delete process.env.SUPABASE_SECRET_KEY;
 
             expect(() => getRepositoryClient()).toThrow('Supabase configuration missing');
+
+            process.env.SUPABASE_SECRET_KEY = originalKey;
         });
 
         it('should indicate which config is missing in error message', () => {
+            const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+            const originalKey = process.env.SUPABASE_SECRET_KEY;
             delete process.env.NEXT_PUBLIC_SUPABASE_URL;
             delete process.env.SUPABASE_SECRET_KEY;
 
@@ -98,6 +104,9 @@ describe('repository-base', () => {
                 expect(message).toContain('NEXT_PUBLIC_SUPABASE_URL: false');
                 expect(message).toContain('SUPABASE_SECRET_KEY: false');
             }
+
+            process.env.NEXT_PUBLIC_SUPABASE_URL = originalUrl;
+            process.env.SUPABASE_SECRET_KEY = originalKey;
         });
 
         it('should create new client after reset', () => {
@@ -119,7 +128,7 @@ describe('repository-base', () => {
     describe('resetRepositoryClient', () => {
         it('should reset the singleton client', () => {
             const mockClient = { from: vi.fn() };
-            mockCreateClient.mockReturnValue(mockClient);
+            mockCreateClient.mockReturnValueOnce(mockClient);
 
             // Create initial client
             getRepositoryClient();
@@ -127,6 +136,7 @@ describe('repository-base', () => {
 
             // Reset and create new client
             resetRepositoryClient();
+            mockCreateClient.mockReturnValueOnce(mockClient);
             getRepositoryClient();
             expect(mockCreateClient).toHaveBeenCalledTimes(2);
         });

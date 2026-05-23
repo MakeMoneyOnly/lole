@@ -66,77 +66,89 @@ export const LoginForm = (): React.JSX.Element => {
     };
 
     return (
-        <Card className="bg-surface-0/80 border-surface-200 w-full max-w-md border p-8 shadow-2xl backdrop-blur-xl">
-            <div className="mb-8 text-center">
-                <h1 className="mb-2 text-3xl font-bold text-black">lole</h1>
-                <p className="text-text-secondary">Restaurant Operations Platform</p>
-            </div>
-
-            <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                    <label className="text-text-primary text-sm font-medium">Email</label>
-                    <div className="relative">
-                        <Mail className="text-text-tertiary absolute top-3 left-3 h-5 w-5" />
-                        <input
-                            type="email"
-                            required
-                            value={email}
-                            onChange={e => setEmail(e.target.value)}
-                            className="border-surface-200 bg-surface-50 text-text-primary focus:border-brand-accent focus:ring-brand-accent w-full rounded-lg border py-2.5 pr-4 pl-10 transition-all outline-none focus:ring-1"
-                            placeholder="name@restaurant.com"
-                        />
+        <Card.Root asChild className="w-full max-w-md">
+            <div className="bg-surface-0/80 border-surface-200 border p-8 shadow-2xl backdrop-blur-xl">
+                <Card.Header>
+                    <div className="mb-8 text-center">
+                        <Card.Title asChild>
+                            <h1 className="mb-2 text-3xl font-bold text-black">lole</h1>
+                        </Card.Title>
+                        <Card.Description>Restaurant Operations Platform</Card.Description>
                     </div>
-                </div>
+                </Card.Header>
 
-                <div className="space-y-2">
-                    <label className="text-text-primary text-sm font-medium">Password</label>
-                    <div className="relative">
-                        <Lock className="text-text-tertiary absolute top-3 left-3 h-5 w-5" />
-                        <input
-                            type={showPassword ? 'text' : 'password'}
-                            required
-                            value={password}
-                            onChange={e => setPassword(e.target.value)}
-                            className="border-surface-200 bg-surface-50 text-text-primary focus:border-brand-accent focus:ring-brand-accent w-full rounded-lg border py-2.5 pr-12 pl-10 transition-all outline-none focus:ring-1"
-                            placeholder="••••••••"
-                        />
-                        <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="text-text-tertiary hover:text-text-primary absolute top-3 right-3"
+                <Card.Content>
+                    <form onSubmit={handleLogin} className="space-y-4">
+                        <div className="space-y-2">
+                            <label className="text-text-primary text-sm font-medium">Email</label>
+                            <div className="relative">
+                                <Mail className="text-text-tertiary absolute top-3 left-3 h-5 w-5" />
+                                <input
+                                    type="email"
+                                    required
+                                    value={email}
+                                    onChange={e => setEmail(e.target.value)}
+                                    className="border-surface-200 bg-surface-50 text-text-primary focus:border-brand-accent focus:ring-brand-accent w-full rounded-lg border py-2.5 pr-4 pl-10 transition-all outline-none focus:ring-1"
+                                    placeholder="name@restaurant.com"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-text-primary text-sm font-medium">
+                                Password
+                            </label>
+                            <div className="relative">
+                                <Lock className="text-text-tertiary absolute top-3 left-3 h-5 w-5" />
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    required
+                                    value={password}
+                                    onChange={e => setPassword(e.target.value)}
+                                    className="border-surface-200 bg-surface-50 text-text-primary focus:border-brand-accent focus:ring-brand-accent w-full rounded-lg border py-2.5 pr-12 pl-10 transition-all outline-none focus:ring-1"
+                                    placeholder="••••••••"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="text-text-tertiary hover:text-text-primary absolute top-3 right-3"
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="h-5 w-5" />
+                                    ) : (
+                                        <Eye className="h-5 w-5" />
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+
+                        {error && (
+                            <div className="rounded-lg border border-red-100 bg-red-50 p-3 text-sm font-medium text-red-600">
+                                {error}
+                            </div>
+                        )}
+
+                        <Button
+                            type="submit"
+                            className="bg-brand-accent hover:bg-brand-accent-hover shadow-brand-accent/20 h-12 w-full text-lg font-bold text-black shadow-lg"
+                            isLoading={loading}
                         >
-                            {showPassword ? (
-                                <EyeOff className="h-5 w-5" />
-                            ) : (
-                                <Eye className="h-5 w-5" />
-                            )}
-                        </button>
+                            Sign In
+                        </Button>
+                    </form>
+                </Card.Content>
+
+                <Card.Footer>
+                    <div className="mt-6 text-center">
+                        <a
+                            href="#"
+                            className="text-text-tertiary text-sm transition-colors hover:text-black"
+                        >
+                            Forgot your password?
+                        </a>
                     </div>
-                </div>
-
-                {error && (
-                    <div className="rounded-lg border border-red-100 bg-red-50 p-3 text-sm font-medium text-red-600">
-                        {error}
-                    </div>
-                )}
-
-                <Button
-                    type="submit"
-                    className="bg-brand-accent hover:bg-brand-accent-hover shadow-brand-accent/20 h-12 w-full text-lg font-bold text-black shadow-lg"
-                    isLoading={loading}
-                >
-                    Sign In
-                </Button>
-            </form>
-
-            <div className="mt-6 text-center">
-                <a
-                    href="#"
-                    className="text-text-tertiary text-sm transition-colors hover:text-black"
-                >
-                    Forgot your password?
-                </a>
+                </Card.Footer>
             </div>
-        </Card>
+        </Card.Root>
     );
 };
