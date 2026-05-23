@@ -19,6 +19,8 @@ vi.mock('@/lib/api/audit', () => ({
 const getAuthenticatedUserMock = vi.mocked(getAuthenticatedUser);
 const getAuthorizedRestaurantContextMock = vi.mocked(getAuthorizedRestaurantContext);
 const writeAuditLogMock = vi.mocked(writeAuditLog);
+const VALID_RESTAURANT_ID = '12345678-1234-4234-8234-123456789012';
+
 function makeFakeDb(options?: { orders?: any[]; heartbeats?: any[] }): any {
     const orders = options?.orders ?? [];
     const heartbeats = options?.heartbeats ?? [];
@@ -56,10 +58,11 @@ function setAuthAndContextOk(db?: any): void {
     getAuthenticatedUserMock.mockResolvedValue({
         ok: true,
         user: { id: 'user-1' },
+        supabase: db,
     } as any);
     getAuthorizedRestaurantContextMock.mockResolvedValue({
         ok: true,
-        restaurantId: 'resto-1',
+        restaurantId: VALID_RESTAURANT_ID,
         supabase: db,
     } as any);
 }

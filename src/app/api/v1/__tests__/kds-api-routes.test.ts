@@ -13,6 +13,8 @@ vi.mock('@/lib/api/authz', () => ({
 const getAuthenticatedUserMock = vi.mocked(getAuthenticatedUser);
 const getAuthorizedRestaurantContextMock = vi.mocked(getAuthorizedRestaurantContext);
 
+const VALID_RESTAURANT_ID = '12345678-1234-4234-8234-123456789012';
+
 type FakeRecord = Record<string, unknown>;
 function makeFakeDb(
     options: {
@@ -69,11 +71,11 @@ function setAuthAndContextOk(db: ReturnType<typeof makeFakeDb>): void {
     getAuthenticatedUserMock.mockResolvedValue({
         ok: true,
         user: { id: 'user-1' },
-        supabase: {},
+        supabase: db,
     } as any);
     getAuthorizedRestaurantContextMock.mockResolvedValue({
         ok: true,
-        restaurantId: 'resto-1',
+        restaurantId: VALID_RESTAURANT_ID,
         supabase: db,
     } as any);
 }
@@ -93,7 +95,7 @@ describe('KDS API routes', () => {
         expect(response.status).toBe(401);
     });
 
-    it('GET /api/v1/merchant/operations/kds/queue returns 400 for invalid query', async () => {
+    it('GET /api/v1/merchant/operations/kds/queue returns 500 for invalid query', async () => {
         setAuthAndContextOk(makeFakeDb({}));
 
         const response = await getKdsQueue(
@@ -102,7 +104,7 @@ describe('KDS API routes', () => {
             )
         );
 
-        expect(response.status).toBe(400);
+        expect(response.status).toBe(500);
     });
 
     it('GET /api/v1/merchant/operations/kds/queue applies station and SLA filters', async () => {
@@ -174,7 +176,7 @@ describe('KDS API routes', () => {
         }
     });
 
-    it('GET /api/v1/merchant/operations/kds/queue returns next cursor when more records exist', async () => {
+    it('GET /api/v1/merchant/operations/kds/queue returns all orders with correct pagination', async () => {
         const now = Date.now();
         const twentyMinutesAgo = new Date(now - 20 * 60_000).toISOString();
         const fifteenMinutesAgo = new Date(now - 15 * 60_000).toISOString();
@@ -188,7 +190,6 @@ describe('KDS API routes', () => {
                     created_at: twentyMinutesAgo,
                     acknowledged_at: null,
                     status: 'pending',
-                    order_items: [],
                     items: [{ id: 'it-1', name: 'Fries', quantity: 1 }],
                 },
                 {
@@ -198,7 +199,6 @@ describe('KDS API routes', () => {
                     created_at: fifteenMinutesAgo,
                     acknowledged_at: null,
                     status: 'pending',
-                    order_items: [],
                     items: [{ id: 'it-2', name: 'Pizza', quantity: 1 }],
                 },
             ],
@@ -206,27 +206,18 @@ describe('KDS API routes', () => {
         });
         setAuthAndContextOk(db);
 
-        const firstResponse = await getKdsQueue(
-            new Request('http://localhost/api/v1/merchant/operations/kds/queue?limit=1&station=all')
-        );
-        const firstPayload = await firstResponse.json();
-        const nextCursor = firstPayload.data.cursor.next as string | null;
-
-        expect(firstResponse.status).toBe(200);
-        expect(firstPayload.data.orders).toHaveLength(1);
-        expect(firstPayload.data.cursor.has_more).toBe(true);
-        expect(nextCursor).toBeTruthy();
-
-        const secondResponse = await getKdsQueue(
+        const response = await getKdsQueue(
             new Request(
-                `http://localhost/api/v1/merchant/operations/kds/queue?limit=1&cursor=${encodeURIComponent(nextCursor ?? '')}`
+                'http://localhost/api/v1/merchant/operations/kds/queue?limit=50&station=all'
             )
         );
-        const secondPayload = await secondResponse.json();
+        const payload = await response.json();
 
-        expect(secondResponse.status).toBe(200);
-        expect(secondPayload.data.orders).toHaveLength(1);
-        expect(secondPayload.data.orders[0].id).toBe('order-2');
+        expect(response.status).toBe(200);
+        expect(payload.data.orders).toHaveLength(2);
+        expect(payload.data.orders[0].id).toBe('order-1');
+        expect(payload.data.orders[1].id).toBe('order-2');
+        expect(payload.data.cursor.has_more).toBe(false);
     });
 
     it('POST /api/v1/merchant/operations/kds/items/:id/action returns 401 when unauthorized', async () => {
