@@ -92,3 +92,19 @@ export {
     type DeliveryReportEntry,
     type DeliveryReport,
 } from './notification-metrics';
+
+// Web Vitals tracking
+export {
+    getRating,
+    formatVitalValue,
+    getVitalColor,
+    getVitalBgColor,
+    observeWebVitals,
+    reportWebVital,
+    initWebVitalsReporting,
+    disconnectObservers,
+    WEB_VITALS_THRESHOLDS,
+    type WebVitalName,
+    type WebVitalMetric,
+    type WebVitalsThresholds,
+} from './webVitalsTracker';

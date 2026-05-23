@@ -147,5 +147,3 @@ export const QueryPerformance = {
 };
 
 export default QueryPerformance;
-
-export { trackQuery as measureQuery };

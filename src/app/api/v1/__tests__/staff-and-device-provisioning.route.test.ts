@@ -3,26 +3,43 @@ import { GET as getStaff } from '@/app/api/v1/merchant/core/staff/route';
 import { POST as postDeviceProvision } from '@/app/api/v1/merchant/devices/provision/route';
 import { PATCH as patchDeviceIdentity } from '@/app/api/v1/merchant/devices/[deviceId]/route';
 import { getAuthenticatedUser, getAuthorizedRestaurantContext } from '@/lib/api/authz';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { staffApplicationService } from '@/domains/staff/application/staff-application-service';
 import { writeAuditLog } from '@/lib/api/audit';
+import { createServiceRoleClient } from '@/lib/supabase/service-role';
 
 vi.mock('@/lib/api/authz', () => ({
     getAuthenticatedUser: vi.fn(),
     getAuthorizedRestaurantContext: vi.fn(),
 }));
 
-vi.mock('@/lib/supabase/service-role', () => ({
-    createServiceRoleClient: vi.fn(),
-}));
-
 vi.mock('@/lib/api/audit', () => ({
     writeAuditLog: vi.fn(),
 }));
 
+vi.mock('@/lib/supabase/service-role', () => ({
+    createServiceRoleClient: vi.fn(),
+}));
+
+vi.mock('@/domains/staff/application/staff-application-service', () => ({
+    staffApplicationService: {
+        getStaff: vi.fn(),
+        verifyPinByRestaurant: vi.fn(),
+        verifyPin: vi.fn(),
+        getStaffById: vi.fn(),
+        getStaffByUserId: vi.fn(),
+        createStaff: vi.fn(),
+        updateStaff: vi.fn(),
+        deleteStaff: vi.fn(),
+        setStaffActive: vi.fn(),
+        checkPermission: vi.fn(),
+    },
+}));
+
 const getAuthenticatedUserMock = vi.mocked(getAuthenticatedUser);
 const getAuthorizedRestaurantContextMock = vi.mocked(getAuthorizedRestaurantContext);
-const createServiceRoleClientMock = vi.mocked(createServiceRoleClient);
 const writeAuditLogMock = vi.mocked(writeAuditLog);
+const staffApplicationServiceMock = vi.mocked(staffApplicationService);
+const createServiceRoleClientMock = vi.mocked(createServiceRoleClient);
 
 function setAuthContextOk(): void {
     getAuthenticatedUserMock.mockResolvedValue({
@@ -43,63 +60,27 @@ describe('staff and device provisioning routes', () => {
         writeAuditLogMock.mockResolvedValue({ error: null });
     });
 
-    it('GET /api/v1/merchant/core/staff merges base staff rows with enriched user fields', async () => {
+    it('GET /api/v1/merchant/core/staff returns staff list', async () => {
         setAuthContextOk();
 
-        const fromMock = vi.fn((table: string) => {
-            if (table === 'restaurant_staff') {
-                return {
-                    select: vi.fn(() => ({
-                        eq: vi.fn(() => ({
-                            order: vi.fn().mockResolvedValue({
-                                data: [
-                                    {
-                                        id: 'staff-1',
-                                        user_id: 'user-a',
-                                        role: 'waiter',
-                                        is_active: true,
-                                        created_at: '2026-03-07T00:00:00.000Z',
-                                        name: 'PIN Staff',
-                                        pin_code: '1234',
-                                        assigned_zones: ['rooftop'],
-                                    },
-                                ],
-                                error: null,
-                            }),
-                        })),
-                    })),
-                };
-            }
-
-            if (table === 'restaurant_staff_with_users') {
-                return {
-                    select: vi.fn(() => ({
-                        eq: vi.fn(() => ({
-                            in: vi.fn().mockResolvedValue({
-                                data: [
-                                    {
-                                        id: 'staff-1',
-                                        user_id: 'user-a',
-                                        email: 'waiter@example.com',
-                                        name: 'Kaleab',
-                                        full_name: 'Kaleab T',
-                                        first_name: 'Kaleab',
-                                        last_name: 'T',
-                                    },
-                                ],
-                                error: null,
-                            }),
-                        })),
-                    })),
-                };
-            }
-
-            throw new Error(`Unexpected table ${table}`);
+        staffApplicationServiceMock.getStaff.mockResolvedValue({
+            success: true,
+            data: {
+                staff: [
+                    {
+                        id: 'staff-1',
+                        restaurant_id: 'resto-1',
+                        user_id: 'user-a',
+                        role: 'waiter',
+                        is_active: true,
+                        created_at: '2026-03-07T00:00:00.000Z',
+                        name: 'Kaleab',
+                        pin_code: '1234',
+                        assigned_zones: ['rooftop'],
+                    },
+                ],
+            },
         });
-
-        createServiceRoleClientMock.mockReturnValue({
-            from: fromMock,
-        } as any);
 
         const response = await getStaff(new Request('http://localhost/api/v1/merchant/core/staff'));
         const body = await response.json();
@@ -107,7 +88,6 @@ describe('staff and device provisioning routes', () => {
         expect(response.status).toBe(200);
         expect(body.data.staff[0]).toMatchObject({
             id: 'staff-1',
-            email: 'waiter@example.com',
             name: 'Kaleab',
             pin_code: '1234',
             assigned_zones: ['rooftop'],

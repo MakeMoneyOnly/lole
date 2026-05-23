@@ -16,7 +16,7 @@ import {
     PaymentProviderName,
     PaymentVerifyResponse,
 } from './types';
-import { createHmac, createHash as _createHash } from 'crypto';
+import { createHmac, createHash as _createHash, timingSafeEqual } from 'crypto';
 import { logger } from '@/lib/logger';
 
 const log = logger.child('Telebirr');
@@ -123,6 +123,18 @@ function generateTimestamp(): string {
 }
 
 /**
+ * Constant-time string comparison to prevent timing attacks
+ */
+function secureCompare(a: string, b: string): boolean {
+    if (a.length !== b.length) {
+        return false;
+    }
+    const bufA = Buffer.from(a);
+    const bufB = Buffer.from(b);
+    return timingSafeEqual(bufA, bufB);
+}
+
+/**
  * Validate Telebirr webhook signature
  */
 export function verifyTelebirrWebhookSignature(
@@ -151,7 +163,7 @@ export function verifyTelebirrWebhookSignature(
         const calculatedSign = generateSignature(paramsWithoutSign, appKey);
 
         // Constant-time comparison
-        return calculatedSign === receivedSign;
+        return secureCompare(calculatedSign, receivedSign);
     } catch (error) {
         log.error('Webhook signature verification failed', error);
         return false;

@@ -1,12 +1,13 @@
 import { createHmac, randomUUID, timingSafeEqual } from 'crypto';
 import type { PaymentEventStatus, PaymentLifecycleEventPayload } from '@/lib/events/contracts';
 import { createPaymentLifecycleEvent } from '@/lib/events/contracts';
-import { enqueueInternalJob, publishEvent } from '@/lib/events/runtime';
+import { publishEvent, enqueueInternalJob } from '@/lib/events/runtime';
 import {
     createServiceRoleClient as _createServiceRoleClient,
     createAuditedServiceRoleClient,
 } from '@/lib/supabase/service-role';
 import { logger } from '@/lib/logger';
+import { validationError, notFound } from '@/lib/api/errors';
 import { verifyTelebirrWebhookSignature as telebirrVerifySignature } from './telebirr';
 
 const log = logger.child('webhook');
@@ -163,7 +164,7 @@ export function parseChapaWebhook(
         searchParams?.get('tx_ref');
 
     if (!txRef) {
-        throw new Error('Missing Chapa transaction reference');
+        throw validationError('Missing Chapa transaction reference');
     }
 
     const status = statusFromRaw(
@@ -196,7 +197,7 @@ export function parseTelebirrWebhook(
         searchParams?.get('tradeNo');
 
     if (!outTradeNo) {
-        throw new Error('Missing Telebirr transaction reference');
+        throw validationError('Missing Telebirr transaction reference');
     }
 
     const tradeStatus = getString(body, 'tradeStatus', 'status', 'result');
@@ -347,9 +348,7 @@ async function resolvePaymentContext(
     }
 
     if (!metadataRestaurantId) {
-        throw new Error(
-            `Unable to resolve payment context for ${provider}:${providerTransactionId}`
-        );
+        throw notFound('PaymentContext', `${provider}:${providerTransactionId}`);
     }
 
     return {

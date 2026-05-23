@@ -591,5 +591,3 @@ export const NetworkSpeedUtils = {
 };
 
 export default NetworkSpeedUtils;
-
-export { detectNetworkSpeed as getConnectionSpeed };

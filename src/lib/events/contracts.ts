@@ -36,6 +36,48 @@ const NotificationQueuedPayloadSchema = z.object({
     idempotency_key: z.string().min(1),
 });
 
+const OrderCreatedPayloadSchema = z.object({
+    restaurant_id: uuidPattern,
+    order_id: uuidPattern,
+    table_id: uuidPattern.nullable().optional(),
+    items: z.array(
+        z.object({
+            item_id: uuidPattern,
+            quantity: z.number().int().positive(),
+            price: z.number(),
+        })
+    ),
+    total_amount: z.number(),
+    currency: z.string(),
+});
+
+const OrderStatusChangedPayloadSchema = z.object({
+    restaurant_id: uuidPattern,
+    order_id: uuidPattern,
+    previous_status: z.enum(['pending', 'confirmed', 'preparing', 'ready', 'served']),
+    new_status: z.enum(['pending', 'confirmed', 'preparing', 'ready', 'served', 'cancelled']),
+});
+
+const OrderCompletedPayloadSchema = z.object({
+    restaurant_id: uuidPattern,
+    order_id: uuidPattern,
+    completed_at: z.string(),
+    total_amount: z.number(),
+});
+
+const OrderCancelledPayloadSchema = z.object({
+    restaurant_id: uuidPattern,
+    order_id: uuidPattern,
+    cancelled_at: z.string(),
+    reason: z.string().optional(),
+});
+
+const MenuUpdatedPayloadSchema = z.object({
+    restaurant_id: uuidPattern,
+    menu_id: uuidPattern,
+    updated_items: z.array(uuidPattern),
+});
+
 const GenericPayloadSchema = z
     .object({
         restaurant_id: z.string().optional(),
@@ -62,6 +104,21 @@ export function validateEventSchema(event: loleEvent): boolean {
             case 'notification.retry_scheduled':
                 // Reuse queued schema fields (subset valid)
                 GenericPayloadSchema.parse(event.payload);
+                return true;
+            case 'order.created':
+                OrderCreatedPayloadSchema.parse(event.payload);
+                return true;
+            case 'order.status_changed':
+                OrderStatusChangedPayloadSchema.parse(event.payload);
+                return true;
+            case 'order.completed':
+                OrderCompletedPayloadSchema.parse(event.payload);
+                return true;
+            case 'order.cancelled':
+                OrderCancelledPayloadSchema.parse(event.payload);
+                return true;
+            case 'menu.updated':
+                MenuUpdatedPayloadSchema.parse(event.payload);
                 return true;
             default:
                 // Generic validation for undocumented event types
@@ -152,6 +209,50 @@ export type loleEventName =
     | 'notification.failed'
     | 'notification.retry_scheduled';
 
+export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'served' | 'cancelled';
+
+export interface OrderItem {
+    item_id: string;
+    quantity: number;
+    price: number;
+}
+
+export interface OrderCreatedPayload {
+    restaurant_id: string;
+    order_id: string;
+    table_id?: string | null;
+    items: OrderItem[];
+    total_amount: number;
+    currency: string;
+}
+
+export interface OrderStatusChangedPayload {
+    restaurant_id: string;
+    order_id: string;
+    previous_status: OrderStatus;
+    new_status: OrderStatus;
+}
+
+export interface OrderCompletedPayload {
+    restaurant_id: string;
+    order_id: string;
+    completed_at: string;
+    total_amount: number;
+}
+
+export interface OrderCancelledPayload {
+    restaurant_id: string;
+    order_id: string;
+    cancelled_at: string;
+    reason?: string;
+}
+
+export interface MenuUpdatedPayload {
+    restaurant_id: string;
+    menu_id: string;
+    updated_items: string[];
+}
+
 export type PaymentEventStatus = 'completed' | 'failed';
 
 export interface PaymentLifecycleEventPayload {
@@ -233,4 +334,42 @@ export function createNotificationRetryScheduledEvent(
     payload: NotificationRetryScheduledPayload
 ): loleEvent<'notification.retry_scheduled', NotificationRetryScheduledPayload> {
     return createloleEvent('notification.retry_scheduled', payload);
+}
+
+// =========================================================
+// Order Event Factory Functions
+// =========================================================
+
+export function createOrderCreatedEvent(
+    payload: OrderCreatedPayload
+): loleEvent<'order.created', OrderCreatedPayload> {
+    return createloleEvent('order.created', payload);
+}
+
+export function createOrderStatusChangedEvent(
+    payload: OrderStatusChangedPayload
+): loleEvent<'order.status_changed', OrderStatusChangedPayload> {
+    return createloleEvent('order.status_changed', payload);
+}
+
+export function createOrderCompletedEvent(
+    payload: OrderCompletedPayload
+): loleEvent<'order.completed', OrderCompletedPayload> {
+    return createloleEvent('order.completed', payload);
+}
+
+export function createOrderCancelledEvent(
+    payload: OrderCancelledPayload
+): loleEvent<'order.cancelled', OrderCancelledPayload> {
+    return createloleEvent('order.cancelled', payload);
+}
+
+// =========================================================
+// Menu Event Factory Functions
+// =========================================================
+
+export function createMenuUpdatedEvent(
+    payload: MenuUpdatedPayload
+): loleEvent<'menu.updated', MenuUpdatedPayload> {
+    return createloleEvent('menu.updated', payload);
 }

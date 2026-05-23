@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { POST as postVerifyPin } from '@/app/api/v1/merchant/core/staff/verify-pin/route';
 import { getAuthenticatedUser, getAuthorizedRestaurantContext } from '@/lib/api/authz';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { staffApplicationService } from '@/domains/staff/application/staff-application-service';
 import { hashStaffPin } from '@/domains/staff/pin';
 
 vi.mock('@/lib/api/authz', () => ({
@@ -9,13 +9,24 @@ vi.mock('@/lib/api/authz', () => ({
     getAuthorizedRestaurantContext: vi.fn(),
 }));
 
-vi.mock('@/lib/supabase/service-role', () => ({
-    createServiceRoleClient: vi.fn(),
+vi.mock('@/domains/staff/application/staff-application-service', () => ({
+    staffApplicationService: {
+        getStaff: vi.fn(),
+        verifyPinByRestaurant: vi.fn(),
+        verifyPin: vi.fn(),
+        getStaffById: vi.fn(),
+        getStaffByUserId: vi.fn(),
+        createStaff: vi.fn(),
+        updateStaff: vi.fn(),
+        deleteStaff: vi.fn(),
+        setStaffActive: vi.fn(),
+        checkPermission: vi.fn(),
+    },
 }));
 
 const getAuthenticatedUserMock = vi.mocked(getAuthenticatedUser);
 const getAuthorizedRestaurantContextMock = vi.mocked(getAuthorizedRestaurantContext);
-const createServiceRoleClientMock = vi.mocked(createServiceRoleClient);
+const staffApplicationServiceMock = vi.mocked(staffApplicationService);
 
 describe('staff verify pin route', () => {
     beforeEach(() => {
@@ -31,38 +42,20 @@ describe('staff verify pin route', () => {
     });
 
     it('matches hashed active staff pins from fetched restaurant staff rows', async () => {
-        const staffRows = [
-            {
-                id: 'staff-1',
-                user_id: 'user-a',
-                role: 'waiter',
-                name: 'Other Staff',
-                email: 'other@example.com',
-                pin_code: hashStaffPin('0000'),
-                staff_name: 'Other Staff',
-            },
-            {
+        staffApplicationServiceMock.verifyPinByRestaurant.mockResolvedValue({
+            success: true,
+            data: {
                 id: 'staff-2',
+                restaurant_id: '11111111-1111-4111-8111-111111111111',
                 user_id: 'user-b',
                 role: 'waiter',
-                name: 'Kalkidan',
-                email: 'kalkidan@example.com',
+                name: 'Kalkidan H',
                 pin_code: hashStaffPin('1234'),
-                staff_name: 'Kalkidan H',
+                assigned_zones: null,
+                created_at: '2026-01-01T00:00:00.000Z',
+                is_active: true,
             },
-        ];
-
-        createServiceRoleClientMock.mockReturnValue({
-            from: vi.fn(() => {
-                const chain: Record<string, ReturnType<typeof vi.fn>> = {};
-                chain.select = vi.fn(() => chain);
-                chain.eq = vi
-                    .fn()
-                    .mockReturnValueOnce(chain)
-                    .mockResolvedValueOnce({ data: staffRows, error: null });
-                return chain;
-            }),
-        } as never);
+        });
 
         const response = await postVerifyPin(
             new Request('http://localhost/api/v1/merchant/core/staff/verify-pin', {

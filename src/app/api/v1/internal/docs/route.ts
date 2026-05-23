@@ -13,16 +13,6 @@
 import { apiSuccess } from '@/lib/api/response';
 import openApiSpec from '@/lib/docs/openapi-generated.json';
 
-export const dynamic = 'force-dynamic';
-
 export async function GET(_request: Request): Promise<Response> {
     return apiSuccess(openApiSpec);
 }
-
-
-
-
-
-
-
-

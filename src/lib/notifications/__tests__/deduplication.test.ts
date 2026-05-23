@@ -366,7 +366,7 @@ describe('Deduplication Performance', () => {
         it('should handle concurrent key generation', async () => {
             const iterations = 100;
 
-            const generateKeys = async (): Promise<void> => {
+            const generateKeys = async (): Promise<string[]> => {
                 const keys: string[] = [];
                 for (let i = 0; i < iterations; i++) {
                     keys.push(

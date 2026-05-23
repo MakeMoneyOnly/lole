@@ -9,6 +9,7 @@ import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { sendSmsWithRetry } from '@/lib/notifications/retry';
 import { checkAndRecord, type NotificationType } from '@/lib/notifications/deduplication';
 import { logger } from '@/lib/logger';
+import { notFound, validationError, internalError } from '@/lib/api/errors';
 import type {
     AddWaitlistParams,
     WaitlistEntry,
@@ -58,7 +59,7 @@ async function getNextPosition(supabase: any, restaurantId: string): Promise<num
 
     if (error) {
         logger.error('[waitlist] Error getting next position', error);
-        throw new Error('Failed to calculate waitlist position');
+        throw internalError('Failed to calculate waitlist position');
     }
 
     return data ? data.position + 1 : 1;
@@ -132,7 +133,7 @@ export async function addToWaitlist(params: AddWaitlistParams): Promise<Waitlist
         guestCount < WAITLIST_CONFIG.MIN_GUEST_COUNT ||
         guestCount > WAITLIST_CONFIG.MAX_GUEST_COUNT
     ) {
-        throw new Error(
+        throw validationError(
             `Guest count must be between ${WAITLIST_CONFIG.MIN_GUEST_COUNT} and ${WAITLIST_CONFIG.MAX_GUEST_COUNT}`
         );
     }
@@ -164,7 +165,7 @@ export async function addToWaitlist(params: AddWaitlistParams): Promise<Waitlist
 
     if (error || !data) {
         logger.error('[waitlist] Error adding to waitlist', error);
-        throw new Error(error?.message ?? 'Failed to add to waitlist');
+        throw internalError(error?.message ?? 'Failed to add to waitlist');
     }
 
     const entry = normalizeWaitlistEntry(data as TableWaitlistRow);
@@ -204,7 +205,7 @@ export async function getWaitlist(
 
     if (error) {
         logger.error('[waitlist] Error fetching waitlist', error);
-        throw new Error('Failed to fetch waitlist');
+        throw internalError('Failed to fetch waitlist');
     }
 
     return ((data ?? []) as TableWaitlistRow[]).map(normalizeWaitlistEntry);
@@ -229,7 +230,7 @@ export async function getWaitlistEntry(waitlistId: string): Promise<WaitlistEntr
 
     if (error) {
         logger.error('[waitlist] Error fetching waitlist entry', error);
-        throw new Error('Failed to fetch waitlist entry');
+        throw internalError('Failed to fetch waitlist entry');
     }
 
     if (!data) {
@@ -257,7 +258,7 @@ export async function getWaitlistStats(restaurantId: string): Promise<WaitlistSt
 
     if (countError) {
         logger.error('[waitlist] Error fetching waitlist stats', countError);
-        throw new Error('Failed to fetch waitlist statistics');
+        throw internalError('Failed to fetch waitlist statistics');
     }
 
     const waitingEntries = countData ?? [];
@@ -406,7 +407,7 @@ async function updateStatusInternal(
 
     if (error) {
         logger.error('[waitlist] Error updating status', error);
-        throw new Error('Failed to update waitlist status');
+        throw internalError('Failed to update waitlist status');
     }
 }
 
@@ -423,7 +424,7 @@ export async function updateStatus(params: UpdateWaitlistStatusParams): Promise<
     // Get the entry to check current status
     const entry = await getWaitlistEntry(waitlistId);
     if (!entry) {
-        throw new Error('Waitlist entry not found');
+        throw notFound('Waitlist entry', waitlistId);
     }
 
     // Update status
@@ -522,7 +523,7 @@ export async function removeFromWaitlist(waitlistId: string): Promise<void> {
     // Get the entry first
     const entry = await getWaitlistEntry(waitlistId);
     if (!entry) {
-        throw new Error('Waitlist entry not found');
+        throw notFound('Waitlist entry', waitlistId);
     }
 
     // Delete the entry
@@ -530,7 +531,7 @@ export async function removeFromWaitlist(waitlistId: string): Promise<void> {
 
     if (error) {
         logger.error('[waitlist] Error removing from waitlist', error);
-        throw new Error('Failed to remove from waitlist');
+        throw internalError('Failed to remove from waitlist');
     }
 
     // Recalculate positions
@@ -576,7 +577,7 @@ async function sendCancellationNotification(entry: WaitlistEntry): Promise<void>
 export async function getPosition(waitlistId: string): Promise<number> {
     const entry = await getWaitlistEntry(waitlistId);
     if (!entry) {
-        throw new Error('Waitlist entry not found');
+        throw notFound('Waitlist entry', waitlistId);
     }
     return entry.position;
 }

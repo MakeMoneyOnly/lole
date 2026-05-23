@@ -9,10 +9,11 @@ import { NextRequest } from 'next/server';
 import { verifyTelebirrWebhookSignature } from '@/lib/payments/telebirr';
 import { createAuditedServiceRoleClient } from '@/lib/supabase/service-role';
 import { logger } from '@/lib/logger';
-import { apiSuccess, apiError } from '@/lib/api/response';
+import { apiSuccess, apiError, handleApiError } from '@/lib/api/response';
 
-export async function POST(request:  NextRequest): Promise<Response> {
+export async function POST(request: NextRequest): Promise<Response> {
     const startTime = Date.now();
+    const requestId = crypto.randomUUID();
 
     try {
         // Get raw body for signature verification
@@ -150,12 +151,9 @@ export async function POST(request:  NextRequest): Promise<Response> {
             durationMs: duration,
         });
 
-        return apiError(
-            'Internal server error',
-            500,
-            'INTERNAL_ERROR',
-            error instanceof Error ? error.message : 'Unknown error'
-        );
+        return handleApiError(error, {
+            operation: 'telebirr-webhook',
+        });
     }
 }
 
@@ -163,11 +161,3 @@ export async function POST(request:  NextRequest): Promise<Response> {
 export async function GET(_request: Request): Promise<Response> {
     return apiError('Method not allowed', 405, 'METHOD_NOT_ALLOWED');
 }
-
-
-
-
-
-
-
-

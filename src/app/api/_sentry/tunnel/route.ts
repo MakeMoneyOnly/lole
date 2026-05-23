@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 const SENTRY_HOST = 'o1000000.ingest.sentry.io';
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
     const envelope = await request.text();
 
     const projectId = process.env.NEXT_PUBLIC_SENTRY_DSN?.split('/').pop()?.split('?')[0];
