@@ -102,7 +102,6 @@ import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { CreateOrderSchema } from '@/lib/validators/order';
-import { apiError, apiSuccess } from '@/lib/api/response';
 import { logger } from '@/lib/logger';
 import { monitoredQuery } from '@/lib/services/queryMonitor';
 import {
@@ -119,7 +118,8 @@ import { createloleEvent } from '@/lib/events/contracts';
 import { publishEvent } from '@/lib/events/runtime';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { prepareOrderDiscount } from '@/lib/discounts/service';
-import { redisRateLimiters } from '@/lib/security';
+import { apiSuccess, apiError, handleApiError } from '@/lib/api/response';
+import { resolveRestaurantIdForUser } from '@/lib/api/route-utils';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 
@@ -168,38 +168,6 @@ const CreateOrderRequestSchema = CreateOrderSchema.omit({
         })
         .optional(),
 });
-
-async function resolveRestaurantIdForUser(userId: string): Promise<{ restaurantId: string | null; error?: string }> {
-    const supabase = await createClient();
-    const { data: staffEntry, error: staffError } = await supabase
-        .from('restaurant_staff')
-        .select('restaurant_id')
-        .eq('user_id', userId)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-    if (staffError) {
-        return { restaurantId: null, error: staffError.message };
-    }
-
-    if (staffEntry?.restaurant_id) {
-        return { restaurantId: staffEntry.restaurant_id };
-    }
-
-    const { data: agencyUser, error: agencyError } = await supabase
-        .from('agency_users')
-        .select('restaurant_ids')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-    if (agencyError) {
-        return { restaurantId: null, error: agencyError.message };
-    }
-
-    return { restaurantId: agencyUser?.restaurant_ids?.[0] ?? null };
-}
 
 export async function GET(request: NextRequest): Promise<Response> {
     const startedAt = Date.now();
@@ -313,8 +281,9 @@ export async function GET(request: NextRequest): Promise<Response> {
     }
 }
 
-export async function POST(request:  NextRequest): Promise<Response> {
-    // Apply rate limiting for order creation
+export async function POST(request: NextRequest): Promise<Response> {
+    // Rate limiting is handled by middleware - use redisRateLimiters for endpoint-specific limits
+    const { redisRateLimiters } = await import('@/lib/security');
     const rateLimitResponse = await redisRateLimiters.orderCreate(request);
     if (rateLimitResponse) {
         return rateLimitResponse;
@@ -566,11 +535,3 @@ export async function POST(request:  NextRequest): Promise<Response> {
         return apiError('Internal server error', 500, 'INTERNAL_ERROR');
     }
 }
-
-
-
-
-
-
-
-

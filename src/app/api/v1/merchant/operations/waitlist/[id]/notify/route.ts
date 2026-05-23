@@ -5,11 +5,10 @@
  * - POST /api/waitlist/:id/notify
  */
 
-import { apiError, apiSuccess } from '@/lib/api/response';
+import { apiError, apiSuccess, handleApiError } from '@/lib/api/response';
 import { getAuthenticatedUser, getAuthorizedRestaurantContext } from '@/lib/api/authz';
 import { writeAuditLog } from '@/lib/api/audit';
 import { getWaitlistEntry, notifyGuest } from '@/lib/waitlist/service';
-import { logger } from '@/lib/logger';
 
 /**
  * Extract waitlist ID from request
@@ -22,18 +21,21 @@ function getWaitlistId(params: { id: string }): string {
  * POST /api/waitlist/:id/notify
  * Notify a guest that their table is ready
  */
-export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }): Promise<Response> {
-    const auth = await getAuthenticatedUser();
-    if (!auth.ok) {
-        return auth.response;
-    }
-
-    const context = await getAuthorizedRestaurantContext(auth.user.id);
-    if (!context.ok) {
-        return context.response;
-    }
-
+export async function POST(
+    request: Request,
+    { params }: { params: Promise<{ id: string }> }
+): Promise<Response> {
     try {
+        const auth = await getAuthenticatedUser();
+        if (!auth.ok) {
+            return auth.response;
+        }
+
+        const context = await getAuthorizedRestaurantContext(auth.user.id);
+        if (!context.ok) {
+            return context.response;
+        }
+
         const resolvedParams = await params;
         const waitlistId = getWaitlistId(resolvedParams);
 
@@ -92,12 +94,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
             },
         });
     } catch (error) {
-        logger.error('[waitlist] notify Error', error);
-        return apiError(
-            'Failed to notify guest',
-            500,
-            'NOTIFICATION_FAILED',
-            error instanceof Error ? error.message : 'Unknown error'
-        );
+        return handleApiError(error, {
+            operation: 'waitlist.notify.POST',
+        });
     }
 }

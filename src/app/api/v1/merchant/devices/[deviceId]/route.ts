@@ -7,6 +7,7 @@ import {
     rotateGatewayIdentityMetadata,
 } from '@/lib/auth/offline-authz';
 import { DEVICE_PAIRING_CODE_LENGTH } from '@/lib/devices/config';
+import { PAIRED_CODE_EXPIRY_MS } from '@/lib/constants/kds';
 import { z } from 'zod';
 
 const DeviceIdentityActionSchema = z.object({
@@ -113,7 +114,7 @@ export async function PATCH(
               device_token: null,
               pairing_state: 'ready',
               pairing_code: generatePairingCode(),
-              pairing_code_expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+              pairing_code_expires_at: new Date(Date.now() + PAIRED_CODE_EXPIRY_MS).toISOString(),
               paired_at: null,
               pairing_completed_at: null,
           }

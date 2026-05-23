@@ -6,7 +6,6 @@ import { logger } from '@/lib/logger';
 
 const log = logger.child('merchant-core-settings/payments');
 
-export const dynamic = 'force-dynamic';
 import {
     createChapaSubaccount,
     isChapaConfigured,
@@ -338,15 +337,15 @@ export async function PATCH(request: Request): Promise<Response> {
                     ? null
                     : subaccount.message || 'Payout destination is waiting for Chapa review.';
         }
-} catch (error) {
-         const errorMessage = error instanceof Error ? error.message : null;
-         const message = errorMessage || 'Unknown Chapa subaccount provisioning error';
-nextStatus = normalizePayoutStatus({
-               subaccountId: nextSubaccountId ?? undefined,
-               providerMessage: message,
-           });
-         nextLastError = message;
-     }
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : null;
+        const message = errorMessage || 'Unknown Chapa subaccount provisioning error';
+        nextStatus = normalizePayoutStatus({
+            subaccountId: nextSubaccountId ?? undefined,
+            providerMessage: message,
+        });
+        nextLastError = message;
+    }
 
     log.info('Saving to database', {
         restaurantId: context.restaurantId,

@@ -1,30 +1,12 @@
 import { createClient } from '@/lib/supabase/server';
 import { apiError, apiSuccess } from '@/lib/api/response';
 import { enforcePilotAccess } from '@/lib/api/pilotGate';
+import { resolveRestaurantIdForUser } from '@/lib/api/route-utils';
 
-async function resolveRestaurantIdForUser(userId: string): Promise<{ restaurantId: string | null; error?: string }> {
-    const supabase = await createClient();
-
-    // Parallelize both lookups — only one will have a result
-    const [staffResult, agencyResult] = await Promise.all([
-        supabase
-            .from('restaurant_staff')
-            .select('restaurant_id')
-            .eq('user_id', userId)
-            .eq('is_active', true)
-            .limit(1)
-            .maybeSingle(),
-        supabase.from('agency_users').select('restaurant_ids').eq('user_id', userId).maybeSingle(),
-    ]);
-
-    if (staffResult.error) return { restaurantId: null, error: staffResult.error.message };
-    if (staffResult.data?.restaurant_id) return { restaurantId: staffResult.data.restaurant_id };
-
-    if (agencyResult.error) return { restaurantId: null, error: agencyResult.error.message };
-    return { restaurantId: agencyResult.data?.restaurant_ids?.[0] ?? null };
-}
-
-export async function GET(_request: Request, context: { params: Promise<{ orderId: string }> }): Promise<Response> {
+export async function GET(
+    _request: Request,
+    context: { params: Promise<{ orderId: string }> }
+): Promise<Response> {
     try {
         const { orderId } = await context.params;
         const supabase = await createClient();

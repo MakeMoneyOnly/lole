@@ -7,11 +7,10 @@
  */
 
 import { z } from 'zod';
-import { apiError, apiSuccess } from '@/lib/api/response';
+import { apiError, apiSuccess, handleApiError } from '@/lib/api/response';
 import { getAuthenticatedUser, getAuthorizedRestaurantContext } from '@/lib/api/authz';
 import { parseJsonBody } from '@/lib/api/validation';
 import { writeAuditLog } from '@/lib/api/audit';
-import { logger } from '@/lib/logger';
 import { addToWaitlist, getWaitlist, getWaitlistStats } from '@/lib/waitlist/service';
 import type { WaitlistStatus } from '@/lib/waitlist/types';
 
@@ -66,13 +65,9 @@ export async function GET(request: Request): Promise<Response> {
 
         return apiSuccess(responseData);
     } catch (error) {
-        logger.error('[waitlist] GET Error', error);
-        return apiError(
-            'Failed to fetch waitlist',
-            500,
-            'WAITLIST_FETCH_FAILED',
-            error instanceof Error ? error.message : 'Unknown error'
-        );
+        return handleApiError(error, {
+            operation: 'waitlist.GET',
+        });
     }
 }
 
@@ -80,7 +75,7 @@ export async function GET(request: Request): Promise<Response> {
  * POST /api/waitlist
  * Add a guest to the waitlist
  */
-export async function POST(request:  Request): Promise<Response> {
+export async function POST(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -122,28 +117,8 @@ export async function POST(request:  Request): Promise<Response> {
 
         return apiSuccess({ entry }, 201);
     } catch (error) {
-        logger.error('[waitlist] POST Error', error);
-
-        // Handle specific error cases
-        if (error instanceof Error) {
-            if (error.message.includes('Guest count must be between')) {
-                return apiError(error.message, 400, 'INVALID_GUEST_COUNT');
-            }
-        }
-
-        return apiError(
-            'Failed to add to waitlist',
-            500,
-            'WAITLIST_ADD_FAILED',
-            error instanceof Error ? error.message : 'Unknown error'
-        );
+        return handleApiError(error, {
+            operation: 'waitlist.POST',
+        });
     }
 }
-
-
-
-
-
-
-
-

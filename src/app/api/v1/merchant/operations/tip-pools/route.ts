@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { apiError, apiSuccess } from '@/lib/api/response';
+import { apiError, apiSuccess, handleApiError } from '@/lib/api/response';
 import { getAuthenticatedUser, getAuthorizedRestaurantContext } from '@/lib/api/authz';
 import { parseJsonBody } from '@/lib/api/validation';
 import { writeAuditLog } from '@/lib/api/audit';
@@ -109,12 +109,9 @@ export async function GET(_request: Request): Promise<Response> {
             shares: sharesByPool,
         });
     } catch (error) {
-        return apiError(
-            'Failed to load tip pools',
-            500,
-            'TIP_POOL_FETCH_FAILED',
-            error instanceof Error ? error.message : 'Unknown error'
-        );
+        return handleApiError(error, {
+            operation: 'tip-pools.GET',
+        });
     }
 }
 
@@ -199,11 +196,3 @@ export async function POST(request: Request): Promise<Response> {
 
     return apiSuccess({ tip_pool: pool, shares }, 201);
 }
-
-
-
-
-
-
-
-

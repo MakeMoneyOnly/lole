@@ -9,7 +9,7 @@
  */
 
 import { z } from 'zod';
-import { apiError, apiSuccess } from '@/lib/api/response';
+import { apiError, apiSuccess, handleApiError } from '@/lib/api/response';
 import { getAuthenticatedUser, getAuthorizedRestaurantContext } from '@/lib/api/authz';
 import { parseJsonBody } from '@/lib/api/validation';
 import { writeAuditLog } from '@/lib/api/audit';
@@ -40,7 +40,10 @@ function getWaitlistId(params: { id: string }): string {
  * GET /api/waitlist/:id
  * Get a specific waitlist entry
  */
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }): Promise<Response> {
+export async function GET(
+    request: Request,
+    { params }: { params: Promise<{ id: string }> }
+): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -90,7 +93,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
  * PATCH /api/waitlist/:id
  * Update waitlist entry status
  */
-export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }): Promise<Response> {
+export async function PATCH(
+    request: Request,
+    { params }: { params: Promise<{ id: string }> }
+): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -158,7 +164,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
  * DELETE /api/waitlist/:id
  * Remove a guest from the waitlist
  */
-export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }): Promise<Response> {
+export async function DELETE(
+    request: Request,
+    { params }: { params: Promise<{ id: string }> }
+): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
