@@ -13,3 +13,13 @@ export type { InitiatePaymentInput, PaymentResult } from './service';
 
 // Resolvers
 export { paymentsResolvers } from './resolvers';
+
+// Tax Classification
+export { taxClassifier } from './taxClassifier';
+export type {
+    TaxCategory,
+    TaxClassification,
+    TaxClassifierInput,
+    MonthlyTaxExport,
+    CountryTaxConfig,
+} from './taxClassifier';

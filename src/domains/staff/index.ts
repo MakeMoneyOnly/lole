@@ -40,6 +40,7 @@ export type {
     UpdateStaffCommand,
     DeleteStaffCommand,
     VerifyPinQuery,
+    VerifyPinByRestaurantQuery,
     SetStaffActiveCommand,
     CheckPermissionQuery,
     StaffListResponse,

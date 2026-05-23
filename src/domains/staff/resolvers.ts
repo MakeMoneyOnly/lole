@@ -1,5 +1,7 @@
 // Staff Domain - Resolvers Layer
 // GraphQL resolvers with authorization and validation
+// Uses dependency injection for testability and loose coupling
+
 import { GraphQLError } from 'graphql';
 import { GraphQLContext } from '@/lib/graphql/context';
 import { requireAuth, requireRestaurantAccess } from '@/lib/graphql/authz';
@@ -14,9 +16,18 @@ import {
     UpdateStaffInputSchema,
 } from '@/lib/validators/graphql';
 import { enforcePaginationLimit } from '@/lib/graphql/constants';
-import { staffRepository } from './repository';
-import { staffService } from './service';
+import { STAFF_REPOSITORY, STAFF_SERVICE } from './container';
+import { container } from '@/lib/di/container';
 import { logger } from '@/lib/logger';
+
+// Resolve dependencies from DI container (DI-05)
+function getRepository() {
+    return container.resolve(STAFF_REPOSITORY);
+}
+
+function getService() {
+    return container.resolve(STAFF_SERVICE);
+}
 
 export const staffResolvers = {
     Query: {
@@ -24,8 +35,8 @@ export const staffResolvers = {
             // Authorization: Require authentication
             const authContext = requireAuth(context);
 
-            // Fetch staff member
-            const staff = await staffRepository.getStaffMember(args.id);
+            // Fetch staff member via DI
+            const staff = await getRepository().getStaffMember(args.id);
 
             // Tenant isolation: Verify user has access to this staff member's restaurant
             if (staff && authContext.user?.restaurantId) {
@@ -56,8 +67,8 @@ export const staffResolvers = {
             const limit = enforcePaginationLimit(args.first);
             const offset = args.after ? parseInt(args.after, 10) : 0;
 
-            // Fetch staff list
-            const staff = await staffRepository.getStaff(args.restaurantId, {
+            // Fetch staff list via DI
+            const staff = await getRepository().getStaff(args.restaurantId, {
                 role: args.role,
                 limit,
                 offset,
@@ -102,8 +113,9 @@ export const staffResolvers = {
                 // Authorization: Verify user has access to this restaurant
                 await requireRestaurantAccess(context, validation.data.restaurantId);
 
-                // Create staff member
-                const staffMember = await staffService.createStaffMember({
+                // Create staff member via DI
+                const service = getService();
+                const staffMember = await service.createStaffMember({
                     restaurantId: validation.data.restaurantId,
                     name: validation.data.fullName,
                     email: validation.data.email,
@@ -149,7 +161,7 @@ export const staffResolvers = {
                 const authContext = requireAuth(context);
 
                 // Fetch existing staff member and verify tenant isolation
-                const existingStaff = await staffRepository.getStaffMember(validation.data.id);
+                const existingStaff = await getRepository().getStaffMember(validation.data.id);
                 if (!existingStaff) {
                     return {
                         ...createErrorResult('NOT_FOUND', 'Staff member not found'),
@@ -163,8 +175,9 @@ export const staffResolvers = {
                     });
                 }
 
-                // Update staff member
-                const staffMember = await staffService.updateStaffMember(
+                // Update staff member via DI
+                const service = getService();
+                const staffMember = await service.updateStaffMember(
                     validation.data.id,
                     {
                         name: validation.data.fullName,
@@ -201,7 +214,7 @@ export const staffResolvers = {
                 const authContext = requireAuth(context);
 
                 // Fetch existing staff member and verify tenant isolation
-                const existingStaff = await staffRepository.getStaffMember(args.id);
+                const existingStaff = await getRepository().getStaffMember(args.id);
                 if (!existingStaff) {
                     return {
                         ...createErrorResult('NOT_FOUND', 'Staff member not found'),
@@ -215,8 +228,9 @@ export const staffResolvers = {
                     });
                 }
 
-                // Deactivate staff member
-                const staffMember = await staffService.deactivateStaffMember(
+                // Deactivate staff member via DI
+                const service = getService();
+                const staffMember = await service.deactivateStaffMember(
                     args.id,
                     authContext.user?.restaurantId
                 );
@@ -243,8 +257,8 @@ export const staffResolvers = {
             // Federation reference resolver
             const authContext = requireAuth(context);
 
-            // Fetch staff member
-            const staff = await staffRepository.getStaffMember(reference.id);
+            // Fetch staff member via DI
+            const staff = await getRepository().getStaffMember(reference.id);
 
             // Tenant isolation
             if (staff && authContext.user?.restaurantId) {

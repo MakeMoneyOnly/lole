@@ -4,10 +4,13 @@
 
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
-import { staffService } from '../service';
-import { StaffRow, StaffListOptions } from '../repository';
+import type { StaffRow, StaffListOptions } from '../repository';
 import type { CreateStaffInput, UpdateStaffInput } from '../crud-service';
 import { STAFF_ROLES } from '@/types/status';
+import { verifyStoredStaffPin } from '../pin';
+import type { IStaffRepository } from '@/lib/di/repository-container';
+import type { StaffServiceInterface } from '../service.interface';
+import { staffService } from '../service';
 
 // ============================================================================
 // Input/Output DTOs for Use Cases
@@ -77,6 +80,13 @@ export const VerifyPinQuerySchema = z.object({
 
 export type VerifyPinQuery = z.infer<typeof VerifyPinQuerySchema>;
 
+export const VerifyPinByRestaurantQuerySchema = z.object({
+    restaurantId: z.string().uuid(),
+    pinCode: z.string().length(4, 'PIN must be 4 digits'),
+});
+
+export type VerifyPinByRestaurantQuery = z.infer<typeof VerifyPinByRestaurantQuerySchema>;
+
 export const SetStaffActiveCommandSchema = z.object({
     staffId: z.string().uuid(),
     restaurantId: z.string().uuid(),
@@ -117,7 +127,7 @@ export interface StaffListResponse {
 // Validation Helpers
 // ============================================================================
 
-type ValidationResult<T> = 
+type ValidationResult<T> =
     | { success: true; data: T }
     | { success: false; error: { message: string; code: string; details?: unknown } };
 
@@ -429,6 +439,52 @@ export class StaffApplicationService {
         }
     }
 
+    // Verify PIN by restaurant (finds staff member within restaurant by PIN)
+    async verifyPinByRestaurant(
+        query: VerifyPinByRestaurantQuery
+    ): Promise<UseCaseResult<StaffRow>> {
+        const validation = validateDto(VerifyPinByRestaurantQuerySchema, query);
+        if (!validation.success) {
+            return { success: false, error: validation.error } as UseCaseResult<StaffRow>;
+        }
+
+        const validQuery = validation.data;
+
+        try {
+            // Get all active staff for the restaurant
+            const staffList = await staffService.getStaff(validQuery.restaurantId, {
+                isActive: true,
+            });
+
+            // Find matching PIN using constant-time comparison
+            for (const staff of staffList) {
+                if (staff.pin_code && verifyStoredStaffPin(staff.pin_code, validQuery.pinCode)) {
+                    return { success: true, data: staff };
+                }
+            }
+
+            return {
+                success: false,
+                error: {
+                    message: 'Invalid PIN',
+                    code: 'INVALID_PIN',
+                },
+            };
+        } catch (error) {
+            logger.error('verifyPinByRestaurant failed', error, {
+                source: '[staff/application]',
+                restaurantId: validQuery.restaurantId,
+            });
+            return {
+                success: false,
+                error: {
+                    message: error instanceof Error ? error.message : 'PIN verification failed',
+                    code: 'PIN_VERIFICATION_FAILED',
+                },
+            };
+        }
+    }
+
     // Set staff active status
     async setStaffActive(command: SetStaffActiveCommand): Promise<UseCaseResult<StaffRow>> {
         const validation = validateDto(SetStaffActiveCommandSchema, command);
@@ -464,7 +520,8 @@ export class StaffApplicationService {
             return {
                 success: false,
                 error: {
-                    message: error instanceof Error ? error.message : 'Failed to update staff status',
+                    message:
+                        error instanceof Error ? error.message : 'Failed to update staff status',
                     code: 'STAFF_STATUS_UPDATE_FAILED',
                 },
             };
