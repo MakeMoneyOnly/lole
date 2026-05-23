@@ -9,6 +9,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 import { logger } from '@/lib/logger';
+import { DEFAULT_TARGET_COMPLETION_MS } from '@/lib/constants/kds';
 
 // =========================================================
 // Type Definitions
@@ -83,7 +84,7 @@ export async function calculateOrderFireTimes(
             targetTime ??
             (order.target_completion_at
                 ? new Date(order.target_completion_at)
-                : new Date(Date.now() + 30 * 60 * 1000)); // Default 30 min from now
+                : new Date(Date.now() + DEFAULT_TARGET_COMPLETION_MS)); // Default 30 min from now
 
         // Get all order items with prep times
         const { data: orderItems, error: itemsError } = await db
@@ -310,7 +311,7 @@ export async function autoFireReadyItems(
             success: true,
             itemsFired: data?.items_fired ?? 0,
         };
-} catch (error) {
+    } catch (error) {
         logger.error('[PrepTimeCalculator] Auto-fire error', error);
         return { success: false, itemsFired: 0 };
     }

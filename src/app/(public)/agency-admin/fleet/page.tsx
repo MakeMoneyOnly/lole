@@ -7,7 +7,7 @@ import { getAgencyFleetAccess } from '@/lib/agency/access';
 import { requireAdminOrManager } from '@/lib/auth/requireAuth';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 
-export const dynamic = 'force-dynamic';
+
 
 function readRecord(value: unknown): Record<string, unknown> {
     return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};

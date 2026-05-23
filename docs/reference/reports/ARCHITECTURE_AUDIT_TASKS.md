@@ -137,13 +137,30 @@
 
 ## API Route Layer Refactoring
 
-| Task ID    | Description                                    | Effort | Owner     | Dependencies | Status                                                                         |
-| ---------- | ---------------------------------------------- | ------ | --------- | ------------ | ------------------------------------------------------------------------------ |
-| API-REF-01 | Standardize API route error handling           | Medium | @backend  | P2-ARCH-03   | ✅ Completed - apiSuccess, apiError, handleApiError in src/lib/api/response.ts |
-| API-REF-02 | Add input validation middleware                | Medium | @backend  | None         | ✅ Completed - Implemented in src/lib/api/middleware.ts with Zod schemas       |
-| API-REF-03 | Add rate limiting middleware                   | Low    | @security | None         | ✅ Completed - Redis-backed rate limiting in src/lib/rate-limit.ts             |
-| API-REF-04 | Consolidate duplicate utility patterns         | Low    | @backend  | None         | ✅ Completed - Consolidated in src/lib/api/middleware.ts and response.ts       |
-| API-REF-05 | Flatten nested app router depth where possible | Low    | @frontend | None         | Pending                                                                        |
+| Task ID    | Description                                                                                                            | Effort | Owner     | Dependencies | Status                                                                         |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------- | ------ | --------- | ------------ | ------------------------------------------------------------------------------ |
+| API-REF-01 | Standardize API route error handling                                                                                   | Medium | @backend  | P2-ARCH-03   | ✅ Completed - apiSuccess, apiError, handleApiError in src/lib/api/response.ts |
+| API-REF-02 | Add input validation middleware                                                                                        | Medium | @backend  | None         | ✅ Completed - Implemented in src/lib/api/middleware.ts with Zod schemas       |
+| API-REF-03 | Add rate limiting middleware                                                                                           | Low    | @security | None         | ✅ Completed - Redis-backed rate limiting in src/lib/rate-limit.ts             |
+| API-REF-04 | Consolidate duplicate utility patterns                                                                                 | Low    | @backend  | None         | ✅ Completed - Consolidated in src/lib/api/middleware.ts and response.ts       |
+| API-REF-05 | Flatten nested app router depth where possible                                                                         | Low    | @frontend | None         | ✅ Resolved - No Action Required                                               |
+|            | - Current route depth is semantically meaningful (5-6 levels express domain resource hierarchy)                        |        |           |              |                                                                                |
+|            | - Handlers are thin controllers (50-150 lines) delegating to extracted services                                        |        |           |              |                                                                                |
+|            | - Multi-audience API (merchant, internal, guest-portal, POS, webhooks, system) benefits from hierarchical organization |        |           |              |                                                                                |
+|            | - Higher priority: feature-slice architecture migration over route flattening                                          |        |           |              |                                                                                |
+
+---
+
+## Higher-Value Architecture Tasks
+
+| Task ID | Priority  | Description                                   | Effort | Owner      | Dependencies | Status                                                                                          |
+| ------- | --------- | --------------------------------------------- | ------ | ---------- | ------------ | ----------------------------------------------------------------------------------------------- |
+| ARCH-12 | P1-High   | Complete feature-slice migration              | High   | @fullstack | None         | ✅ Completed                                                                                    |
+| ARCH-13 | P2-Medium | Introduce application service layer           | Medium | @backend   | DOM-IF-02    | ✅ Completed                                                                                    |
+| ARCH-14 | P2-Medium | Zod-to-OpenAPI contract generation            | Medium | @backend   | None         | ✅ Completed - Tooling exists via scripts/tools/generate-openapi.ts and openapi:generate script |
+| ARCH-15 | P2-Medium | Standardize event contracts                   | Medium | @backend   | None         | Pending                                                                                         |
+| ARCH-16 | P2-Medium | Repository abstraction for Supabase           | Medium | @backend   | DOM-IF-01    | Pending                                                                                         |
+| ARCH-17 | P3-Low    | Add observability/tracing for async workflows | Medium | @ops       | None         | Pending                                                                                         |
 
 ---
 
@@ -290,26 +307,27 @@ The payment webhook implementation demonstrates **strong security posture** with
 
 ## Tracking Summary Table
 
-| Priority | Category             | Tasks | Effort Distribution            | Status                   |
-| -------- | -------------------- | ----- | ------------------------------ | ------------------------ |
-| P0       | Security Critical    | 2     | 1 High, 1 Low                  | 1/2 Complete (1 Blocked) |
-| P1       | Security High        | 8     | 3 Low, 2 Medium, 2 High, 1 Low | 7/8 Complete             |
-| P2       | Architecture Medium  | 11    | 5 Low, 4 Medium, 2 High        | 8/11 Complete            |
-| P3       | Optimization Low     | 4     | 3 Low, 1 Medium                | 0/4 Complete             |
-| SOLID    | Principle Violations | 3     | 2 Medium, 1 Low                | 2/3 Complete             |
-| Domain   | Interface Creation   | 8     | All Medium                     | 3/8 Complete             |
-| Staff    | Service Refactoring  | 6     | 5 Medium, 1 Low                | 6/6 Complete             |
-| API      | Route Refactoring    | 5     | 2 Low, 2 Medium, 1 Low         | 4/5 Complete             |
-| Test     | Testing Updates      | 8     | 4 Low, 3 Medium, 1 High        | 5/8 Complete             |
-| Security | Invoker Fixes        | 6     | All Low                        | 6/6 Complete             |
-| Error    | Handling             | 5     | 1 Low, 3 Medium, 1 Low         | 5/5 Complete             |
-| DI       | Setup                | 6     | 5 Medium, 1 Low                | 6/6 Complete             |
-| App      | Layer & Exports      | 2     | 1 High, 1 Low                  | 2/2 Complete             |
-| Anti     | Patterns             | 3     | 1 High, 1 Low, 1 Medium        | 3/3 Complete             |
+| Priority | Category             | Tasks | Effort Distribution              | Status                                   |
+| -------- | -------------------- | ----- | -------------------------------- | ---------------------------------------- |
+| P0       | Security Critical    | 2     | 1 High, 1 Low                    | 1/2 Complete (1 Blocked)                 |
+| P1       | Security High        | 8     | 3 Low, 2 Medium, 2 High, 1 Low   | 7/8 Complete                             |
+| P2       | Architecture Medium  | 11    | 5 Low, 4 Medium, 2 High          | 8/11 Complete                            |
+| P3       | Optimization Low     | 4     | 3 Low, 1 Medium                  | 0/4 Complete                             |
+| SOLID    | Principle Violations | 3     | 2 Medium, 1 Low                  | 2/3 Complete                             |
+| Domain   | Interface Creation   | 8     | All Medium                       | 3/8 Complete                             |
+| Staff    | Service Refactoring  | 6     | 5 Medium, 1 Low                  | 6/6 Complete                             |
+| API      | Route Refactoring    | 5     | 2 Low, 2 Medium, 1 Low           | 5/5 Complete                             |
+| Test     | Testing Updates      | 8     | 4 Low, 3 Medium, 1 High          | 5/8 Complete                             |
+| Security | Invoker Fixes        | 6     | All Low                          | 6/6 Complete                             |
+| Error    | Handling             | 5     | 1 Low, 3 Medium, 1 Low           | 5/5 Complete                             |
+| DI       | Setup                | 6     | 5 Medium, 1 Low                  | 6/6 Complete                             |
+| App      | Layer & Exports      | 2     | 1 High, 1 Low                    | 2/2 Complete                             |
+| Anti     | Patterns             | 3     | 1 High, 1 Low, 1 Medium          | 3/3 Complete                             |
+| ARCH     | Higher-Value Tasks   | 6     | 1 P1-High, 4 P2-Medium, 1 P3-Low | 3/6 Complete (ARCH-12, ARCH-13, ARCH-14) |
 
-**Total Tasks:** 75  
-**Completed:** 53 (Updated: P2-ARCH-06, P2-ARCH-07, P2-ARCH-08, TEST-05, TEST-06, TEST-08, ANTI-03 all complete)  
-**Pending:** 22 (1 Blocked)  
+**Total Tasks:** 81  
+**Completed:** 57 (Updated: ARCH-12, ARCH-13, ARCH-14 complete; Zod-to-OpenAPI tooling exists via scripts/tools/generate-openapi.ts and openapi:generate script)  
+**Pending:** 24 (1 Blocked)  
 **Estimated Total Effort:** 25-35 weeks (assuming parallel execution)
 
 ---

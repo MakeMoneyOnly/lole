@@ -10,8 +10,7 @@ import { WebVitalsDashboard } from '@/components/performance/WebVitalsDashboard'
 
 export const metadata = generatePageMetadata({
     title: 'Web Vitals Performance',
-    description:
-        'Monitor Core Web Vitals performance metrics including LCP, FID, CLS, FCP, TTFB, and INP.',
+    description: 'Monitor Core Web Vitals performance metrics including LCP, FID, CLS, FCP, TTFB, and INP.',
     path: '/performance',
 });
 
