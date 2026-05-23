@@ -17,6 +17,11 @@ export const CATEGORIES: UICategory[] = [
     { id: 'sweet', name: 'Sweet', icon: <Coffee size={18} /> },
 ];
 
+// Realtime and polling constants
+export const GUEST_TRACKER_POLL_INTERVAL_MS = 8000;
+export const DEFAULT_LOCATION_ID = 'default-location';
+export const TOPIC_FILTER_TABLES_COMMANDS = 'tables/commands';
+
 const SUPABASE_STORAGE_URL =
     'https://axuegixbqsvztdraenkz.supabase.co/storage/v1/object/public/food-images';
 const PLACEHOLDER_IMAGE =
