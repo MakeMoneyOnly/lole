@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Manrope, JetBrains_Mono } from 'next/font/google';
+import { Suspense } from 'react';
 import './globals.css';
 import { ClientProviders } from '@/components/providers/ClientProviders';
 
@@ -34,9 +35,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }):
                 className={`${inter.variable} ${manrope.variable} ${jetbrainsMono.variable} font-inter text-brand-ink bg-brand-canvas antialiased`}
                 suppressHydrationWarning
             >
-                <ClientProviders>{children}</ClientProviders>
+                <ClientProviders>
+                    <Suspense>{children}</Suspense>
+                </ClientProviders>
             </body>
         </html>
     );
 }
-

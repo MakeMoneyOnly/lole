@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 
-// Force dynamic rendering for all guest auth pages to avoid build-time errors
-export const dynamic = 'force-dynamic';
-
-export default function GuestAuthLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
-    return <>{children}</>;
+export default function GuestAuthLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}): React.JSX.Element {
+    return <Suspense>{children}</Suspense>;
 }
-

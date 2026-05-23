@@ -1,8 +1,5 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { RoleGuard } from '@/components/auth/guards/RoleGuard';
-
-// Force dynamic rendering to prevent build-time errors
-export const dynamic = 'force-dynamic';
 
 /**
  * Skip Link Component for Accessibility
@@ -31,10 +28,9 @@ export default function KDSLayout({ children }: { children: React.ReactNode }): 
                     className="relative min-h-0 flex-1 bg-gray-50"
                     tabIndex={-1}
                 >
-                    {children}
+                    <Suspense>{children}</Suspense>
                 </main>
             </div>
         </RoleGuard>
     );
 }
-

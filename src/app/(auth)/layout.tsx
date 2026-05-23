@@ -1,9 +1,5 @@
-import React from 'react';
-
-// Force dynamic rendering for all auth pages to avoid build-time errors
-export const dynamic = 'force-dynamic';
+import React, { Suspense } from 'react';
 
 export default function AuthLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
-    return <>{children}</>;
+    return <Suspense>{children}</Suspense>;
 }
-

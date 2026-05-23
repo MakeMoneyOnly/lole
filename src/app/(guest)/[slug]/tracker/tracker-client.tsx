@@ -13,6 +13,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
+import { GUEST_TRACKER_POLL_INTERVAL_MS } from '@/lib/constants';
 import {
     ChefHat,
     Clock,
@@ -246,7 +247,7 @@ function TrackerContent(): React.JSX.Element {
             } catch (error) {
                 logger.warn('Poll failed', { error });
             }
-        }, 8000);
+        }, GUEST_TRACKER_POLL_INTERVAL_MS);
 
         return () => clearInterval(interval);
     }, [orderId, tableNumber, signature, expiresAt, slug]);

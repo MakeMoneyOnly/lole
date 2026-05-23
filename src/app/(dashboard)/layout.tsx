@@ -1,9 +1,6 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { RoleGuard } from '@/components/auth/guards/RoleGuard';
 import { DashboardLayoutClient } from '@/components/merchant/layout/DashboardLayoutClient';
-
-// Force dynamic rendering to prevent build-time errors
-export const dynamic = 'force-dynamic';
 
 function SkipLink(): React.JSX.Element {
     return (
@@ -18,7 +15,11 @@ function SkipLink(): React.JSX.Element {
 
 import { OfflineIndicator } from '@/components/providers/OfflineIndicator';
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
+export default function DashboardLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}): React.JSX.Element {
     return (
         <div
             className="font-inter flex h-screen w-full flex-col overflow-hidden bg-white"
@@ -29,10 +30,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <SkipLink />
 
                 <DashboardLayoutClient>
-                    <RoleGuard allowedRoles={['owner', 'admin', 'manager']}>{children}</RoleGuard>
+                    <RoleGuard allowedRoles={['owner', 'admin', 'manager']}>
+                        <Suspense>{children}</Suspense>
+                    </RoleGuard>
                 </DashboardLayoutClient>
             </div>
         </div>
     );
 }
-
