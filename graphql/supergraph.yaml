@@ -1,29 +1,36 @@
 # Apollo Federation Supergraph Configuration
 # Defines subgraph endpoints for local composition and development
 # For production, Apollo GraphOS handles composition automatically
+#
+# Subgraphs in the lole Restaurant Operating System:
+# - orders: Order management, KDS, and fulfillment
+# - menu: Restaurant menus, categories, and items
+# - payments: Payment processing and transaction management
+# - guests: Guest sessions, profiles, and loyalty
+# - staff: Staff management and internal operations
 
 subgraphs:
-    orders:
-        routing_url: ${NEXT_PUBLIC_APP_URL}/api/subgraphs/orders
-        schema:
-            file: ./subgraphs/orders.graphql
+  orders:
+    routing_url: https://lole.app/api/subgraphs/orders
+    schema:
+      file: ./subgraphs/orders.graphql
 
-    menu:
-        routing_url: ${NEXT_PUBLIC_APP_URL}/api/subgraphs/menu
-        schema:
-            file: ./subgraphs/menu.graphql
+  menu:
+    routing_url: https://lole.app/api/subgraphs/menu
+    schema:
+      file: ./subgraphs/menu.graphql
 
-    payments:
-        routing_url: ${NEXT_PUBLIC_APP_URL}/api/subgraphs/payments
-        schema:
-            file: ./subgraphs/payments.graphql
+  payments:
+    routing_url: https://lole.app/api/subgraphs/payments
+    schema:
+      file: ./subgraphs/payments.graphql
 
-    guests:
-        routing_url: ${NEXT_PUBLIC_APP_URL}/api/subgraphs/guests
-        schema:
-            file: ./subgraphs/guests.graphql
+  guests:
+    routing_url: https://lole.app/api/subgraphs/guests
+    schema:
+      file: ./subgraphs/guests.graphql
 
-    staff:
-        routing_url: ${NEXT_PUBLIC_APP_URL}/api/subgraphs/staff
-        schema:
-            file: ./subgraphs/staff.graphql
+  staff:
+    routing_url: https://lole.app/api/subgraphs/staff
+    schema:
+      file: ./subgraphs/staff.graphql

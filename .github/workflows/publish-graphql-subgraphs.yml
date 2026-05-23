@@ -8,9 +8,9 @@ on:
     push:
         branches:
             - main
-            - develop
         paths:
             - 'graphql/subgraphs/**/*.graphql'
+            - 'src/domains/*/graphql-schema.ts'
 
 permissions:
     contents: read
@@ -21,12 +21,12 @@ concurrency:
     cancel-in-progress: true
 
 env:
-    APOLLO_GRAPH_ID: lole-production-tj1sjiw
-    ROUTING_URL: https://lole.app/api/graphql
+    APOLLO_GRAPH_REF: lole-production-tj1sjiw@current
+    APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
 
 jobs:
-    publish-subgraphs:
-        name: Publish Subgraphs
+    check-and-publish:
+        name: Check Breaking Changes & Publish Subgraphs
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
@@ -39,27 +39,25 @@ jobs:
             - name: Detect changed subgraphs
               id: changes
               run: |
-                  # Get list of changed files
-                  CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD -- 'graphql/subgraphs/*.graphql' || echo "")
+                  CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD -- 'graphql/subgraphs/*.graphql' 'src/domains/*/graphql-schema.ts' || echo "")
 
                   SUBGRAPHS=""
-                  if echo "$CHANGED_FILES" | grep -q "orders.graphql"; then
+                  if echo "$CHANGED_FILES" | grep -q "orders"; then
                     SUBGRAPHS="$SUBGRAPHS orders"
                   fi
-                  if echo "$CHANGED_FILES" | grep -q "menu.graphql"; then
+                  if echo "$CHANGED_FILES" | grep -q "menu"; then
                     SUBGRAPHS="$SUBGRAPHS menu"
                   fi
-                  if echo "$CHANGED_FILES" | grep -q "payments.graphql"; then
+                  if echo "$CHANGED_FILES" | grep -q "payments"; then
                     SUBGRAPHS="$SUBGRAPHS payments"
                   fi
-                  if echo "$CHANGED_FILES" | grep -q "guests.graphql"; then
+                  if echo "$CHANGED_FILES" | grep -q "guests"; then
                     SUBGRAPHS="$SUBGRAPHS guests"
                   fi
-                  if echo "$CHANGED_FILES" | grep -q "staff.graphql"; then
+                  if echo "$CHANGED_FILES" | grep -q "staff"; then
                     SUBGRAPHS="$SUBGRAPHS staff"
                   fi
 
-                  # If no specific changes detected, publish all
                   if [ -z "$SUBGRAPHS" ]; then
                     SUBGRAPHS="orders menu payments guests staff"
                   fi
@@ -67,60 +65,89 @@ jobs:
                   echo "subgraphs=$SUBGRAPHS" >> $GITHUB_OUTPUT
                   echo "Subgraphs to publish: $SUBGRAPHS"
 
+            - name: Check Orders Subgraph for Breaking Changes
+              if: contains(steps.changes.outputs.subgraphs, 'orders')
+              continue-on-error: true
+              run: |
+                  rover subgraph check ${{ env.APOLLO_GRAPH_REF }} \
+                      --name orders \
+                      --schema ./graphql/subgraphs/orders.graphql
+
+            - name: Check Menu Subgraph for Breaking Changes
+              if: contains(steps.changes.outputs.subgraphs, 'menu')
+              continue-on-error: true
+              run: |
+                  rover subgraph check ${{ env.APOLLO_GRAPH_REF }} \
+                      --name menu \
+                      --schema ./graphql/subgraphs/menu.graphql
+
+            - name: Check Payments Subgraph for Breaking Changes
+              if: contains(steps.changes.outputs.subgraphs, 'payments')
+              continue-on-error: true
+              run: |
+                  rover subgraph check ${{ env.APOLLO_GRAPH_REF }} \
+                      --name payments \
+                      --schema ./graphql/subgraphs/payments.graphql
+
+            - name: Check Guests Subgraph for Breaking Changes
+              if: contains(steps.changes.outputs.subgraphs, 'guests')
+              continue-on-error: true
+              run: |
+                  rover subgraph check ${{ env.APOLLO_GRAPH_REF }} \
+                      --name guests \
+                      --schema ./graphql/subgraphs/guests.graphql
+
+            - name: Check Staff Subgraph for Breaking Changes
+              if: contains(steps.changes.outputs.subgraphs, 'staff')
+              continue-on-error: true
+              run: |
+                  rover subgraph check ${{ env.APOLLO_GRAPH_REF }} \
+                      --name staff \
+                      --schema ./graphql/subgraphs/staff.graphql
+
             - name: Publish Orders Subgraph
               if: contains(steps.changes.outputs.subgraphs, 'orders')
-              env:
-                  APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
               run: |
-                  rover subgraph publish ${{ env.APOLLO_GRAPH_ID }}@current \
+                  rover subgraph publish ${{ env.APOLLO_GRAPH_REF }} \
                       --name orders \
                       --schema ./graphql/subgraphs/orders.graphql \
-                      --routing-url ${{ env.ROUTING_URL }}
+                      --routing-url https://lole.app/api/subgraphs/orders
 
             - name: Publish Menu Subgraph
               if: contains(steps.changes.outputs.subgraphs, 'menu')
-              env:
-                  APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
               run: |
-                  rover subgraph publish ${{ env.APOLLO_GRAPH_ID }}@current \
+                  rover subgraph publish ${{ env.APOLLO_GRAPH_REF }} \
                       --name menu \
                       --schema ./graphql/subgraphs/menu.graphql \
-                      --routing-url ${{ env.ROUTING_URL }}
+                      --routing-url https://lole.app/api/subgraphs/menu
 
             - name: Publish Payments Subgraph
               if: contains(steps.changes.outputs.subgraphs, 'payments')
-              env:
-                  APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
               run: |
-                  rover subgraph publish ${{ env.APOLLO_GRAPH_ID }}@current \
+                  rover subgraph publish ${{ env.APOLLO_GRAPH_REF }} \
                       --name payments \
                       --schema ./graphql/subgraphs/payments.graphql \
-                      --routing-url ${{ env.ROUTING_URL }}
+                      --routing-url https://lole.app/api/subgraphs/payments
 
             - name: Publish Guests Subgraph
               if: contains(steps.changes.outputs.subgraphs, 'guests')
-              env:
-                  APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
               run: |
-                  rover subgraph publish ${{ env.APOLLO_GRAPH_ID }}@current \
+                  rover subgraph publish ${{ env.APOLLO_GRAPH_REF }} \
                       --name guests \
                       --schema ./graphql/subgraphs/guests.graphql \
-                      --routing-url ${{ env.ROUTING_URL }}
+                      --routing-url https://lole.app/api/subgraphs/guests
 
             - name: Publish Staff Subgraph
               if: contains(steps.changes.outputs.subgraphs, 'staff')
-              env:
-                  APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
               run: |
-                  rover subgraph publish ${{ env.APOLLO_GRAPH_ID }}@current \
+                  rover subgraph publish ${{ env.APOLLO_GRAPH_REF }} \
                       --name staff \
                       --schema ./graphql/subgraphs/staff.graphql \
-                      --routing-url ${{ env.ROUTING_URL }}
+                      --routing-url https://lole.app/api/subgraphs/staff
 
             - name: Summary
               run: |
                   echo "## 🚀 GraphQL Subgraphs Published" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "**Graph ID:** ${{ env.APOLLO_GRAPH_ID }}" >> $GITHUB_STEP_SUMMARY
-                  echo "**Variant:** current" >> $GITHUB_STEP_SUMMARY
+                  echo "**Graph Ref:** ${{ env.APOLLO_GRAPH_REF }}" >> $GITHUB_STEP_SUMMARY
                   echo "**Subgraphs:** ${{ steps.changes.outputs.subgraphs }}" >> $GITHUB_STEP_SUMMARY

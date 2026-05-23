@@ -1,11 +1,12 @@
 # Apollo Router Configuration for GraphOS
 # Production-ready configuration with JWT authentication
+# Router v2.14.0+ required
 #
 # Required Environment Variables:
 #   APOLLO_KEY: Your Apollo GraphOS API key
 #   APOLLO_GRAPH_REF: graph-name@variant (e.g., lole-production@current)
-#   SUPABASE_JWT_SECRET: Supabase JWT secret for token verification
-#   NEXT_PUBLIC_APP_URL: Base URL for subgraph endpoints
+#   NEXT_PUBLIC_SUPABASE_URL: Supabase project URL (for JWT JWKS)
+#   NEXT_PUBLIC_SUPABASE_ANON_KEY: Supabase anon key for public operations
 
 # GraphOS supergraph configuration
 supergraph:
@@ -150,7 +151,7 @@ headers:
         response:
             - set:
                   named: 'x-lole-router-version'
-                  value: '2.1.0'
+                  value: '2.14.0'
 
 # Telemetry and observability
 telemetry:
@@ -178,3 +179,29 @@ logging:
 #         redis:
 #             urls:
 #                 - ${REDIS_URL}
+
+# =============================================================================
+# Railway Deployment Notes
+# =============================================================================
+# Deploy to Railway with the following environment variables:
+#
+# Required:
+#   APOLLO_KEY                   - Apollo GraphOS API key
+#   APOLLO_GRAPH_REF             - graph-name@variant (e.g., lole-production@current)
+#   NEXT_PUBLIC_SUPABASE_URL     - Supabase project URL (for JWT JWKS)
+#
+# Optional:
+#   LOG_LEVEL                    - Log level (debug, info, warn, error)
+#   INCLUDE_SUBGRAPH_ERRORS      - Include subgraph errors in response (true/false)
+#   OTEL_EXPORTER_OTLP_ENDPOINT  - OpenTelemetry collector endpoint
+#   REDIS_URL                    - Redis connection string for entity caching
+#
+# Railway Configuration:
+#   - Dockerfile path: router/Dockerfile
+#   - Health check: /health on port 8088 (exposed automatically)
+#   - GraphQL endpoint: port 4000
+#   - Start command: docker run -p 4000:4000 -p 8088:8088 -e APOLLO_KEY -e APOLLO_GRAPH_REF <image>
+#
+# Scaling considerations:
+#   - Rate limits scale with instance count
+#   - Consider Redis for entity caching when scaling beyond 1 instance
