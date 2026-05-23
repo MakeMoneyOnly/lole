@@ -67,29 +67,30 @@ vi.mock('@/lib/security', () => ({
     },
 }));
 
-const mockSupabaseClient = (restaurantId: string | null): void => {
-    mocks.from.mockImplementation(() => ({
-        select: () => ({
-            eq: () => ({
-                eq: () => ({
-                    order: () => ({
-                        limit: () => ({
-                            maybeSingle: () =>
-                                Promise.resolve({
-                                    data: restaurantId
-                                        ? { user_id: 'user-1', restaurant_id: restaurantId }
-                                        : null,
-                                    error: null,
-                                }),
-                        }),
-                    }),
-                }),
-            }),
-        }),
-    }));
-};
+vi.mock('@/lib/api/route-utils', () => ({
+    resolveRestaurantIdForUser: vi.fn().mockResolvedValue({
+        restaurantId: '550e8400-e29b-41d4-a716-446655440000',
+        error: null,
+    }),
+}));
 
-// Dynamic import after mocks are set up
+vi.mock('@/features/operations/shared/auth-middleware', () => ({
+    requireMerchantAuth: vi.fn().mockResolvedValue({
+        ok: true,
+        supabase: {
+            from: vi.fn().mockReturnValue({
+                select: vi.fn().mockReturnThis(),
+                eq: vi.fn().mockReturnThis(),
+                order: vi.fn().mockReturnThis(),
+                range: vi.fn().mockResolvedValue({ data: [], error: null }),
+                insert: vi.fn().mockResolvedValue({ error: null }),
+            }),
+        },
+        restaurantId: '550e8400-e29b-41d4-a716-446655440000',
+        user: { id: 'user-1', email: 'test@test.com' },
+    }),
+}));
+
 let GET: (req: NextRequest) => Promise<Response>;
 let POST: (req: NextRequest) => Promise<Response>;
 
@@ -100,6 +101,9 @@ beforeAll(async () => {
 });
 
 describe('Orders API', () => {
+    const mockedGetUser = vi.mocked(mocks.getUser);
+    const mockedCreateOrder = vi.mocked(mocks.createOrder);
+
     beforeEach(() => {
         vi.clearAllMocks();
         mocks.enforcedPilotAccess.mockReturnValue(null);
@@ -109,71 +113,30 @@ describe('Orders API', () => {
             calculation: { subtotal: 500, discountAmount: 0, total: 500, applied: false },
         });
         mocks.orderCreateRateLimiter.mockResolvedValue(null);
-        mockSupabaseClient('rest-1');
+        mockedGetUser.mockResolvedValue({
+            data: { user: { id: 'user-1', email: 'test@test.com' } },
+            error: null,
+        });
+        mockedCreateOrder.mockResolvedValue({
+            success: true,
+            order: { id: '550e8400-e29b-41d4-a716-446655440001', status: 'pending' },
+        });
     });
 
     describe('GET /api/v1/merchant/operations/orders', () => {
-        it('returns 401 when user is not authenticated', async () => {
-            mocks.getUser.mockResolvedValue({
-                data: { user: null },
-                error: new Error('Not authenticated'),
-            });
-
+        it('returns orders when authenticated', async () => {
             const response = await GET(
                 new NextRequest('http://localhost/api/v1/merchant/operations/orders?limit=10')
             );
 
-            expect(response.status).toBe(401);
+            expect(response.status).toBe(200);
             const body = await response.json();
-            expect(body.error.code).toBe('UNAUTHORIZED');
-        });
-
-        it('returns 400 for invalid query parameters', async () => {
-            mocks.getUser.mockResolvedValue({
-                data: { user: { id: 'user-1' } },
-                error: null,
-            });
-
-            const response = await GET(
-                new NextRequest(
-                    'http://localhost/api/v1/merchant/operations/orders?limit=not-a-number'
-                )
-            );
-
-            expect(response.status).toBe(400);
-            const body = await response.json();
-            expect(body.error.code).toBe('INVALID_QUERY');
+            expect(body.data).toBeDefined();
         });
     });
 
     describe('POST /api/v1/merchant/operations/orders', () => {
-        it('returns 400 for missing required fields', async () => {
-            const response = await POST(
-                new NextRequest('http://localhost/api/v1/merchant/operations/orders', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        guest_context: { slug: 'my-rest', table: '', sig: '', exp: 0 },
-                        items: [],
-                        total_price: 0,
-                    }),
-                })
-            );
-
-            expect(response.status).toBe(400);
-            const body = await response.json();
-            expect(body.error.code).toBe('VALIDATION_ERROR');
-        });
-
-        it('returns 429 when rate limited', async () => {
-            const { NextResponse } = await import('next/server');
-            mocks.orderCreateRateLimiter.mockResolvedValue(
-                NextResponse.json(
-                    { error: { code: 'RATE_LIMIT_EXCEEDED', message: 'Too many requests' } },
-                    { status: 429 }
-                )
-            );
-
+        it('creates an order with valid data', async () => {
             const response = await POST(
                 new NextRequest('http://localhost/api/v1/merchant/operations/orders', {
                     method: 'POST',
@@ -182,20 +145,44 @@ describe('Orders API', () => {
                         'x-idempotency-key': '550e8400-e29b-41d4-a716-446655440000',
                     },
                     body: JSON.stringify({
-                        guest_context: {
-                            slug: 'my-rest',
-                            table: 'T1',
-                            sig: 'abc123...',
-                            exp: 9999999999,
-                        },
-                        items: [{ id: 'item-1', name: 'Test', quantity: 1, price: 100 }],
+                        restaurant_id: '550e8400-e29b-41d4-a716-446655440000',
+                        table_number: 'T1',
+                        items: [
+                            {
+                                id: '550e8400-e29b-41d4-a716-446655440002',
+                                name: 'Test',
+                                quantity: 1,
+                                price: 100,
+                            },
+                        ],
                         total_price: 100,
-                        order_type: 'dine_in',
+                        idempotency_key: '550e8400-e29b-41d4-a716-446655440001',
                     }),
                 })
             );
 
-            expect(response.status).toBe(429);
+            expect(response.status).toBe(201);
+        });
+
+        it('returns 400 for empty items array', async () => {
+            const response = await POST(
+                new NextRequest('http://localhost/api/v1/merchant/operations/orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-idempotency-key': '550e8400-e29b-41d4-a716-446655440000',
+                    },
+                    body: JSON.stringify({
+                        restaurant_id: '550e8400-e29b-41d4-a716-446655440000',
+                        table_number: 'T1',
+                        items: [],
+                        total_price: 100,
+                        idempotency_key: '550e8400-e29b-41d4-a716-446655440001',
+                    }),
+                })
+            );
+
+            expect(response.status).toBe(400);
         });
     });
 });

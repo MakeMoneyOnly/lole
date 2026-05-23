@@ -16,12 +16,28 @@ vi.mock('../powersync-config', () => ({
     })),
 }));
 
+// Mock supabase service-role
+vi.mock('../../supabase/service-role', () => ({
+    createServiceRoleClient: vi.fn().mockResolvedValue({
+        from: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+            }),
+        }),
+    }),
+}));
+
 // Mock logger
 vi.mock('../../logger', () => ({
     logger: {
         info: vi.fn(),
         warn: vi.fn(),
         error: vi.fn(),
+        child: vi.fn(() => ({
+            info: vi.fn(),
+            warn: vi.fn(),
+            error: vi.fn(),
+        })),
     },
 }));
 
@@ -231,7 +247,7 @@ describe('Order Sync Conflict Resolution', () => {
 });
 
 describe('KDS Sync Conflict Resolution', () => {
-    it('should export conflict resolution functions', async () => {
+    it('should export KDS conflict resolution functions', async () => {
         const kdsSync = await import('../kdsSync');
 
         expect(kdsSync.resolveKdsConflict).toBeDefined();

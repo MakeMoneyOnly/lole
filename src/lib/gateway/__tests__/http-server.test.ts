@@ -57,7 +57,7 @@ describe('gateway http server', () => {
             ok: true,
             device: {
                 id: 'device-1',
-                restaurant_id: 'rest-1',
+                restaurant_id: '550e8400-e29b-41d4-a716-446655440000',
                 location_id: 'loc-1',
                 device_type: 'terminal',
                 device_profile: 'cashier',
@@ -75,7 +75,7 @@ describe('gateway http server', () => {
                 target_app_version: null,
                 ota_status: null,
             },
-            restaurantId: 'rest-1',
+            restaurantId: '550e8400-e29b-41d4-a716-446655440000',
             admin: {} as never,
         });
 
@@ -105,10 +105,10 @@ describe('gateway http server', () => {
         });
 
         const body = (await response.json()) as {
-            session: { claims?: { deviceId?: string } };
+            session: { deviceId: string };
         };
 
         expect(response.status).toBe(200);
-        expect(body.session.claims?.deviceId).toBe('device-1');
+        expect(body.session.deviceId).toBe('device-1');
     });
 });

@@ -107,18 +107,18 @@ class QueryBuilder {
     }
 }
 
-function createHarness(): { store: TableStore; supabase: any; } {
+function createHarness(): { store: TableStore; supabase: any } {
     const store: TableStore = {
         tables: [
             {
                 id: '11111111-1111-4111-8111-111111111111',
-                restaurant_id: 'rest-1',
+                restaurant_id: '00000000-0000-4000-8000-000000000001',
                 table_number: 'T1',
                 status: 'available',
             },
             {
                 id: '22222222-2222-4222-8222-222222222222',
-                restaurant_id: 'rest-1',
+                restaurant_id: '00000000-0000-4000-8000-000000000001',
                 table_number: 'T2',
                 status: 'available',
             },
@@ -150,7 +150,7 @@ describe('Table session lifecycle integration', () => {
         } as any);
         getAuthorizedRestaurantContextMock.mockResolvedValue({
             ok: true,
-            restaurantId: 'rest-1',
+            restaurantId: '00000000-0000-4000-8000-000000000001',
             supabase: harness.supabase,
         } as any);
 
@@ -158,8 +158,8 @@ describe('Table session lifecycle integration', () => {
             new Request('http://localhost/api/v1/merchant/operations/table-sessions/open', {
                 method: 'POST',
                 body: JSON.stringify({
-                    table_id: '11111111-1111-4111-8111-111111111111',
-                    guest_count: 2,
+                    tableId: '11111111-1111-4111-8111-111111111111',
+                    guestCount: 2,
                     notes: 'walk-in',
                 }),
                 headers: { 'content-type': 'application/json' },
@@ -178,7 +178,7 @@ describe('Table session lifecycle integration', () => {
                 {
                     method: 'POST',
                     body: JSON.stringify({
-                        to_table_id: '22222222-2222-4222-8222-222222222222',
+                        toTableId: '22222222-2222-4222-8222-222222222222',
                         notes: 'moved to window',
                     }),
                     headers: { 'content-type': 'application/json' },
@@ -223,7 +223,7 @@ describe('Table session lifecycle integration', () => {
         const harness = createHarness();
         harness.store.table_sessions.push({
             id: '33333333-3333-4333-8333-333333333333',
-            restaurant_id: 'rest-1',
+            restaurant_id: '00000000-0000-4000-8000-000000000001',
             table_id: '11111111-1111-4111-8111-111111111111',
             status: 'open',
         });
@@ -235,7 +235,7 @@ describe('Table session lifecycle integration', () => {
         } as any);
         getAuthorizedRestaurantContextMock.mockResolvedValue({
             ok: true,
-            restaurantId: 'rest-1',
+            restaurantId: '00000000-0000-4000-8000-000000000001',
             supabase: harness.supabase,
         } as any);
 
@@ -243,7 +243,7 @@ describe('Table session lifecycle integration', () => {
             new Request('http://localhost/api/v1/merchant/operations/table-sessions/open', {
                 method: 'POST',
                 body: JSON.stringify({
-                    table_id: '11111111-1111-4111-8111-111111111111',
+                    tableId: '11111111-1111-4111-8111-111111111111',
                 }),
                 headers: { 'content-type': 'application/json' },
             })
@@ -260,13 +260,13 @@ describe('Table session lifecycle integration', () => {
         harness.store.table_sessions.push(
             {
                 id: '44444444-4444-4444-8444-444444444444',
-                restaurant_id: 'rest-1',
+                restaurant_id: '00000000-0000-4000-8000-000000000001',
                 table_id: '11111111-1111-4111-8111-111111111111',
                 status: 'open',
             },
             {
                 id: '55555555-5555-4555-8555-555555555555',
-                restaurant_id: 'rest-1',
+                restaurant_id: '00000000-0000-4000-8000-000000000001',
                 table_id: '22222222-2222-4222-8222-222222222222',
                 status: 'open',
             }
@@ -279,7 +279,7 @@ describe('Table session lifecycle integration', () => {
         } as any);
         getAuthorizedRestaurantContextMock.mockResolvedValue({
             ok: true,
-            restaurantId: 'rest-1',
+            restaurantId: '00000000-0000-4000-8000-000000000001',
             supabase: harness.supabase,
         } as any);
 
@@ -289,7 +289,7 @@ describe('Table session lifecycle integration', () => {
                 {
                     method: 'POST',
                     body: JSON.stringify({
-                        to_table_id: '22222222-2222-4222-8222-222222222222',
+                        toTableId: '22222222-2222-4222-8222-222222222222',
                     }),
                     headers: { 'content-type': 'application/json' },
                 }
