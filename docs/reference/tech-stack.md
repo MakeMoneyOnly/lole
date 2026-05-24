@@ -29,7 +29,7 @@ The lole Restaurant Operating System utilizes a modern, resilient technology sta
 | Component       | Technology | Version    | Purpose                 |
 | --------------- | ---------- | ---------- | ----------------------- |
 | Bundler         | Turbopack  | Next.js 16 | Fast incremental builds |
-| Package Manager | npm/pnpm   | >=10.0.0 | Dependency management   |
+| Package Manager | npm/pnpm   | >=10.0.0   | Dependency management   |
 | Linting         | ESLint     | 9.x        | Code quality            |
 | Formatting      | Prettier   | 3.x        | Code formatting         |
 
@@ -49,7 +49,7 @@ The lole Restaurant Operating System utilizes a modern, resilient technology sta
 
 | Component  | Technology         | Version | Purpose                 |
 | ---------- | ------------------ | ------- | ----------------------- |
-| Primary    | Next.js API Routes | 16.2.3 | Serverless functions    |
+| Primary    | Next.js API Routes | 16.2.3  | Serverless functions    |
 | GraphQL    | Apollo Server      | 4.x     | Federated GraphQL       |
 | Router     | Apollo Router      | 2.x     | Rust-based federation   |
 | Validation | Zod                | 3.x     | Runtime type validation |
@@ -171,8 +171,8 @@ The lole Restaurant Operating System utilizes a modern, resilient technology sta
 
 | Component A | Component B | Compatible Versions | Notes           |
 | ----------- | ----------- | ------------------- | --------------- |
-| Next.js     | React       | 16.2.3 ↔ 19.x         | Auto-linked     |
-| Next.js     | Node.js     | 16.2.3 ↔ 22.x         | LTS requirement |
+| Next.js     | React       | 16.2.3 ↔ 19.x       | Auto-linked     |
+| Next.js     | Node.js     | 16.2.3 ↔ 22.x       | LTS requirement |
 | TypeScript  | Node.js     | 5.5+ ↔ 22.x         | Target ES2022   |
 | PostgreSQL  | Supabase    | 15.x ↔ Latest       | Native support  |
 | PowerSync   | Postgres    | Any ↔ 15.x          | Recommended     |

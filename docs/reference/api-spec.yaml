@@ -1,2610 +1,729 @@
 openapi: 3.0.3
 info:
-  title: lole Restaurant OS API
-  version: 1.0.0
-  description: |
-    Enterprise-grade Restaurant Operating System API for Ethiopian restaurants.
-    Supports offline-first operations with synchronization capabilities.
-  contact:
-    name: lole Engineering
-    email: api@lole.restaurant
-  license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
+    title: lole Restaurant OS API
+    version: 1.0.0
+    description: |
+        Enterprise-grade Restaurant Operating System API for Ethiopian restaurants.
+        Supports offline-first operations with synchronization capabilities.
+    contact:
+        name: lole Engineering
+        email: api@lole.restaurant
+    license:
+        name: MIT
+        url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: https://api.lole.app
-    description: Production server (Global)
-  - url: https://api.staging.lole.app
-    description: Staging server (Testing)
-  - url: http://localhost:3000/api
-    description: Local development server
+    - url: https://api.lole.app
+      description: Production server (Global)
+    - url: https://api.staging.lole.app
+      description: Staging server (Testing)
+    - url: http://localhost:3000/api
+      description: Local development server
 
 tags:
-   - name: Auth
-     description: Authentication and session management
-   - name: Restaurants
-     description: Restaurant profile and configuration
-   - name: Menu
-     description: Menu management and categories
-   - name: Orders
-     description: Order lifecycle and management
-   - name: KDS
-     description: Kitchen Display System operations
-   - name: Payments
-     description: Payment processing and reconciliation
-   - name: Reports
-     description: Analytics and reporting
-   - name: Staff
-     description: Staff management and permissions
-   - name: Guest Portal
-     description: Guest-facing portal operations
-   - name: Merchant Core
-     description: Core merchant management operations
-   - name: Merchant Marketing
-     description: Marketing and promotional features
-   - name: Merchant Operations
-     description: Daily operations management
-   - name: POS Device
-     description: Point-of-sale device operations
-   - name: Internal
-     description: Internal system operations
-   - name: System
-     description: System health and infrastructure
+    - name: Auth
+      description: Authentication and session management
+    - name: Restaurants
+      description: Restaurant profile and configuration
+    - name: Menu
+      description: Menu management and categories
+    - name: Orders
+      description: Order lifecycle and management
+    - name: KDS
+      description: Kitchen Display System operations
+    - name: Payments
+      description: Payment processing and reconciliation
+    - name: Reports
+      description: Analytics and reporting
+    - name: Staff
+      description: Staff management and permissions
 
 security:
-  - bearerAuth: []
+    - bearerAuth: []
 
 components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-    apiKey:
-      type: apiKey
-      in: header
-      name: X-API-Key
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+        apiKey:
+            type: apiKey
+            in: header
+            name: X-API-Key
 
-  schemas:
-    # Common Types
-    UUID:
-      type: string
-      format: uuid
-      pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-      example: '123e4567-e89b-12d3-a456-426614174000'
-    
-    Santim:
-      type: integer
-      description: Monetary value in Ethiopian cents (1/100 of ETB)
-      minimum: 0
-      example: 15000
-      x-unit: ETB
-
-    Timestamp:
-      type: string
-      format: date-time
-      example: '2026-05-15T10:30:00Z'
-
-    # Restaurant
-    Restaurant:
-      type: object
-      required: [id, name, subdomain]
-      properties:
-        id:
-          $ref: '#/components/schemas/UUID'
-        name:
-          type: string
-          maxLength: 255
-          example: 'Kategna Restaurant'
-        subdomain:
-          type: string
-          pattern: '^[a-z0-9-]+$'
-          example: 'kategna'
-        currency:
-          type: string
-          default: 'ETB'
-          enum: [ETB, USD]
-        timezone:
-          type: string
-          default: 'Africa/Addis_Ababa'
-        settings:
-          $ref: '#/components/schemas/RestaurantSettings'
-        created_at:
-          $ref: '#/components/schemas/Timestamp'
-        updated_at:
-          $ref: '#/components/schemas/Timestamp'
-
-    RestaurantSettings:
-      type: object
-      properties:
-        auto_sync_enabled:
-          type: boolean
-          default: true
-        offline_mode:
-          type: boolean
-          default: true
-        fiscal_compliance:
-          type: boolean
-          default: false
-
-    # Menu
-    MenuItem:
-      type: object
-      required: [id, name, price_santim, category_id]
-      properties:
-        id:
-          $ref: '#/components/schemas/UUID'
-        name:
-          type: string
-          maxLength: 255
-          example: 'Doro Wat'
-        description:
-          type: string
-          maxLength: 1000
-        price_santim:
-          $ref: '#/components/schemas/Santim'
-        category_id:
-          $ref: '#/components/schemas/UUID'
-        is_vegetarian:
-          type: boolean
-          default: false
-        is_fast:
-          type: boolean
-          description: Fasting period compatible
-          default: false
-        image_url:
-          type: string
-          format: uri
-        sort_order:
-          type: integer
-          minimum: 0
-        is_active:
-          type: boolean
-          default: true
-
-    Category:
-      type: object
-      required: [id, name]
-      properties:
-        id:
-          $ref: '#/components/schemas/UUID'
-        name:
-          type: string
-          maxLength: 100
-        description:
-          type: string
-          maxLength: 500
-        sort_order:
-          type: integer
-        color:
-          type: string
-          pattern: '^#[0-9A-Fa-f]{6}$'
-
-    # Orders
-    Order:
-      type: object
-      required: [id, restaurant_id, status, total_santim, created_at]
-      properties:
-        id:
-          $ref: '#/components/schemas/UUID'
-        restaurant_id:
-          $ref: '#/components/schemas/UUID'
-        table_id:
-          $ref: '#/components/schemas/UUID'
-nullable: true
-        order_number:
-          type: integer
-          description: Human-readable sequential order number
-        status:
-          type: string
-          enum: [pending, confirmed, preparing, ready, served, cancelled]
-        order_type:
-          type: string
-          enum: [dine_in, takeaway, delivery]
-          default: 'dine_in'
-        total_santim:
-          $ref: '#/components/schemas/Santim'
-        notes:
-          type: string
-          maxLength: 1000
-        created_at:
-          $ref: '#/components/schemas/Timestamp'
-        updated_at:
-          $ref: '#/components/schemas/Timestamp'
-        completed_at:
-          $ref: '#/components/schemas/Timestamp'
-          nullable: true
-        order_items:
-          type: array
-          items:
-            $ref: '#/components/schemas/OrderItem'
-
-    OrderItem:
-      type: object
-      required: [id, menu_item_id, quantity, price_santim]
-      properties:
-        id:
-          $ref: '#/components/schemas/UUID'
-        order_id:
-          $ref: '#/components/schemas/UUID'
-        menu_item_id:
-          $ref: '#/components/schemas/UUID'
-        menu_item:
-          $ref: '#/components/schemas/MenuItem'
-        quantity:
-          type: integer
-          minimum: 1
-          default: 1
-        price_santim:
-          $ref: '#/components/schemas/Santim'
-        notes:
-          type: string
-          maxLength: 500
-
-    PaginatedOrders:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Order'
-        pagination:
-          $ref: '#/components/schemas/Pagination'
-
-    # KDS
-    KDSCourse:
-      type: object
-      properties:
-        id:
-          $ref: '#/components/schemas/UUID'
-        order_id:
-          $ref: '#/components/schemas/UUID'
-        course_number:
-          type: integer
-name:
-          type: string
-          enum: [appetizers, mains, desserts, drinks]
-        status:
-          type: string
-          enum: [pending, fired, preparing, ready, served, cancelled]
-        due_at:
-          $ref: '#/components/schemas/Timestamp'
-
-    # Payments
-    Payment:
-      type: object
-      required: [id, order_id, amount_santim, method, status]
-      properties:
-        id:
-          $ref: '#/components/schemas/UUID'
-        order_id:
-          $ref: '#/components/schemas/UUID'
-        amount_santim:
-          $ref: '#/components/schemas/Santim'
-method:
-          type: string
-          enum: [cash, telebirr, chappa, card, gift_card]
-        status:
-          type: string
-          enum: [pending, processing, captured, failed, refunded, cancelled]
-        reference:
-          type: string
-        created_at:
-          $ref: '#/components/schemas/Timestamp'
-
-    # Staff
-    StaffMember:
-      type: object
-      required: [id, restaurant_id, first_name, role]
-      properties:
-        id:
-          $ref: '#/components/schemas/UUID'
-        restaurant_id:
-          $ref: '#/components/schemas/UUID'
-        first_name:
-          type: string
-        last_name:
-          type: string
-        email:
-          type: string
-          format: email
-phone:
-                  type: string
-                role:
-                  type: string
-                  enum: [owner, admin, manager, waiter, kitchen, bar]
-                permissions:
-          type: array
-          items:
+    schemas:
+        # Common Types
+        UUID:
             type: string
-        is_active:
-          type: boolean
+            format: uuid
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            example: '123e4567-e89b-12d3-a456-426614174000'
 
-    # Common Responses
-    Pagination:
-      type: object
-      properties:
-        total:
-          type: integer
-          minimum: 0
-        limit:
-          type: integer
-          minimum: 1
-          default: 20
-        offset:
-          type: integer
-          minimum: 0
-          default: 0
-        has_more:
-          type: boolean
-
-    Error:
-      type: object
-      required: [error, message]
-      properties:
-        error:
-          type: string
-        message:
-          type: string
-        details:
-          type: object
-        code:
-          type: string
-
-    SuccessResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-          default: true
-        data:
-          type: object
-
-paths:
-  /api/restaurants/{restaurantId}:
-    get:
-      tags: [Restaurants]
-      summary: Get restaurant profile
-      operationId: getRestaurant
-      parameters:
-        - name: restaurantId
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/UUID'
-      responses:
-        '200':
-          description: Restaurant profile
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Restaurant'
-        '404':
-          description: Restaurant not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /api/menu:
-    get:
-      tags: [Menu]
-      summary: List menu items
-      operationId: listMenuItems
-      parameters:
-        - name: restaurant_id
-          in: query
-          required: true
-          schema:
-            $ref: '#/components/schemas/UUID'
-        - name: category_id
-          in: query
-          schema:
-            $ref: '#/components/schemas/UUID'
-        - name: active_only
-          in: query
-          schema:
-            type: boolean
-            default: true
-        - name: limit
-          in: query
-          schema:
+        Santim:
             type: integer
-            default: 100
-      responses:
-        '200':
-          description: List of menu items
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/MenuItem'
-                  categories:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Category'
+            description: Monetary value in Ethiopian cents (1/100 of ETB)
+            minimum: 0
+            example: 15000
+            x-unit: ETB
 
-  /api/orders:
-    get:
-      tags: [Orders]
-      summary: List orders
-      operationId: listOrders
-      parameters:
-        - name: restaurant_id
-          in: query
-          required: true
-          schema:
-            $ref: '#/components/schemas/UUID'
-        - name: status
-          in: query
-          schema:
+        Timestamp:
             type: string
-        - name: order_type
-          in: query
-          schema:
-            type: string
-        - name: date_from
-          in: query
-          schema:
-            type: string
-            format: date
-        - name: date_to
-          in: query
-          schema:
-            type: string
-            format: date
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 20
-        - name: offset
-          in: query
-          schema:
-            type: integer
-            default: 0
-      responses:
-        '200':
-          description: Paginated orders list
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedOrders'
+            format: date-time
+            example: '2026-05-15T10:30:00Z'
 
-    post:
-      tags: [Orders]
-      summary: Create new order
-      operationId: createOrder
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [restaurant_id, items]
-              properties:
+        # Restaurant
+        Restaurant:
+            type: object
+            required: [id, name, subdomain]
+            properties:
+                id:
+                    $ref: '#/components/schemas/UUID'
+                name:
+                    type: string
+                    maxLength: 255
+                    example: 'Kategna Restaurant'
+                subdomain:
+                    type: string
+                    pattern: '^[a-z0-9-]+$'
+                    example: 'kategna'
+                currency:
+                    type: string
+                    default: 'ETB'
+                    enum: [ETB, USD]
+                timezone:
+                    type: string
+                    default: 'Africa/Addis_Ababa'
+                settings:
+                    $ref: '#/components/schemas/RestaurantSettings'
+                created_at:
+                    $ref: '#/components/schemas/Timestamp'
+                updated_at:
+                    $ref: '#/components/schemas/Timestamp'
+
+        RestaurantSettings:
+            type: object
+            properties:
+                auto_sync_enabled:
+                    type: boolean
+                    default: true
+                offline_mode:
+                    type: boolean
+                    default: true
+                fiscal_compliance:
+                    type: boolean
+                    default: false
+
+        # Menu
+        MenuItem:
+            type: object
+            required: [id, name, price_santim, category_id]
+            properties:
+                id:
+                    $ref: '#/components/schemas/UUID'
+                name:
+                    type: string
+                    maxLength: 255
+                    example: 'Doro Wat'
+                description:
+                    type: string
+                    maxLength: 1000
+                price_santim:
+                    $ref: '#/components/schemas/Santim'
+                category_id:
+                    $ref: '#/components/schemas/UUID'
+                is_vegetarian:
+                    type: boolean
+                    default: false
+                is_fast:
+                    type: boolean
+                    description: Fasting period compatible
+                    default: false
+                image_url:
+                    type: string
+                    format: uri
+                sort_order:
+                    type: integer
+                    minimum: 0
+                is_active:
+                    type: boolean
+                    default: true
+
+        Category:
+            type: object
+            required: [id, name]
+            properties:
+                id:
+                    $ref: '#/components/schemas/UUID'
+                name:
+                    type: string
+                    maxLength: 100
+                description:
+                    type: string
+                    maxLength: 500
+                sort_order:
+                    type: integer
+                color:
+                    type: string
+                    pattern: '^#[0-9A-Fa-f]{6}$'
+
+        # Orders
+        Order:
+            type: object
+            required: [id, restaurant_id, status, total_santim, created_at]
+            properties:
+                id:
+                    $ref: '#/components/schemas/UUID'
                 restaurant_id:
-                  $ref: '#/components/schemas/UUID'
+                    $ref: '#/components/schemas/UUID'
                 table_id:
-                  $ref: '#/components/schemas/UUID'
-                order_type:
-                  type: string
-                  enum: [dine_in, takeaway, delivery]
-                items:
-                  type: array
-                  items:
-                    type: object
-                    required: [menu_item_id, quantity]
-                    properties:
-                      menu_item_id:
-                        $ref: '#/components/schemas/UUID'
-                      quantity:
-                        type: integer
-                        minimum: 1
-                      notes:
-                        type: string
-                notes:
-                  type: string
-      responses:
-        '201':
-          description: Order created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Order'
-        '400':
-          description: Invalid request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /api/orders/{orderId}:
-    get:
-      tags: [Orders]
-      summary: Get order by ID
-      operationId: getOrder
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/UUID'
-      responses:
-        '200':
-          description: Order details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Order'
-        '404':
-          description: Order not found
-
-    patch:
-      tags: [Orders]
-      summary: Update order status
-      operationId: updateOrder
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/UUID'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-properties:
+                    $ref: '#/components/schemas/UUID'
+                    nullable: true
+                order_number:
+                    type: integer
+                    description: Human-readable sequential order number
                 status:
-                  type: string
-                  enum: [pending, confirmed, preparing, ready, served, cancelled]
-              responses:
-        '200':
-          description: Order updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Order'
-
-  /api/orders/{orderId}/items:
-    post:
-      tags: [Orders]
-      summary: Add item to order
-      operationId: addOrderItem
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/UUID'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [menu_item_id, quantity]
-              properties:
-                menu_item_id:
-                  $ref: '#/components/schemas/UUID'
-                quantity:
-                  type: integer
-                  minimum: 1
+                    type: string
+                    enum: [pending, confirmed, preparing, ready, served, completed, cancelled]
+                order_type:
+                    type: string
+                    enum: [dine_in, takeaway, delivery]
+                    default: 'dine_in'
+                total_santim:
+                    $ref: '#/components/schemas/Santim'
                 notes:
-                  type: string
-      responses:
-        '201':
-          description: Item added
-
-  /api/payments:
-    post:
-      tags: [Payments]
-      summary: Process payment
-      operationId: createPayment
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [order_id, amount_santim, method]
-              properties:
-                order_id:
-                  $ref: '#/components/schemas/UUID'
-                amount_santim:
-                  $ref: '#/components/schemas/Santim'
-                method:
-                  type: string
-                  enum: [cash, telebirr, chappa, card, gift_card]
-                reference:
-                  type: string
-      responses:
-        '201':
-          description: Payment processed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Payment'
-
-  /api/staff:
-    get:
-      tags: [Staff]
-      summary: List staff members
-      operationId: listStaff
-      parameters:
-        - name: restaurant_id
-          in: query
-          required: true
-          schema:
-            $ref: '#/components/schemas/UUID'
-        - name: active_only
-          in: query
-          schema:
-            type: boolean
-            default: true
-      responses:
-        '200':
-          description: Staff list
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
+                    type: string
+                    maxLength: 1000
+                created_at:
+                    $ref: '#/components/schemas/Timestamp'
+                updated_at:
+                    $ref: '#/components/schemas/Timestamp'
+                completed_at:
+                    $ref: '#/components/schemas/Timestamp'
+                    nullable: true
+                order_items:
                     type: array
                     items:
-                      $ref: '#/components/schemas/StaffMember'
-                  pagination:
+                        $ref: '#/components/schemas/OrderItem'
+
+        OrderItem:
+            type: object
+            required: [id, menu_item_id, quantity, price_santim]
+            properties:
+                id:
+                    $ref: '#/components/schemas/UUID'
+                order_id:
+                    $ref: '#/components/schemas/UUID'
+                menu_item_id:
+                    $ref: '#/components/schemas/UUID'
+                menu_item:
+                    $ref: '#/components/schemas/MenuItem'
+                quantity:
+                    type: integer
+                    minimum: 1
+                    default: 1
+                price_santim:
+                    $ref: '#/components/schemas/Santim'
+                notes:
+                    type: string
+                    maxLength: 500
+
+        PaginatedOrders:
+            type: object
+            properties:
+                data:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Order'
+                pagination:
                     $ref: '#/components/schemas/Pagination'
 
-    post:
-      tags: [Staff]
-      summary: Create staff member
-      operationId: createStaff
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [restaurant_id, first_name, role]
-              properties:
-                restaurant_id:
-                  $ref: '#/components/schemas/UUID'
-                first_name:
-                  type: string
-                last_name:
-                  type: string
-                phone:
-                  type: string
-role:
-                   type: string
-                   enum: [owner, admin, manager, waiter, kitchen, bar]
-                permissions:
-                  type: array
-                  items:
+        # KDS
+        KDSCourse:
+            type: object
+            properties:
+                id:
+                    $ref: '#/components/schemas/UUID'
+                order_id:
+                    $ref: '#/components/schemas/UUID'
+                course_number:
+                    type: integer
+                name:
                     type: string
-      responses:
-        '201':
-          description: Staff created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StaffMember'
-
-  /health:
-    get:
-      tags: [Auth]
-      summary: Health check endpoint
-      operationId: healthCheck
-      security: []
-      responses:
-        '200':
-          description: System health status
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
+                    enum: [appetizers, mains, desserts, drinks]
+                status:
                     type: string
-                    enum: [healthy, degraded]
-                  timestamp:
+                    enum: [pending, preparing, ready, served]
+                due_at:
                     $ref: '#/components/schemas/Timestamp'
-                  version:
+
+        # Payments
+        Payment:
+            type: object
+            required: [id, order_id, amount_santim, method, status]
+            properties:
+                id:
+                    $ref: '#/components/schemas/UUID'
+                order_id:
+                    $ref: '#/components/schemas/UUID'
+                amount_santim:
+                    $ref: '#/components/schemas/Santim'
+                method:
                     type: string
-                  dependencies:
-                    type: object
-                    properties:
-                      database:
-                        type: string
-                        enum: [up, down]
-                      redis:
-                        type: string
-                        enum: [up, down]
-                      powersync:
-                        type: string
-                        enum: [up, down]
-  /api/v1/guest-portal/context:
-    get:
-      tags: [Guest Portal]
-      summary: Get guest portal context
-      operationId: getGuestPortalContext
-      security: []
-      responses:
-        '200':
-          description: Guest portal context
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  restaurant_id:
+                    enum: [cash, telebirr, chappa, card, gift_card]
+                status:
                     type: string
-                  table_id:
+                    enum: [pending, completed, failed, refunded]
+                reference:
                     type: string
-                  session_started:
+                created_at:
+                    $ref: '#/components/schemas/Timestamp'
+
+        # Staff
+        StaffMember:
+            type: object
+            required: [id, restaurant_id, first_name, role]
+            properties:
+                id:
+                    $ref: '#/components/schemas/UUID'
+                restaurant_id:
+                    $ref: '#/components/schemas/UUID'
+                first_name:
+                    type: string
+                last_name:
+                    type: string
+                email:
+                    type: string
+                    format: email
+                phone:
+                    type: string
+                role:
+                    type: string
+                    enum: [owner, manager, waiter, kitchen]
+                permissions:
+                    type: array
+                    items:
+                        type: string
+                is_active:
                     type: boolean
 
-  /api/v1/guest-portal/restaurant:
-    get:
-      tags: [Guest Portal]
-      summary: Get restaurant info for guest portal
-      operationId: getGuestPortalRestaurant
-      security: []
-      responses:
-        '200':
-          description: Restaurant info
-          content:
-            application/json:
-              schema:
-                type: object
-
-  /api/v1/guest-portal/session:
-    post:
-      tags: [Guest Portal]
-      summary: Create guest portal session
-      operationId: createGuestPortalSession
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [restaurant_id]
-              properties:
-                restaurant_id:
-                  type: string
-                table_id:
-                  type: string
-      responses:
-        '201':
-          description: Session created
-
-  /api/v1/guest-portal/discounts:
-    get:
-      tags: [Guest Portal]
-      summary: Get available discounts for guest
-      operationId: getGuestPortalDiscounts
-      security: []
-      responses:
-        '200':
-          description: List of discounts
-
-  /api/v1/guest-portal/track:
-    post:
-      tags: [Guest Portal]
-      summary: Track guest activity
-      operationId: trackGuestActivity
-      security: []
-      responses:
-        '200':
-          description: Activity tracked
-
-  /api/v1/guest-portal/verify-contact:
-    post:
-      tags: [Guest Portal]
-      summary: Verify guest contact info
-      operationId: verifyGuestContact
-      security: []
-      responses:
-        '200':
-          description: Contact verified
-
-  /api/v1/merchant/core/tables:
-    get:
-      tags: [Merchant Core]
-      summary: List all tables
-      operationId: listMerchantTables
-      responses:
-        '200':
-          description: List of tables
-    post:
-      tags: [Merchant Core]
-      summary: Create a new table
-      operationId: createMerchantTable
-      responses:
-        '201':
-          description: Table created
-
-  /api/v1/merchant/core/tables/{tableId}:
-    get:
-      tags: [Merchant Core]
-      summary: Get table by ID
-      operationId: getMerchantTable
-      parameters:
-        - name: tableId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Table details
-    patch:
-      tags: [Merchant Core]
-      summary: Update table
-      operationId: updateMerchantTable
-      parameters:
-        - name: tableId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Table updated
-    delete:
-      tags: [Merchant Core]
-      summary: Delete table
-      operationId: deleteMerchantTable
-      parameters:
-        - name: tableId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Table deleted
-
-  /api/v1/merchant/core/tables/{tableId}/qr/regenerate:
-    post:
-      tags: [Merchant Core]
-      summary: Regenerate QR code for table
-      operationId: regenerateTableQR
-      parameters:
-        - name: tableId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: QR code regenerated
-
-  /api/v1/merchant/core/menu:
-    get:
-      tags: [Merchant Core]
-      summary: Get menu
-      operationId: getMerchantMenu
-      responses:
-        '200':
-          description: Menu details
-    post:
-      tags: [Merchant Core]
-      summary: Create menu update
-      operationId: createMerchantMenu
-      responses:
-        '201':
-          description: Menu updated
-
-  /api/v1/merchant/core/menu/items/{itemId}/upsell:
-    get:
-      tags: [Merchant Core]
-      summary: Get upsell items for menu item
-      operationId: getUpsellItems
-      parameters:
-        - name: itemId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Upsell items list
-
-  /api/v1/merchant/core/staff:
-    get:
-      tags: [Merchant Core]
-      summary: List staff
-      operationId: listMerchantStaff
-      responses:
-        '200':
-          description: Staff list
-    post:
-      tags: [Merchant Core]
-      summary: Create staff member
-      operationId: createMerchantStaff
-      responses:
-        '201':
-          description: Staff created
-
-  /api/v1/merchant/core/staff/{staffId}:
-    get:
-      tags: [Merchant Core]
-      summary: Get staff member
-      operationId: getMerchantStaff
-      parameters:
-        - name: staffId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Staff details
-    patch:
-      tags: [Merchant Core]
-      summary: Update staff member
-      operationId: updateMerchantStaff
-      parameters:
-        - name: staffId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Staff updated
-    delete:
-      tags: [Merchant Core]
-      summary: Delete staff member
-      operationId: deleteMerchantStaff
-      parameters:
-        - name: staffId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Staff deleted
-
-  /api/v1/merchant/core/staff/{staffId}/role:
-    patch:
-      tags: [Merchant Core]
-      summary: Update staff role
-      operationId: updateStaffRole
-      parameters:
-        - name: staffId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Role updated
-
-  /api/v1/merchant/core/staff/invite:
-    post:
-      tags: [Merchant Core]
-      summary: Invite new staff member
-      operationId: inviteStaff
-      responses:
-        '201':
-          description: Invitation sent
-
-  /api/v1/merchant/core/dashboard-presets:
-    get:
-      tags: [Merchant Core]
-      summary: Get dashboard presets
-      operationId: getDashboardPresets
-      responses:
-        '200':
-          description: Dashboard presets
-    patch:
-      tags: [Merchant Core]
-      summary: Update dashboard presets
-      operationId: updateDashboardPresets
-      responses:
-        '200':
-          description: Presets updated
-
-  /api/v1/merchant/core/activity:
-    get:
-      tags: [Merchant Core]
-      summary: Get recent activity
-      operationId: getMerchantActivity
-      responses:
-        '200':
-          description: Activity list
-
-  /api/v1/merchant/core/command-center:
-    get:
-      tags: [Merchant Core]
-      summary: Get command center status
-      operationId: getCommandCenter
-      responses:
-        '200':
-          description: Command center status
-
-  /api/v1/merchant/marketing/loyalty/programs:
-    get:
-      tags: [Merchant Marketing]
-      summary: List loyalty programs
-      operationId: listLoyaltyPrograms
-      responses:
-        '200':
-          description: Loyalty programs list
-    post:
-      tags: [Merchant Marketing]
-      summary: Create loyalty program
-      operationId: createLoyaltyProgram
-      responses:
-        '201':
-          description: Program created
-
-  /api/v1/merchant/marketing/loyalty/programs/{programId}:
-    get:
-      tags: [Merchant Marketing]
-      summary: Get loyalty program
-      operationId: getLoyaltyProgram
-      parameters:
-        - name: programId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Program details
-    patch:
-      tags: [Merchant Marketing]
-      summary: Update loyalty program
-      operationId: updateLoyaltyProgram
-      parameters:
-        - name: programId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Program updated
-
-  /api/v1/merchant/marketing/loyalty/accounts/{accountId}/adjust:
-    post:
-      tags: [Merchant Marketing]
-      summary: Adjust loyalty points
-      operationId: adjustLoyaltyPoints
-      parameters:
-        - name: accountId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Points adjusted
-
-  /api/v1/merchant/marketing/gift-cards:
-    get:
-      tags: [Merchant Marketing]
-      summary: List gift cards
-      operationId: listGiftCards
-      responses:
-        '200':
-          description: Gift cards list
-    post:
-      tags: [Merchant Marketing]
-      summary: Create gift card
-      operationId: createGiftCard
-      responses:
-        '201':
-          description: Gift card created
-
-  /api/v1/merchant/marketing/gift-cards/{giftCardId}:
-    get:
-      tags: [Merchant Marketing]
-      summary: Get gift card
-      operationId: getGiftCard
-      parameters:
-        - name: giftCardId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Gift card details
-    patch:
-      tags: [Merchant Marketing]
-      summary: Update gift card
-      operationId: updateGiftCard
-      parameters:
-        - name: giftCardId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Gift card updated
-    delete:
-      tags: [Merchant Marketing]
-      summary: Delete gift card
-      operationId: deleteGiftCard
-      parameters:
-        - name: giftCardId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Gift card deleted
-
-  /api/v1/merchant/marketing/gift-cards/{giftCardId}/redeem:
-    post:
-      tags: [Merchant Marketing]
-      summary: Redeem gift card
-      operationId: redeemGiftCard
-      parameters:
-        - name: giftCardId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Gift card redeemed
-
-  /api/v1/merchant/marketing/discounts:
-    get:
-      tags: [Merchant Marketing]
-      summary: List discounts
-      operationId: listDiscounts
-      responses:
-        '200':
-          description: Discounts list
-    post:
-      tags: [Merchant Marketing]
-      summary: Create discount
-      operationId: createDiscount
-      responses:
-        '201':
-          description: Discount created
-
-  /api/v1/merchant/marketing/happy-hour:
-    get:
-      tags: [Merchant Marketing]
-      summary: Get happy hour settings
-      operationId: getHappyHour
-      responses:
-        '200':
-          description: Happy hour settings
-    post:
-      tags: [Merchant Marketing]
-      summary: Create happy hour
-      operationId: createHappyHour
-      responses:
-        '201':
-          description: Happy hour created
-
-  /api/v1/merchant/marketing/channels/delivery/orders:
-    get:
-      tags: [Merchant Marketing]
-      summary: List delivery orders
-      operationId: listDeliveryOrders
-      responses:
-        '200':
-          description: Delivery orders list
-    post:
-      tags: [Merchant Marketing]
-      summary: Create delivery order
-      operationId: createDeliveryOrder
-      responses:
-        '201':
-          description: Order created
-
-  /api/v1/merchant/marketing/channels/delivery/orders/{externalOrderId}/ack:
-    post:
-      tags: [Merchant Marketing]
-      summary: Acknowledge delivery order
-      operationId: ackDeliveryOrder
-      parameters:
-        - name: externalOrderId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Order acknowledged
-
-  /api/v1/merchant/marketing/channels/delivery/connect:
-    post:
-      tags: [Merchant Marketing]
-      summary: Connect delivery channel
-      operationId: connectDeliveryChannel
-      responses:
-        '200':
-          description: Channel connected
-
-  /api/v1/merchant/marketing/channels/summary:
-    get:
-      tags: [Merchant Marketing]
-      summary: Get channels summary
-      operationId: getChannelsSummary
-      responses:
-        '200':
-          description: Channels summary
-
-  /api/v1/merchant/marketing/channels/online-ordering/settings:
-    get:
-      tags: [Merchant Marketing]
-      summary: Get online ordering settings
-      operationId: getOnlineOrderingSettings
-      responses:
-        '200':
-          description: Settings
-    patch:
-      tags: [Merchant Marketing]
-      summary: Update online ordering settings
-      operationId: updateOnlineOrderingSettings
-      responses:
-        '200':
-          description: Settings updated
-
-  /api/v1/merchant/operations/orders:
-    get:
-      tags: [Merchant Operations]
-      summary: List orders
-      operationId: listMerchantOrders
-      responses:
-        '200':
-          description: Orders list
-    post:
-      tags: [Merchant Operations]
-      summary: Create order
-      operationId: createMerchantOrder
-      responses:
-        '201':
-          description: Order created
-
-  /api/v1/merchant/operations/orders/{orderId}:
-    get:
-      tags: [Merchant Operations]
-      summary: Get order by ID
-      operationId: getMerchantOrder
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Order details
-    patch:
-      tags: [Merchant Operations]
-      summary: Update order
-      operationId: updateMerchantOrder
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Order updated
-
-  /api/v1/merchant/operations/orders/{orderId}/status:
-    post:
-      tags: [Merchant Operations]
-      summary: Update order status
-      operationId: updateOrderStatus
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Status updated
-
-  /api/v1/merchant/operations/orders/{orderId}/split:
-    post:
-      tags: [Merchant Operations]
-      summary: Split order
-      operationId: splitOrder
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Order split
-
-  /api/v1/merchant/operations/orders/{orderId}/assign:
-    post:
-      tags: [Merchant Operations]
-      summary: Assign order to staff
-      operationId: assignOrder
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Order assigned
-
-  /api/v1/merchant/operations/orders/{orderId}/course-fire:
-    post:
-      tags: [Merchant Operations]
-      summary: Fire course
-      operationId: fireCourse
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Course fired
-
-  /api/v1/merchant/operations/orders/{orderId}/items/{itemId}/override-price:
-    patch:
-      tags: [Merchant Operations]
-      summary: Override item price
-      operationId: overrideItemPrice
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: itemId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Price updated
-
-  /api/v1/merchant/operations/orders/{orderId}/notify-status:
-    post:
-      tags: [Merchant Operations]
-      summary: Notify order status
-      operationId: notifyOrderStatus
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Notification sent
-
-  /api/v1/merchant/operations/orders/{orderId}/calculate-fire-times:
-    post:
-      tags: [Merchant Operations]
-      summary: Calculate fire times
-      operationId: calculateFireTimes
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Fire times calculated
-
-  /api/v1/merchant/operations/orders/bulk-status:
-    post:
-      tags: [Merchant Operations]
-      summary: Bulk update order status
-      operationId: bulkUpdateOrderStatus
-      responses:
-        '200':
-          description: Statuses updated
-
-  /api/v1/merchant/operations/kds/orders/{orderId}:
-    patch:
-      tags: [KDS]
-      summary: Update KDS order
-      operationId: updateKDSOrder
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: KDS order updated
-
-  /api/v1/merchant/operations/kds/items/{kdsItemId}/action:
-    post:
-      tags: [KDS]
-      summary: Perform KDS item action
-      operationId: kdsItemAction
-      parameters:
-        - name: kdsItemId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Action performed
-
-  /api/v1/merchant/operations/kds/orders/{orderId}/handoff:
-    post:
-      tags: [KDS]
-      summary: Handoff KDS order
-      operationId: kdsOrderHandoff
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Order handed off
-
-  /api/v1/merchant/operations/kds/orders/{orderId}/print:
-    post:
-      tags: [KDS]
-      summary: Print KDS order
-      operationId: printKDSOrder
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Order printed
-
-  /api/v1/merchant/operations/kds/queue:
-    get:
-      tags: [KDS]
-      summary: Get KDS queue
-      operationId: getKDSQueue
-      responses:
-        '200':
-          description: KDS queue
-
-  /api/v1/merchant/operations/kds/telemetry:
-    get:
-      tags: [KDS]
-      summary: Get KDS telemetry
-      operationId: getKDSTelemetry
-      responses:
-        '200':
-          description: Telemetry data
-
-  /api/v1/merchant/operations/waitlist:
-    get:
-      tags: [Merchant Operations]
-      summary: List waitlist
-      operationId: listWaitlist
-      responses:
-        '200':
-          description: Waitlist
-    post:
-      tags: [Merchant Operations]
-      summary: Add to waitlist
-      operationId: createWaitlistEntry
-      responses:
-        '201':
-          description: Entry added
-
-  /api/v1/merchant/operations/waitlist/{id}:
-    get:
-      tags: [Merchant Operations]
-      summary: Get waitlist entry
-      operationId: getWaitlistEntry
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Entry details
-    patch:
-      tags: [Merchant Operations]
-      summary: Update waitlist entry
-      operationId: updateWaitlistEntry
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Entry updated
-    delete:
-      tags: [Merchant Operations]
-      summary: Remove from waitlist
-      operationId: deleteWaitlistEntry
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Entry removed
-
-  /api/v1/merchant/operations/waitlist/{id}/notify:
-    post:
-      tags: [Merchant Operations]
-      summary: Notify waitlist entry
-      operationId: notifyWaitlistEntry
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Notification sent
-
-  /api/v1/merchant/operations/service-requests:
-    get:
-      tags: [Merchant Operations]
-      summary: List service requests
-      operationId: listServiceRequests
-      responses:
-        '200':
-          description: Service requests list
-    post:
-      tags: [Merchant Operations]
-      summary: Create service request
-      operationId: createServiceRequest
-      responses:
-        '201':
-          description: Request created
-
-  /api/v1/merchant/operations/service-requests/{requestId}:
-    get:
-      tags: [Merchant Operations]
-      summary: Get service request
-      operationId: getServiceRequest
-      parameters:
-        - name: requestId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Request details
-    patch:
-      tags: [Merchant Operations]
-      summary: Update service request
-      operationId: updateServiceRequest
-      parameters:
-        - name: requestId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Request updated
-    delete:
-      tags: [Merchant Operations]
-      summary: Delete service request
-      operationId: deleteServiceRequest
-      parameters:
-        - name: requestId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Request deleted
-
-  /api/v1/merchant/operations/table-sessions/open:
-    post:
-      tags: [Merchant Operations]
-      summary: Open table session
-      operationId: openTableSession
-      responses:
-        '201':
-          description: Session opened
-
-  /api/v1/merchant/operations/table-sessions/{sessionId}/close:
-    post:
-      tags: [Merchant Operations]
-      summary: Close table session
-      operationId: closeTableSession
-      parameters:
-        - name: sessionId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Session closed
-
-  /api/v1/merchant/operations/table-sessions/{sessionId}/transfer:
-    post:
-      tags: [Merchant Operations]
-      summary: Transfer table session
-      operationId: transferTableSession
-      parameters:
-        - name: sessionId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Session transferred
-
-  /api/v1/merchant/operations/payments/sessions:
-    post:
-      tags: [Merchant Operations]
-      summary: Create payment session
-      operationId: createPaymentSession
-      responses:
-        '201':
-          description: Session created
-
-  /api/v1/merchant/operations/tip-pools:
-    get:
-      tags: [Merchant Operations]
-      summary: List tip pools
-      operationId: listTipPools
-      responses:
-        '200':
-          description: Tip pools list
-
-  /api/v1/merchant/operations/tip-pools/allocate:
-    post:
-      tags: [Merchant Operations]
-      summary: Allocate tips
-      operationId: allocateTips
-      responses:
-        '200':
-          description: Tips allocated
-
-  /api/v1/merchant/operations/delivery/fee:
-    get:
-      tags: [Merchant Operations]
-      summary: Get delivery fee
-      operationId: getDeliveryFee
-      responses:
-        '200':
-          description: Delivery fee
-
-  /api/v1/merchant/operations/delivery/aggregator/orders:
-    get:
-      tags: [Merchant Operations]
-      summary: List aggregator orders
-      operationId: listAggregatorOrders
-      responses:
-        '200':
-          description: Orders list
-
-  /api/v1/pos/device/pair:
-    post:
-      tags: [POS Device]
-      summary: Pair POS device
-      operationId: pairPOSDevice
-      security: []
-      responses:
-        '200':
-          description: Device paired
-
-  /api/v1/pos/device/tables:
-    get:
-      tags: [POS Device]
-      summary: Get tables for POS device
-      operationId: getPOSTables
-      responses:
-        '200':
-          description: Tables list
-
-  /api/v1/pos/device/tables/ensure-open-session:
-    post:
-      tags: [POS Device]
-      summary: Ensure open session for table
-      operationId: ensureOpenSession
-      responses:
-        '200':
-          description: Session ensured
-
-  /api/v1/pos/device/tables/close:
-    post:
-      tags: [POS Device]
-      summary: Close table session
-      operationId: closePOSTable
-      responses:
-        '200':
-          description: Table closed
-
-  /api/v1/pos/device/tables/bill-request:
-    post:
-      tags: [POS Device]
-      summary: Request bill for table
-      operationId: requestBill
-      responses:
-        '200':
-          description: Bill requested
-
-  /api/v1/pos/device/orders:
-    get:
-      tags: [POS Device]
-      summary: Get orders for POS
-      operationId: getPOSOrders
-      responses:
-        '200':
-          description: Orders list
-    post:
-      tags: [POS Device]
-      summary: Create order from POS
-      operationId: createPOSOrder
-      responses:
-        '201':
-          description: Order created
-
-  /api/v1/pos/device/menu:
-    get:
-      tags: [POS Device]
-      summary: Get menu for POS
-      operationId: getPOSMenu
-      responses:
-        '200':
-          description: Menu list
-
-  /api/v1/pos/device/discounts:
-    get:
-      tags: [POS Device]
-      summary: Get discounts for POS
-      operationId: getPOSDiscounts
-      responses:
-        '200':
-          description: Discounts list
-
-  /api/v1/pos/device/service-requests:
-    get:
-      tags: [POS Device]
-      summary: Get service requests for POS
-      operationId: getPOSServiceRequests
-      responses:
-        '200':
-          description: Service requests
-    post:
-      tags: [POS Device]
-      summary: Create service request from POS
-      operationId: createPOSServiceRequest
-      responses:
-        '201':
-          description: Request created
-
-  /api/v1/pos/device/terminal/overview:
-    get:
-      tags: [POS Device]
-      summary: Get terminal overview
-      operationId: getTerminalOverview
-      responses:
-        '200':
-          description: Terminal overview
-
-  /api/v1/internal/graphql/graphql:
-    get:
-      tags: [Internal]
-      summary: GraphQL endpoint
-      operationId: graphqlQuery
-      security: []
-      responses:
-        '200':
-          description: GraphQL response
-    post:
-      tags: [Internal]
-      summary: GraphQL POST endpoint
-      operationId: graphqlPost
-      security: []
-      responses:
-        '200':
-          description: GraphQL response
-
-  /api/v1/internal/graphql/subgraphs/guests:
-    get:
-      tags: [Internal]
-      summary: Guests subgraph
-      operationId: guestsSubgraph
-      security: []
-      responses:
-        '200':
-          description: Subgraph response
-    post:
-      tags: [Internal]
-      summary: Guests subgraph POST
-      operationId: guestsSubgraphPost
-      security: []
-      responses:
-        '200':
-          description: Subgraph response
-
-  /api/v1/internal/graphql/subgraphs/menu:
-    get:
-      tags: [Internal]
-      summary: Menu subgraph
-      operationId: menuSubgraph
-      security: []
-      responses:
-        '200':
-          description: Subgraph response
-    post:
-      tags: [Internal]
-      summary: Menu subgraph POST
-      operationId: menuSubgraphPost
-      security: []
-      responses:
-        '200':
-          description: Subgraph response
-
-  /api/v1/internal/graphql/subgraphs/orders:
-    get:
-      tags: [Internal]
-      summary: Orders subgraph
-      operationId: ordersSubgraph
-      security: []
-      responses:
-        '200':
-          description: Subgraph response
-    post:
-      tags: [Internal]
-      summary: Orders subgraph POST
-      operationId: ordersSubgraphPost
-      security: []
-      responses:
-        '200':
-          description: Subgraph response
-
-  /api/v1/internal/graphql/subgraphs/payments:
-    get:
-      tags: [Internal]
-      summary: Payments subgraph
-      operationId: paymentsSubgraph
-      security: []
-      responses:
-        '200':
-          description: Subgraph response
-    post:
-      tags: [Internal]
-      summary: Payments subgraph POST
-      operationId: paymentsSubgraphPost
-      security: []
-      responses:
-        '200':
-          description: Subgraph response
-
-  /api/v1/internal/graphql/subgraphs/staff:
-    get:
-      tags: [Internal]
-      summary: Staff subgraph
-      operationId: staffSubgraph
-      security: []
-      responses:
-        '200':
-          description: Subgraph response
-    post:
-      tags: [Internal]
-      summary: Staff subgraph POST
-      operationId: staffSubgraphPost
-      security: []
-      responses:
-        '200':
-          description: Subgraph response
-
-  /api/v1/internal/docs:
-    get:
-      tags: [Internal]
-      summary: Internal API docs
-      operationId: getInternalDocs
-      security: []
-      responses:
-        '200':
-          description: Docs content
-
-  /api/v1/internal/docs/ui:
-    get:
-      tags: [Internal]
-      summary: Internal docs UI
-      operationId: getInternalDocsUI
-      security: []
-      responses:
-        '200':
-          description: Docs UI
-
-  /api/v1/internal/alerts/alerts/rules:
-    get:
-      tags: [Internal]
-      summary: List alert rules
-      operationId: listAlertRules
-      responses:
-        '200':
-          description: Alert rules list
-    post:
-      tags: [Internal]
-      summary: Create alert rule
-      operationId: createAlertRule
-      responses:
-        '201':
-          description: Rule created
-
-  /api/v1/internal/alerts/alerts/rules/{ruleId}:
-    get:
-      tags: [Internal]
-      summary: Get alert rule
-      operationId: getAlertRule
-      parameters:
-        - name: ruleId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Rule details
-    patch:
-      tags: [Internal]
-      summary: Update alert rule
-      operationId: updateAlertRule
-      parameters:
-        - name: ruleId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Rule updated
-    delete:
-      tags: [Internal]
-      summary: Delete alert rule
-      operationId: deleteAlertRule
-      parameters:
-        - name: ruleId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Rule deleted
-
-  /api/v1/internal/alerts/test-alerts:
-    post:
-      tags: [Internal]
-      summary: Test alert system
-      operationId: testAlerts
-      responses:
-        '200':
-          description: Alert tested
-
-  /api/v1/internal/fleet/devices/{deviceId}/management-actions:
-    post:
-      tags: [Internal]
-      summary: Execute device management action
-      operationId: deviceManagementAction
-      parameters:
-        - name: deviceId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Action executed
-
-  /api/v1/system/health:
-    get:
-      tags: [System]
-      summary: System health check
-      operationId: systemHealthCheck
-      security: []
-      responses:
-        '200':
-          description: Health status
-
-  /api/v1/system/health/live:
-    get:
-      tags: [System]
-      summary: System live check
-      operationId: systemLiveCheck
-      security: []
-      responses:
-        '200':
-          description: Live status
-
-  /api/v1/system/health/ready:
-    get:
-      tags: [System]
-      summary: System ready check
-      operationId: systemReadyCheck
-      security: []
-      responses:
-        '200':
-          description: Ready status
-
-  /api/v1/system/sync:
-    post:
-      tags: [System]
-      summary: Trigger system sync
-      operationId: triggerSync
-      responses:
-        '200':
-          description: Sync triggered
-
-  /api/v1/system/jobs/cron/stale-device-check:
-    post:
-      tags: [System]
-      summary: Cron job - stale device check
-      operationId: cronStaleDeviceCheck
-      responses:
-        '200':
-          description: Job completed
-
-  /api/v1/system/jobs/cron/silent-callback-check:
-    post:
-      tags: [System]
-      summary: Cron job - silent callback check
-      operationId: cronSilentCallbackCheck
-      responses:
-        '200':
-          description: Job completed
-
-  /api/v1/system/jobs/cron/notification-processor:
-    post:
-      tags: [System]
-      summary: Cron job - notification processor
-      operationId: cronNotificationProcessor
-      responses:
-        '200':
-          description: Job completed
-
-  /api/v1/system/jobs/cron/eod-report:
-    post:
-      tags: [System]
-      summary: Cron job - end of day report
-      operationId: cronEODReport
-      responses:
-        '200':
-          description: Job completed
-
-  /api/v1/system/jobs/orders/completed:
-    post:
-      tags: [System]
-      summary: Process completed orders
-      operationId: processCompletedOrders
-      responses:
-        '200':
-          description: Orders processed
-
-  /api/v1/system/jobs/payments/retry:
-    post:
-      tags: [System]
-      summary: Retry failed payments
-      operationId: retryPayments
-      responses:
-        '200':
-          description: Payments retried
-
-  /api/v1/system/jobs/payments/complete:
-    post:
-      tags: [System]
-      summary: Complete pending payments
-      operationId: completePayments
-      responses:
-        '200':
-          description: Payments completed
-
-  /api/v1/system/jobs/fiscal/replay:
-    post:
-      tags: [System]
-      summary: Replay fiscal events
-      operationId: replayFiscal
-      responses:
-        '200':
-          description: Events replayed
-
-  /api/v1/system/jobs/erca/z-report:
-    post:
-      tags: [System]
-      summary: Generate Z-report
-      operationId: generateZReport
-      responses:
-        '200':
-          description: Report generated
-
-  /api/v1/system/webhooks/telebirr:
-    post:
-      tags: [System]
-      summary: Telebirr webhook
-      operationId: telebirrWebhook
-      security: []
-      responses:
-        '200':
-          description: Webhook processed
-
-  /api/v1/system/webhooks/chapa:
-    post:
-      tags: [System]
-      summary: Chapa webhook
-      operationId: chapaWebhook
-      security: []
-      responses:
-        '200':
-          description: Webhook processed
-
-  /api/v1/system/webhooks/delivery:
-    post:
-      tags: [System]
-      summary: Delivery webhook
-      operationId: deliveryWebhook
-      security: []
-      responses:
-        '200':
-          description: Webhook processed
-
-  /api/v1/system/webhooks/guest-order-status:
-    post:
-      tags: [System]
-      summary: Guest order status webhook
-      operationId: guestOrderStatusWebhook
-      security: []
-      responses:
-        '200':
-          description: Webhook processed
-
-  /api/v1/merchant/devices:
-    get:
-      tags: [Merchant Operations]
-      summary: List all devices
-      operationId: listDevices
-      responses:
-        '200':
-          description: Devices list
-    post:
-      tags: [Merchant Operations]
-      summary: Register a new device
-      operationId: registerDevice
-      responses:
-        '201':
-          description: Device registered
-
-  /api/v1/merchant/devices/pair:
-    post:
-      tags: [POS Device]
-      summary: Pair a POS device
-      operationId: pairDevice
-      security: []
-      responses:
-        '200':
-          description: Device paired
-
-  /api/v1/merchant/devices/provision:
-    post:
-      tags: [Merchant Operations]
-      summary: Provision a new device
-      operationId: provisionDevice
-      responses:
-        '201':
-          description: Device provisioned
-
-  /api/v1/merchant/devices/{deviceId}:
-    get:
-      tags: [POS Device]
-      summary: Get device by ID
-      operationId: getDevice
-      parameters:
-        - name: deviceId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Device details
-
-  /api/v1/merchant/devices/{deviceId}/management-actions:
-    post:
-      tags: [Merchant Operations]
-      summary: Execute device management action
-      operationId: deviceManagementAction
-      parameters:
-        - name: deviceId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Action executed
-
-  /api/v1/merchant/core/restaurants:
-    get:
-      tags: [Merchant Core]
-      summary: List restaurants
-      operationId: listRestaurants
-      responses:
-        '200':
-          description: Restaurants list
-    post:
-      tags: [Merchant Core]
-      summary: Create restaurant
-      operationId: createRestaurant
-      responses:
-        '201':
-          description: Restaurant created
-
-  /api/v1/merchant/core/restaurants/{id}/erca-status:
-    get:
-      tags: [Merchant Core]
-      summary: Get ERCA status for restaurant
-      operationId: getErcaStatus
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: ERCA status
-
-  /api/v1/merchant/core/restaurants/zones:
-    get:
-      tags: [Merchant Core]
-      summary: List restaurant zones
-      operationId: listZones
-      responses:
-        '200':
-          description: Zones list
-
-  /api/v1/merchant/core/settings/security:
-    get:
-      tags: [Merchant Core]
-      summary: Get security settings
-      operationId: getSecuritySettings
-      responses:
-        '200':
-          description: Security settings
-
-  /api/v1/merchant/core/settings/notifications:
-    get:
-      tags: [Merchant Core]
-      summary: Get notification settings
-      operationId: getNotificationSettings
-      responses:
-        '200':
-          description: Notification settings
-
-  /api/v1/merchant/core/settings/payments:
-    get:
-      tags: [Merchant Core]
-      summary: Get payment settings
-      operationId: getPaymentSettings
-      responses:
-        '200':
-          description: Payment settings
-
-  /api/v1/merchant/core/onboarding:
-    get:
-      tags: [Merchant Core]
-      summary: Get onboarding status
-      operationId: getOnboardingStatus
-      responses:
-        '200':
-          description: Onboarding status
-    post:
-      tags: [Merchant Core]
-      summary: Update onboarding step
-      operationId: updateOnboarding
-      responses:
-        '200':
-          description: Onboarding updated
-
-  /api/v1/merchant/core/onboarding/banks:
-    get:
-      tags: [Merchant Core]
-      summary: List supported banks
-      operationId: listBanks
-      responses:
-        '200':
-          description: Banks list
-
-  /api/v1/merchant/core/staff/verify-pin:
-    post:
-      tags: [Merchant Core]
-      summary: Verify staff PIN
-      operationId: verifyStaffPin
-      responses:
-        '200':
-          description: PIN verified
-
-  /api/v1/merchant/core/staff/add-pin:
-    post:
-      tags: [Merchant Core]
-      summary: Add PIN for staff
-      operationId: addStaffPin
-      responses:
-        '200':
-          description: PIN added
-
-  /api/v1/merchant/core/staff/time-entries/clock:
-    post:
-      tags: [Merchant Core]
-      summary: Clock in/out staff
-      operationId: clockStaff
-      responses:
-        '200':
-          description: Clock recorded
-
-  /api/v1/merchant/core/staff/schedule:
-    get:
-      tags: [Merchant Core]
-      summary: Get staff schedule
-      operationId: getStaffSchedule
-      responses:
-        '200':
-          description: Schedule
-
-  /api/v1/merchant/core/staff/{staffId}/active:
-    patch:
-      tags: [Merchant Core]
-      summary: Set staff active status
-      operationId: updateStaffActive
-      parameters:
-        - name: staffId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Status updated
-
-  /api/v1/merchant/comms/support/tickets:
-    get:
-      tags: [Merchant Operations]
-      summary: List support tickets
-      operationId: listSupportTickets
-      responses:
-        '200':
-          description: Tickets list
-
-  /api/v1/merchant/comms/support/articles:
-    get:
-      tags: [Merchant Operations]
-      summary: List support articles
-      operationId: listSupportArticles
-      responses:
-        '200':
-          description: Articles list
-
-  /api/v1/merchant/comms/notifications/push/subscribe:
-    post:
-      tags: [Merchant Operations]
-      summary: Subscribe to push notifications
-      operationId: subscribePush
-      responses:
-        '200':
-          description: Subscribed
-
-  /api/v1/merchant/guests:
-    get:
-      tags: [Guest Portal]
-      summary: List guests
-      operationId: listGuests
-      responses:
-        '200':
-          description: Guests list
-
-  /api/v1/merchant/guests/{guestId}:
-    get:
-      tags: [Guest Portal]
-      summary: Get guest by ID
-      operationId: getGuest
-      parameters:
-        - name: guestId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Guest details
-
-  /api/v1/merchant/insights/analytics/overview:
-    get:
-      tags: [Reports]
-      summary: Get analytics overview
-      operationId: getAnalyticsOverview
-      responses:
-        '200':
-          description: Analytics overview
-
-  /api/v1/merchant/insights/metrics/prometheus:
-    get:
-      tags: [Reports]
-      summary: Get Prometheus metrics
-      operationId: getPrometheusMetrics
-      responses:
-        '200':
-          description: Prometheus metrics
-
-  /api/v1/merchant/insights/analytics/notifications:
-    get:
-      tags: [Reports]
-      summary: Get notification analytics
-      operationId: getNotificationAnalytics
-      responses:
-        '200':
-          description: Notification analytics
-
-  /api/v1/merchant/insights/reports/scheduled:
-    get:
-      tags: [Reports]
-      summary: List scheduled reports
-      operationId: listScheduledReports
-      responses:
-        '200':
-          description: Scheduled reports
-
-  /api/v1/merchant/insights/reports/menu-engineering:
-    get:
-      tags: [Reports]
-      summary: Get menu engineering report
-      operationId: getMenuEngineeringReport
-      responses:
-        '200':
-          description: Menu engineering report
-
-  /api/v1/merchant/marketing/campaigns:
-    get:
-      tags: [Merchant Marketing]
-      summary: List campaigns
-      operationId: listCampaigns
-      responses:
-        '200':
-          description: Campaigns list
-
-  /api/v1/merchant/marketing/campaigns/{campaignId}:
-    get:
-      tags: [Merchant Marketing]
-      summary: Get campaign
-      operationId: getCampaign
-      parameters:
-        - name: campaignId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Campaign details
-
-  /api/v1/merchant/marketing/campaigns/{campaignId}/send:
-    post:
-      tags: [Merchant Marketing]
-      summary: Send campaign
-      operationId: sendCampaign
-      parameters:
-        - name: campaignId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Campaign sent
-
-  /api/v1/merchant/insights/analytics/mood:
-    get:
-      tags: [Reports]
-      summary: Get mood analytics
-      operationId: getMoodAnalytics
-      responses:
-        '200':
-          description: Mood analytics
-
-  /api/v1/merchant/insights/analytics/api-metrics:
-    get:
-      tags: [Reports]
-      summary: Get API metrics
-      operationId: getApiMetrics
-      responses:
-        '200':
-          description: API metrics
-
-  /api/v1/merchant/insights/analytics/notifications/report:
-    get:
-      tags: [Reports]
-      summary: Get notification report
-      operationId: getNotificationReport
-      responses:
-        '200':
-          description: Notification report
-
-  /api/v1/merchant/marketing/campaigns/{campaignId}/launch:
-    post:
-      tags: [Merchant Marketing]
-      summary: Launch campaign
-      operationId: launchCampaign
-      parameters:
-        - name: campaignId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Campaign launched
-
-  /api/v1/internal/alerts/alerts:
-    get:
-      tags: [Internal]
-      summary: List alerts
-      operationId: listAlerts
-      responses:
-        '200':
-          description: Alerts list
-    post:
-      tags: [Internal]
-      summary: Create alert
-      operationId: createAlert
-      responses:
-        '201':
-          description: Alert created
-
-  /api/v1/merchant/guests/{guestId}/visits:
-    get:
-      tags: [Guest Portal]
-      summary: Get guest visits
-      operationId: getGuestVisits
-      parameters:
-        - name: guestId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Visits list
+        # Common Responses
+        Pagination:
+            type: object
+            properties:
+                total:
+                    type: integer
+                    minimum: 0
+                limit:
+                    type: integer
+                    minimum: 1
+                    default: 20
+                offset:
+                    type: integer
+                    minimum: 0
+                    default: 0
+                has_more:
+                    type: boolean
+
+        Error:
+            type: object
+            required: [error, message]
+            properties:
+                error:
+                    type: string
+                message:
+                    type: string
+                details:
+                    type: object
+                code:
+                    type: string
+
+        SuccessResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                    default: true
+                data:
+                    type: object
+
+paths:
+    /api/restaurants/{restaurantId}:
+        get:
+            tags: [Restaurants]
+            summary: Get restaurant profile
+            operationId: getRestaurant
+            parameters:
+                - name: restaurantId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: '#/components/schemas/UUID'
+            responses:
+                '200':
+                    description: Restaurant profile
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Restaurant'
+                '404':
+                    description: Restaurant not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /api/menu:
+        get:
+            tags: [Menu]
+            summary: List menu items
+            operationId: listMenuItems
+            parameters:
+                - name: restaurant_id
+                  in: query
+                  required: true
+                  schema:
+                      $ref: '#/components/schemas/UUID'
+                - name: category_id
+                  in: query
+                  schema:
+                      $ref: '#/components/schemas/UUID'
+                - name: active_only
+                  in: query
+                  schema:
+                      type: boolean
+                      default: true
+                - name: limit
+                  in: query
+                  schema:
+                      type: integer
+                      default: 100
+            responses:
+                '200':
+                    description: List of menu items
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/MenuItem'
+                                    categories:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Category'
+
+    /api/orders:
+        get:
+            tags: [Orders]
+            summary: List orders
+            operationId: listOrders
+            parameters:
+                - name: restaurant_id
+                  in: query
+                  required: true
+                  schema:
+                      $ref: '#/components/schemas/UUID'
+                - name: status
+                  in: query
+                  schema:
+                      type: string
+                - name: order_type
+                  in: query
+                  schema:
+                      type: string
+                - name: date_from
+                  in: query
+                  schema:
+                      type: string
+                      format: date
+                - name: date_to
+                  in: query
+                  schema:
+                      type: string
+                      format: date
+                - name: limit
+                  in: query
+                  schema:
+                      type: integer
+                      default: 20
+                - name: offset
+                  in: query
+                  schema:
+                      type: integer
+                      default: 0
+            responses:
+                '200':
+                    description: Paginated orders list
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PaginatedOrders'
+
+        post:
+            tags: [Orders]
+            summary: Create new order
+            operationId: createOrder
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [restaurant_id, items]
+                            properties:
+                                restaurant_id:
+                                    $ref: '#/components/schemas/UUID'
+                                table_id:
+                                    $ref: '#/components/schemas/UUID'
+                                order_type:
+                                    type: string
+                                    enum: [dine_in, takeaway, delivery]
+                                items:
+                                    type: array
+                                    items:
+                                        type: object
+                                        required: [menu_item_id, quantity]
+                                        properties:
+                                            menu_item_id:
+                                                $ref: '#/components/schemas/UUID'
+                                            quantity:
+                                                type: integer
+                                                minimum: 1
+                                            notes:
+                                                type: string
+                                notes:
+                                    type: string
+            responses:
+                '201':
+                    description: Order created
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Order'
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /api/orders/{orderId}:
+        get:
+            tags: [Orders]
+            summary: Get order by ID
+            operationId: getOrder
+            parameters:
+                - name: orderId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: '#/components/schemas/UUID'
+            responses:
+                '200':
+                    description: Order details
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Order'
+                '404':
+                    description: Order not found
+
+        patch:
+            tags: [Orders]
+            summary: Update order status
+            operationId: updateOrder
+            parameters:
+                - name: orderId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: '#/components/schemas/UUID'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                status:
+                                    type: string
+                                    enum:
+                                        [
+                                            pending,
+                                            confirmed,
+                                            preparing,
+                                            ready,
+                                            served,
+                                            completed,
+                                            cancelled,
+                                        ]
+            responses:
+                '200':
+                    description: Order updated
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Order'
+
+    /api/orders/{orderId}/items:
+        post:
+            tags: [Orders]
+            summary: Add item to order
+            operationId: addOrderItem
+            parameters:
+                - name: orderId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: '#/components/schemas/UUID'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [menu_item_id, quantity]
+                            properties:
+                                menu_item_id:
+                                    $ref: '#/components/schemas/UUID'
+                                quantity:
+                                    type: integer
+                                    minimum: 1
+                                notes:
+                                    type: string
+            responses:
+                '201':
+                    description: Item added
+
+    /api/payments:
+        post:
+            tags: [Payments]
+            summary: Process payment
+            operationId: createPayment
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [order_id, amount_santim, method]
+                            properties:
+                                order_id:
+                                    $ref: '#/components/schemas/UUID'
+                                amount_santim:
+                                    $ref: '#/components/schemas/Santim'
+                                method:
+                                    type: string
+                                    enum: [cash, telebirr, chappa, card, gift_card]
+                                reference:
+                                    type: string
+            responses:
+                '201':
+                    description: Payment processed
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Payment'
+
+    /api/staff:
+        get:
+            tags: [Staff]
+            summary: List staff members
+            operationId: listStaff
+            parameters:
+                - name: restaurant_id
+                  in: query
+                  required: true
+                  schema:
+                      $ref: '#/components/schemas/UUID'
+                - name: active_only
+                  in: query
+                  schema:
+                      type: boolean
+                      default: true
+            responses:
+                '200':
+                    description: Staff list
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/StaffMember'
+                                    pagination:
+                                        $ref: '#/components/schemas/Pagination'
+
+        post:
+            tags: [Staff]
+            summary: Create staff member
+            operationId: createStaff
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [restaurant_id, first_name, role]
+                            properties:
+                                restaurant_id:
+                                    $ref: '#/components/schemas/UUID'
+                                first_name:
+                                    type: string
+                                last_name:
+                                    type: string
+                                phone:
+                                    type: string
+                                role:
+                                    type: string
+                                    enum: [owner, manager, waiter, kitchen]
+                                permissions:
+                                    type: array
+                                    items:
+                                        type: string
+            responses:
+                '201':
+                    description: Staff created
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/StaffMember'
+
+    /health:
+        get:
+            tags: [Auth]
+            summary: Health check endpoint
+            operationId: healthCheck
+            security: []
+            responses:
+                '200':
+                    description: System health status
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        enum: [healthy, degraded]
+                                    timestamp:
+                                        $ref: '#/components/schemas/Timestamp'
+                                    version:
+                                        type: string
+                                    dependencies:
+                                        type: object
+                                        properties:
+                                            database:
+                                                type: string
+                                                enum: [up, down]
+                                            redis:
+                                                type: string
+                                                enum: [up, down]
+                                            powersync:
+                                                type: string
+                                                enum: [up, down]

@@ -8,9 +8,9 @@
 - Staging Supabase project created
 - Vercel project configured
 - Environment variables set:
-  - `SUPABASE_ACCESS_TOKEN`
-  - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-  - `SUPABASE_SECRET_KEY`
+    - `SUPABASE_ACCESS_TOKEN`
+    - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+    - `SUPABASE_SECRET_KEY`
 
 ## Steps
 

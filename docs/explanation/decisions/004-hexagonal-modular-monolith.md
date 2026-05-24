@@ -52,15 +52,18 @@ src/
 ### Migration Path
 
 **Phase 1: Core**
+
 - Identify and extract domain entities from StaffService
 - Create `core/domains/staff/entities/` with pure Staff entity
 - Move business logic to domain services
 
 **Phase 2: Ports**
+
 - Define port interfaces in `ports/staff/`
 - Example: `StaffRepositoryPort` with `findById`, `save`, `delete` methods
 
 **Phase 3: Adapters**
+
 - Implement ports in `adapters/outbound/database/`
 - Refactor API routes to use application services
 - Ensure dependency direction: adapters → application → ports → core

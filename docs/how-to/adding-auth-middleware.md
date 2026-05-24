@@ -71,9 +71,7 @@ export async function updateSession(request: NextRequest) {
                 return request.cookies.getAll();
             },
             setAll(cookiesToSet) {
-                cookiesToSet.forEach(({ name, value }) =>
-                    request.cookies.set(name, value)
-                );
+                cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
                 supabaseResponse = NextResponse.next({
                     request,
                 });
@@ -90,9 +88,7 @@ export async function updateSession(request: NextRequest) {
 
     const pathname = request.nextUrl.pathname;
     const protectedPrefixes = ['/app', '/merchant', '/kds', '/staff', '/pos'];
-    const isProtectedPath = protectedPrefixes.some(prefix =>
-        pathname.startsWith(prefix)
-    );
+    const isProtectedPath = protectedPrefixes.some(prefix => pathname.startsWith(prefix));
 
     if (
         !user &&
@@ -131,7 +127,8 @@ if (user && isProtectedPath) {
         const sessionStart = parseInt(sessionStartCookie.value, 10);
         if (!isNaN(sessionStart)) {
             const sessionAgeHours = (now - sessionStart) / (60 * 60 * 1000);
-            if (sessionAgeHours > 8) { // max session lifetime
+            if (sessionAgeHours > 8) {
+                // max session lifetime
                 shouldTimeout = true;
             }
         }
@@ -173,9 +170,7 @@ The `rateLimitMiddleware` applies security headers and rate limiting to API muta
 // src/lib/rate-limit.ts
 import type { NextRequest, NextResponse } from 'next/server';
 
-export async function rateLimitMiddleware(
-    request: NextRequest
-): Promise<NextResponse | null> {
+export async function rateLimitMiddleware(request: NextRequest): Promise<NextResponse | null> {
     const { method } = request;
     const mutationMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
 

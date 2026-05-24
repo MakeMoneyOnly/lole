@@ -4,13 +4,13 @@ This directory contains Architecture Decision Records that capture key architect
 
 ## Records
 
-| #                                                                    | Title                        | Status   |
-| -------------------------------------------------------------------- | ---------------------------- | -------- |
-| [001-domain-repository-pattern.md](001-domain-repository-pattern.md) | Repository-Service Pattern   | Accepted |
-| [002-feature-slice-design.md](002-feature-slice-design.md)           | Feature-Sliced Design        | Accepted |
-| [003-type-inference.md](003-type-inference.md)                       | Database Type Inference      | Accepted |
-| [004-hexagonal-modular-monolith.md](004-hexagonal-modular-monolith.md) | Hexagonal Modular Monolith   | Proposed |
-| [ADR-001-store-gateway-runtime.md](ADR-001-store-gateway-runtime.md) | Store Gateway Runtime        | Accepted |
+| #                                                                      | Title                      | Status   |
+| ---------------------------------------------------------------------- | -------------------------- | -------- |
+| [001-domain-repository-pattern.md](001-domain-repository-pattern.md)   | Repository-Service Pattern | Accepted |
+| [002-feature-slice-design.md](002-feature-slice-design.md)             | Feature-Sliced Design      | Accepted |
+| [003-type-inference.md](003-type-inference.md)                         | Database Type Inference    | Accepted |
+| [004-hexagonal-modular-monolith.md](004-hexagonal-modular-monolith.md) | Hexagonal Modular Monolith | Proposed |
+| [ADR-001-store-gateway-runtime.md](ADR-001-store-gateway-runtime.md)   | Store Gateway Runtime      | Accepted |
 
 ## What is an ADR?
 

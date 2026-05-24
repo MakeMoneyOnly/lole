@@ -140,6 +140,7 @@ AND p.provider IN ('telebirr', 'chapa');
 #### Payment Status Enum
 
 Valid payment statuses:
+
 - `pending` - Payment initiated but not yet confirmed
 - `processing` - Payment being processed by provider
 - `captured` - Payment successfully captured
@@ -150,6 +151,7 @@ Valid payment statuses:
 #### Payment Method Enum
 
 Valid payment methods:
+
 - `cash` - Cash payment
 - `telebirr` - Telebirr mobile payment
 - `chapa` - Chapa payment gateway

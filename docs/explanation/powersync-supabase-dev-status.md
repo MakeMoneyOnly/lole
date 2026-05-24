@@ -1,6 +1,6 @@
 # PowerSync + Supabase Dev Status
 
-Date: 2026-04-23
+Date: 2026-05-24
 Status: blocked for end-to-end cloud replication in current dev environment
 
 ## Decision
@@ -13,14 +13,18 @@ What is done:
 - local PowerSync database initialization is wired
 - app can surface bootstrap status and operating mode
 - local-first gateway work can continue independently
+- `powersync` publication migration created (20260521000000_powersync_publication.sql)
+- SQL migration ready for `CREATE PUBLICATION powersync FOR ALL TABLES`
 
 What is not done:
 
-- Supabase direct logical replication for PowerSync is not live yet
-- `powersync` publication is not established yet
+- Supabase direct logical replication for PowerSync is not live in dev environment
 - end-to-end replay from local journal through PowerSync cloud bridge is not validated yet
+- infrastructure variables not configured (DATABASE_DIRECT_URL)
 
 ## Why blocked
+
+**Code is complete — only infrastructure remains.**
 
 PowerSync needs database-native replication capabilities:
 
@@ -35,7 +39,7 @@ Transaction pooler is not valid for this path.
 Current dev blocker is infra, not app code:
 
 - Supabase direct replication path for PowerSync is not active in this environment
-- publication creation has not been completed
+- `DATABASE_DIRECT_URL` environment variable not configured
 
 ## Team policy
 
@@ -54,6 +58,15 @@ During development, treat these as current truth:
 - gateway, LAN discovery, local journal, local adapters, offline auth, and operating-mode telemetry continue
 - `/api/sync` and local replay abstractions remain interim dev bridge surfaces
 - PowerSync cloud replication is deferred until infra prerequisites are available
+
+## Infrastructure Setup Requirements
+
+Before PowerSync replication can be validated:
+
+- `DATABASE_DIRECT_URL` must be configured in environment
+- This must point to a direct Postgres connection (not transaction pooler)
+- Logical replication must be enabled for the database
+- The `20260521000000_powersync_publication.sql` migration must be applied
 
 ## Unblock checklist
 

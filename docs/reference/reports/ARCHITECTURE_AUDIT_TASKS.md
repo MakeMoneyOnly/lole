@@ -33,10 +33,10 @@
 
 ### P0-Critical Tasks
 
-| Task ID   | Description                                           | Effort | Owner      | Dependencies | Status                                                                                   |
-| --------- | ----------------------------------------------------- | ------ | ---------- | ------------ | ---------------------------------------------------------------------------------------- |
-| P0-SEC-01 | PowerSync package completion                          | High   | @fullstack | None         | **Blocked** - Requires DATABASE_DIRECT_URL infrastructure                                |
-| P0-SEC-02 | Exposed auth.users in view - security_invoker missing | Low    | @backend   | None         | ✅ Completed - Migration 20260408100000 applied security_invoker and user_profiles table |
+| Task ID   | Description                                           | Effort | Owner      | Dependencies | Status                                                                                                                                                                                                                               |
+| --------- | ----------------------------------------------------- | ------ | ---------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| P0-SEC-01 | PowerSync package completion                          | High   | @fullstack | None         | **Code Complete** ✅ (schema, connector, conflict resolution, sync worker) - **Infrastructure Blocker**: Requires DATABASE_DIRECT_URL, PowerSync instance with JWT trust, Migration 20260521000000_powersync_publication.sql created |
+| P0-SEC-02 | Exposed auth.users in view - security_invoker missing | Low    | @backend   | None         | ✅ Completed - Migration 20260408100000 applied security_invoker and user_profiles table                                                                                                                                             |
 
 ### P1-High Tasks
 
@@ -308,27 +308,27 @@ The payment webhook implementation demonstrates **strong security posture** with
 
 ## Tracking Summary Table
 
-| Priority | Category             | Tasks | Effort Distribution              | Status                          |
-| -------- | -------------------- | ----- | -------------------------------- | ------------------------------- |
-| P0       | Security Critical    | 2     | 1 High, 1 Low                    | 1/2 Complete (1 Blocked)        |
-| P1       | Security High        | 7     | 3 Low, 2 Medium, 2 High          | 7/7 Complete                    |
-| P2       | Architecture Medium  | 11    | 5 Low, 4 Medium, 2 High          | 11/11 Complete                  |
-| P3       | Optimization Low     | 4     | 3 Low, 1 Medium                  | 4/4 Complete                    |
-| SOLID    | Principle Violations | 3     | 2 Medium, 1 Low                  | 3/3 Complete                    |
-| Domain   | Interface Creation   | 8     | All Medium                       | 8/8 Complete                    |
-| Staff    | Service Refactoring  | 6     | 5 Medium, 1 Low                  | 6/6 Complete                    |
-| API      | Route Refactoring    | 5     | 2 Low, 2 Medium, 1 Low           | 5/5 Complete                    |
-| Test     | Testing Updates      | 8     | 4 Low, 3 Medium, 1 High          | 7/8 Complete (TEST-07 excluded) |
-| Security | Invoker Fixes        | 6     | All Low                          | 6/6 Complete                    |
-| Error    | Handling             | 5     | 1 Low, 3 Medium, 1 Low           | 5/5 Complete                    |
-| DI       | Setup                | 6     | 5 Medium, 1 Low                  | 6/6 Complete                    |
-| App      | Layer & Exports      | 2     | 1 High, 1 Low                    | 2/2 Complete                    |
-| Anti     | Patterns             | 3     | 1 High, 1 Low, 1 Medium          | 3/3 Complete                    |
-| ARCH     | Higher-Value Tasks   | 7     | 1 P1-High, 4 P2-Medium, 2 P3-Low | 7/7 Complete                    |
+| Priority | Category             | Tasks | Effort Distribution              | Status                                  |
+| -------- | -------------------- | ----- | -------------------------------- | --------------------------------------- |
+| P0       | Security Critical    | 2     | 1 High, 1 Low                    | 1/2 Complete (1 Infrastructure Blocked) |
+| P1       | Security High        | 7     | 3 Low, 2 Medium, 2 High          | 7/7 Complete                            |
+| P2       | Architecture Medium  | 11    | 5 Low, 4 Medium, 2 High          | 11/11 Complete                          |
+| P3       | Optimization Low     | 4     | 3 Low, 1 Medium                  | 4/4 Complete                            |
+| SOLID    | Principle Violations | 3     | 2 Medium, 1 Low                  | 3/3 Complete                            |
+| Domain   | Interface Creation   | 8     | All Medium                       | 8/8 Complete                            |
+| Staff    | Service Refactoring  | 6     | 5 Medium, 1 Low                  | 6/6 Complete                            |
+| API      | Route Refactoring    | 5     | 2 Low, 2 Medium, 1 Low           | 5/5 Complete                            |
+| Test     | Testing Updates      | 8     | 4 Low, 3 Medium, 1 High          | 7/8 Complete (TEST-07 excluded)         |
+| Security | Invoker Fixes        | 6     | All Low                          | 6/6 Complete                            |
+| Error    | Handling             | 5     | 1 Low, 3 Medium, 1 Low           | 5/5 Complete                            |
+| DI       | Setup                | 6     | 5 Medium, 1 Low                  | 6/6 Complete                            |
+| App      | Layer & Exports      | 2     | 1 High, 1 Low                    | 2/2 Complete                            |
+| Anti     | Patterns             | 3     | 1 High, 1 Low, 1 Medium          | 3/3 Complete                            |
+| ARCH     | Higher-Value Tasks   | 7     | 1 P1-High, 4 P2-Medium, 2 P3-Low | 7/7 Complete                            |
 
 **Total Tasks:** 82  
 **Completed:** 70 (TEST-07 excluded from completion requirement)  
-**Pending:** 1 (1 Blocked - P0-SEC-01)  
+**Pending:** 1 (1 Infrastructure Blocked - P0-SEC-01: Code Complete, awaiting DATABASE_DIRECT_URL, PowerSync instance with JWT trust)  
 **Estimated Total Effort:** 25-35 weeks (assuming parallel execution)
 
 ---
