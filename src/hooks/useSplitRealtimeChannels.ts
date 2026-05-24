@@ -250,9 +250,9 @@ export function useSplitRealtimeChannels({
                         payload => {
                             if (!mountedRef.current) return;
                             const typedPayload = payload as unknown as RealtimePayload;
-if (checkDuplicate(typedPayload)) {
-                                 logger.warn(`[Realtime] Skipping duplicate orders message`);
-                                 return;
+                            if (checkDuplicate(typedPayload)) {
+                                logger.warn(`[Realtime] Skipping duplicate orders message`);
+                                return;
                             }
                             onOrderChange?.(typedPayload);
                         }
@@ -271,11 +271,11 @@ if (checkDuplicate(typedPayload)) {
                         payload => {
                             if (!mountedRef.current) return;
                             const typedPayload = payload as unknown as RealtimePayload;
-if (checkDuplicate(typedPayload)) {
-                                 logger.warn(
-                                     `[Realtime] Skipping duplicate external_orders message`
-                                 );
-                                 return;
+                            if (checkDuplicate(typedPayload)) {
+                                logger.warn(
+                                    `[Realtime] Skipping duplicate external_orders message`
+                                );
+                                return;
                             }
                             onExternalOrderChange?.(typedPayload);
                         }
@@ -294,9 +294,9 @@ if (checkDuplicate(typedPayload)) {
                         payload => {
                             if (!mountedRef.current) return;
                             const typedPayload = payload as unknown as RealtimePayload;
-if (checkDuplicate(typedPayload)) {
-                                 logger.warn(`[Realtime] Skipping duplicate tables message`);
-                                 return;
+                            if (checkDuplicate(typedPayload)) {
+                                logger.warn(`[Realtime] Skipping duplicate tables message`);
+                                return;
                             }
                             onTableChange?.(typedPayload);
                         }
@@ -315,24 +315,24 @@ if (checkDuplicate(typedPayload)) {
                         payload => {
                             if (!mountedRef.current) return;
                             const typedPayload = payload as unknown as RealtimePayload;
-if (checkDuplicate(typedPayload)) {
-                                 logger.warn(`[Realtime] Skipping duplicate kds_items message`);
-                                 return;
+                            if (checkDuplicate(typedPayload)) {
+                                logger.warn(`[Realtime] Skipping duplicate kds_items message`);
+                                return;
                             }
                             onKDSItemChange?.(typedPayload);
                         }
                     );
                     break;
 
-default:
-                     logger.error(`[Realtime] Unknown channel type: ${channelType}`);
-                     return;
+                default:
+                    logger.error(`[Realtime] Unknown channel type: ${channelType}`);
+                    return;
             }
 
-// Subscribe with status handling
-             channel.subscribe(status => {
-                 logger.warn(`[Realtime] ${channelType} subscription status: ${status}`);
-                 if (!mountedRef.current) return;
+            // Subscribe with status handling
+            channel.subscribe(status => {
+                logger.warn(`[Realtime] ${channelType} subscription status: ${status}`);
+                if (!mountedRef.current) return;
 
                 if (status === 'SUBSCRIBED') {
                     updateStatus(channelType, 'connected');
@@ -370,16 +370,16 @@ default:
 
             const currentRetry = retryCountRef.current.get(channelType) ?? 0;
 
-if (currentRetry >= RECONNECT_CONFIG.maxRetries) {
-                     logger.error(`[Realtime] ${channelType}: Max reconnection attempts reached`);
-                     updateStatus(channelType, 'error');
-                     return;
+            if (currentRetry >= RECONNECT_CONFIG.maxRetries) {
+                logger.error(`[Realtime] ${channelType}: Max reconnection attempts reached`);
+                updateStatus(channelType, 'error');
+                return;
             }
 
-const delay = calculateReconnectDelay(currentRetry);
-                     logger.warn(
-                         `[Realtime] ${channelType}: Scheduling reconnect attempt ${currentRetry + 1} in ${Math.round(delay)}ms`
-                     );
+            const delay = calculateReconnectDelay(currentRetry);
+            logger.warn(
+                `[Realtime] ${channelType}: Scheduling reconnect attempt ${currentRetry + 1} in ${Math.round(delay)}ms`
+            );
 
             const timeout = setTimeout(() => {
                 if (!mountedRef.current) return;

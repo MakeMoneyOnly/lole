@@ -72,35 +72,35 @@ interface _ModifierValidationResult {
 }
 
 /**
-  * Validate required modifiers for a menu item
-  * Returns validation result with error message if invalid
-  * Gracefully handles exceptions by treating them as valid (fallback behavior)
-  */
- async function validateRequiredModifiers(
-     menuItemId: string,
-     selectedModifierIds: string[]
- ): Promise<{
-     isValid: boolean;
-     missingGroups?: string[];
-     errorMessage?: string;
-     errorMessageAm?: string;
- }> {
-     try {
-         const result = await ordersRepository.validateModifiers(menuItemId, selectedModifierIds);
-         if (!result) {
-             return { isValid: true };
-         }
-         return {
-             isValid: result.is_valid,
-             missingGroups: result.missing_groups,
-             errorMessage: result.error_message ?? undefined,
-             errorMessageAm: result.error_message_am ?? undefined,
-         };
-     } catch {
-         // Graceful fallback: treat validation errors as valid to avoid blocking order creation
-         return { isValid: true };
-     }
- }
+ * Validate required modifiers for a menu item
+ * Returns validation result with error message if invalid
+ * Gracefully handles exceptions by treating them as valid (fallback behavior)
+ */
+async function validateRequiredModifiers(
+    menuItemId: string,
+    selectedModifierIds: string[]
+): Promise<{
+    isValid: boolean;
+    missingGroups?: string[];
+    errorMessage?: string;
+    errorMessageAm?: string;
+}> {
+    try {
+        const result = await ordersRepository.validateModifiers(menuItemId, selectedModifierIds);
+        if (!result) {
+            return { isValid: true };
+        }
+        return {
+            isValid: result.is_valid,
+            missingGroups: result.missing_groups,
+            errorMessage: result.error_message ?? undefined,
+            errorMessageAm: result.error_message_am ?? undefined,
+        };
+    } catch {
+        // Graceful fallback: treat validation errors as valid to avoid blocking order creation
+        return { isValid: true };
+    }
+}
 
 export class OrdersService {
     async createOrder(input: CreateOrderInput): Promise<OrderRow> {

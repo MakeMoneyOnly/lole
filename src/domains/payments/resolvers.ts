@@ -129,7 +129,7 @@ export const paymentsResolvers = {
                 const authContext = requireAuth(context);
 
                 // Validate status
-                if (!PAYMENT_STATUSES.includes(args.status as typeof PAYMENT_STATUSES[number])) {
+                if (!PAYMENT_STATUSES.includes(args.status as (typeof PAYMENT_STATUSES)[number])) {
                     return {
                         ...createErrorResult('VALIDATION_ERROR', `Invalid status: ${args.status}`),
                         payment: null,
@@ -237,17 +237,17 @@ export const paymentsResolvers = {
             // Fetch payment
             const payment = await paymentsRepository.getPayment(reference.id);
 
-// Tenant isolation
-             if (payment && authContext.user?.restaurantId) {
-                 if (payment.restaurant_id !== authContext.user.restaurantId) {
-                     logger.error(
-                         `[payments/resolvers] Tenant isolation violation: User ${authContext.user.id} attempted to access payment ${reference.id}`,
-                         undefined,
-                         { source: '[payments/resolvers]' }
-                     );
-                     return null;
-                 }
-             }
+            // Tenant isolation
+            if (payment && authContext.user?.restaurantId) {
+                if (payment.restaurant_id !== authContext.user.restaurantId) {
+                    logger.error(
+                        `[payments/resolvers] Tenant isolation violation: User ${authContext.user.id} attempted to access payment ${reference.id}`,
+                        undefined,
+                        { source: '[payments/resolvers]' }
+                    );
+                    return null;
+                }
+            }
 
             return payment;
         },

@@ -16,11 +16,9 @@ export function checkTenantIsolation(
     context: string
 ): StaffRow | null {
     if (entity && expectedRestaurantId && entity.restaurant_id !== expectedRestaurantId) {
-        logger.error(
-            `Tenant isolation violation: ${context}`,
-            undefined,
-            { source: '[staff/service]' }
-        );
+        logger.error(`Tenant isolation violation: ${context}`, undefined, {
+            source: '[staff/service]',
+        });
         return null;
     }
     return entity;

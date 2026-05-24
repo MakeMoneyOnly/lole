@@ -77,7 +77,7 @@ export function useAbortableEffect(
  * }, [signal]);
  * ```
  */
-export function useAbortController(): { getSignal: () => AbortSignal; abort: () => void; } {
+export function useAbortController(): { getSignal: () => AbortSignal; abort: () => void } {
     const abortControllerRef = useRef<AbortController | null>(null);
 
     useEffect(() => {

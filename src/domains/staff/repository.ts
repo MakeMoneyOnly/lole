@@ -48,7 +48,9 @@ export class StaffRepository {
             .maybeSingle();
 
         if (error) {
-            logger.error('Error fetching staff by user ID', error, { source: '[staff/repository]' });
+            logger.error('Error fetching staff by user ID', error, {
+                source: '[staff/repository]',
+            });
             throw new Error(error.message);
         }
 
@@ -170,7 +172,9 @@ export class StaffRepository {
             .single();
 
         if (error) {
-            logger.error('Error deactivating staff member', error, { source: '[staff/repository]' });
+            logger.error('Error deactivating staff member', error, {
+                source: '[staff/repository]',
+            });
             throw new Error(error.message);
         }
 

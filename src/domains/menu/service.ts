@@ -70,14 +70,11 @@ async function getCategories(restaurantId: string): Promise<Record<string, unkno
  * Search menu items by name (English or Amharic).
  * Currently performs in-memory filtering; replace with FTS when available.
  */
-async function searchMenu(
-    restaurantId: string,
-    query: string
-): Promise<Record<string, unknown>[]> {
+async function searchMenu(restaurantId: string, query: string): Promise<Record<string, unknown>[]> {
     const items = await menuRepository.getMenuItems(restaurantId);
     const q = query.toLowerCase();
     return items.filter(
-        (item) =>
+        item =>
             (item.name as string)?.toLowerCase().includes(q) ||
             (item.name_am as string)?.toLowerCase().includes(q)
     );
@@ -93,7 +90,9 @@ async function setItemAvailability(
 ): Promise<Record<string, unknown> | null> {
     // Repository mutation not yet wired — placeholder for when write-path lands.
     // The resolver already validates tenant isolation before calling this.
-    logger.info(`setItemAvailability: item=${id} available=${available} (stub)`, { source: '[menu/service]' });
+    logger.info(`setItemAvailability: item=${id} available=${available} (stub)`, {
+        source: '[menu/service]',
+    });
     return menuRepository.getMenuItem(id);
 }
 

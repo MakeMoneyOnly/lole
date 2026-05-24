@@ -120,18 +120,13 @@ export class RolePermissionsRepository {
      */
     async setRolePermissions(role: string, permissions: string[]): Promise<void> {
         // First remove all existing permissions for the role
-        await getRepositoryClient()
-            .from('role_permissions')
-            .delete()
-            .eq('role', role);
+        await getRepositoryClient().from('role_permissions').delete().eq('role', role);
 
         // Then insert new permissions
         if (permissions.length > 0) {
             const { error } = await getRepositoryClient()
                 .from('role_permissions')
-                .insert(
-                    permissions.map((permission) => ({ role, permission }))
-                );
+                .insert(permissions.map(permission => ({ role, permission })));
 
             if (error) {
                 logger.error('Error setting role permissions', error, {

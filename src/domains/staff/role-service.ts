@@ -52,10 +52,10 @@ export class RoleService {
                 this.rolePermissions = { ...DEFAULT_ROLE_PERMISSIONS, ...dbPermissions };
             }
         } catch (error) {
-logger.warn(
-                'Failed to load permissions from database, using defaults',
-                { error: error instanceof Error ? error.message : String(error), source: '[staff/role-service]' }
-            );
+            logger.warn('Failed to load permissions from database, using defaults', {
+                error: error instanceof Error ? error.message : String(error),
+                source: '[staff/role-service]',
+            });
         }
 
         this.loaded = true;

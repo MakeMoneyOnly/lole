@@ -23,10 +23,7 @@ export interface StaffServiceInterface {
      * @param expectedRestaurantId - Optional restaurant ID for tenant isolation check
      * @returns The staff member record, or null if not found or tenant violation
      */
-    getStaffByUserId(
-        userId: string,
-        expectedRestaurantId?: string
-    ): Promise<StaffRow | null>;
+    getStaffByUserId(userId: string, expectedRestaurantId?: string): Promise<StaffRow | null>;
 
     /**
      * Get paginated staff list for a restaurant
@@ -62,10 +59,7 @@ export interface StaffServiceInterface {
      * @param expectedRestaurantId - Optional restaurant ID for tenant isolation check
      * @returns The deactivated staff member record
      */
-    deactivateStaffMember(
-        id: string,
-        expectedRestaurantId?: string
-    ): Promise<StaffRow>;
+    deactivateStaffMember(id: string, expectedRestaurantId?: string): Promise<StaffRow>;
 
     /**
      * Verify PIN code for staff member with tenant validation
@@ -80,11 +74,11 @@ export interface StaffServiceInterface {
         expectedRestaurantId?: string
     ): Promise<StaffRow | null>;
 
-/**
-      * Check if user has permission for an action
-      * @param staff - The staff member record
-      * @param permission - The permission string to check
-      * @returns True if the staff member has the permission
-      */
+    /**
+     * Check if user has permission for an action
+     * @param staff - The staff member record
+     * @param permission - The permission string to check
+     * @returns True if the staff member has the permission
+     */
     hasPermission(staff: StaffRow, permission: string): Promise<boolean>;
 }

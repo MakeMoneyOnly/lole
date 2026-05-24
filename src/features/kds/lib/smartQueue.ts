@@ -295,9 +295,7 @@ export class SmartQueue {
 
     addOrder(order: KDSOrder): void {
         if (this.orders.size >= this.config.maxOrdersInQueue) {
-            logger.warn(
-                `SmartQueue: Maximum queue size reached (${this.config.maxOrdersInQueue})`
-            );
+            logger.warn(`SmartQueue: Maximum queue size reached (${this.config.maxOrdersInQueue})`);
             return;
         }
 

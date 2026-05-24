@@ -113,9 +113,9 @@ export function useSessionRefresh(config: SessionRefreshConfig = {}): {
                 timeUntilExpiry,
             };
         } catch (error) {
-        log.error('Error getting session info', error);
-        return null;
-    }
+            log.error('Error getting session info', error);
+            return null;
+        }
     }, [supabase]);
 
     /**
@@ -263,7 +263,11 @@ export function useSessionRefresh(config: SessionRefreshConfig = {}): {
  * ```
  */
 export function useSessionState(options: { redirectTo?: string } = {}): {
-    checkSession: () => Promise<{ isAuthenticated: boolean; userId: string | null; expiresAt?: number }>;
+    checkSession: () => Promise<{
+        isAuthenticated: boolean;
+        userId: string | null;
+        expiresAt?: number;
+    }>;
 } {
     void options; // Options reserved for future use (e.g., redirect behavior)
     const supabase = getSupabaseClient();

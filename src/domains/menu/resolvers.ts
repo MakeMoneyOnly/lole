@@ -68,7 +68,10 @@ export const menuResolvers = {
         category: async (_: unknown, args: { id: string }, _context: GraphQLContext) => {
             // For now, return null - would need a getCategory method
             // This is a placeholder for federation reference resolution
-            logger.warn('[menu/resolvers] category query called with id:', { id: args.id, source: '[menu/resolvers]' });
+            logger.warn('[menu/resolvers] category query called with id:', {
+                id: args.id,
+                source: '[menu/resolvers]',
+            });
             return null;
         },
 
@@ -325,14 +328,14 @@ export const menuResolvers = {
                 const menuItemId = modifierGroup.menu_item_id as string | undefined;
                 if (menuItemId) {
                     const menuItem = await context.dataLoaders.menuItems.load(menuItemId);
-if (menuItem && menuItem.restaurant_id !== context.user.restaurantId) {
-                         logger.error(
-                             `[menu/resolvers] Tenant isolation violation: User ${context.user.id} attempted to access modifier group ${reference.id}`,
-                             undefined,
-                             { source: '[menu/resolvers]' }
-                         );
-                         return null;
-                     }
+                    if (menuItem && menuItem.restaurant_id !== context.user.restaurantId) {
+                        logger.error(
+                            `[menu/resolvers] Tenant isolation violation: User ${context.user.id} attempted to access modifier group ${reference.id}`,
+                            undefined,
+                            { source: '[menu/resolvers]' }
+                        );
+                        return null;
+                    }
                 }
             }
 
@@ -367,14 +370,14 @@ if (menuItem && menuItem.restaurant_id !== context.user.restaurantId) {
                         const menuItemId = modifierGroup.menu_item_id as string | undefined;
                         if (menuItemId) {
                             const menuItem = await context.dataLoaders.menuItems.load(menuItemId);
-if (menuItem && menuItem.restaurant_id !== context.user.restaurantId) {
-                                 logger.error(
-                                     `[menu/resolvers] Tenant isolation violation: User ${context.user.id} attempted to access modifier option ${reference.id}`,
-                                     undefined,
-                                     { source: '[menu/resolvers]' }
-                                 );
-                                 return null;
-                             }
+                            if (menuItem && menuItem.restaurant_id !== context.user.restaurantId) {
+                                logger.error(
+                                    `[menu/resolvers] Tenant isolation violation: User ${context.user.id} attempted to access modifier option ${reference.id}`,
+                                    undefined,
+                                    { source: '[menu/resolvers]' }
+                                );
+                                return null;
+                            }
                         }
                     }
                 }
