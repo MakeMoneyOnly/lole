@@ -19,7 +19,7 @@ export default defineConfig({
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './src'),
-            'bcryptjs': path.resolve(__dirname, '__mocks__/bcryptjs.ts'),
+            bcryptjs: path.resolve(__dirname, '__mocks__/bcryptjs.ts'),
         },
     },
 });

@@ -10,27 +10,27 @@
 # - staff: Staff management and internal operations
 
 subgraphs:
-  orders:
-    routing_url: https://lole.app/api/subgraphs/orders
-    schema:
-      file: ./subgraphs/orders.graphql
+    orders:
+        routing_url: https://lole.app/api/subgraphs/orders
+        schema:
+            file: ./subgraphs/orders.graphql
 
-  menu:
-    routing_url: https://lole.app/api/subgraphs/menu
-    schema:
-      file: ./subgraphs/menu.graphql
+    menu:
+        routing_url: https://lole.app/api/subgraphs/menu
+        schema:
+            file: ./subgraphs/menu.graphql
 
-  payments:
-    routing_url: https://lole.app/api/subgraphs/payments
-    schema:
-      file: ./subgraphs/payments.graphql
+    payments:
+        routing_url: https://lole.app/api/subgraphs/payments
+        schema:
+            file: ./subgraphs/payments.graphql
 
-  guests:
-    routing_url: https://lole.app/api/subgraphs/guests
-    schema:
-      file: ./subgraphs/guests.graphql
+    guests:
+        routing_url: https://lole.app/api/subgraphs/guests
+        schema:
+            file: ./subgraphs/guests.graphql
 
-  staff:
-    routing_url: https://lole.app/api/subgraphs/staff
-    schema:
-      file: ./subgraphs/staff.graphql
+    staff:
+        routing_url: https://lole.app/api/subgraphs/staff
+        schema:
+            file: ./subgraphs/staff.graphql
