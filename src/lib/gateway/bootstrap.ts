@@ -51,9 +51,10 @@ function buildBootstrapConfig(input: CreateGatewayBootstrapPayloadInput): StoreG
     };
 }
 
-export function createGatewayBootstrapPayload(
-    input: CreateGatewayBootstrapPayloadInput
-): Omit<GatewayBootstrapPayload, 'session'> & {
+export function createGatewayBootstrapPayload(input: CreateGatewayBootstrapPayloadInput): Omit<
+    GatewayBootstrapPayload,
+    'session'
+> & {
     session: {
         deviceId: string;
         restaurantId: string;

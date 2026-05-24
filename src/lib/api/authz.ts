@@ -357,10 +357,10 @@ export async function enforceTenantScope(
         .eq('is_active', true)
         .maybeSingle();
 
-if (error) {
-         logger.error('Failed to verify tenant scope', error);
-         return { allowed: false, reason: 'Failed to verify access' };
-     }
+    if (error) {
+        logger.error('Failed to verify tenant scope', error);
+        return { allowed: false, reason: 'Failed to verify access' };
+    }
 
     if (staffEntry) {
         return { allowed: true };
@@ -373,10 +373,10 @@ if (error) {
         .eq('user_id', userId)
         .maybeSingle();
 
-if (agencyError) {
-         logger.error('Failed to verify agency access', agencyError);
-         return { allowed: false, reason: 'Failed to verify access' };
-     }
+    if (agencyError) {
+        logger.error('Failed to verify agency access', agencyError);
+        return { allowed: false, reason: 'Failed to verify access' };
+    }
 
     if (agencyUser?.restaurant_ids?.includes(restaurantId)) {
         return { allowed: true };
@@ -446,10 +446,10 @@ export async function validateOrderTenantScope(
         .eq('id', orderId)
         .maybeSingle();
 
-if (error) {
-         logger.error('Failed to validate order scope', error);
-         return { valid: false, reason: 'Failed to validate order' };
-     }
+    if (error) {
+        logger.error('Failed to validate order scope', error);
+        return { valid: false, reason: 'Failed to validate order' };
+    }
 
     if (!data) {
         return { valid: false, reason: 'Order not found' };
@@ -499,10 +499,10 @@ export async function validateMenuItemTenantScope(
         .eq('id', menuItemId)
         .maybeSingle();
 
-if (error) {
-         logger.error('Failed to validate menu item scope', error);
-         return { valid: false, reason: 'Failed to validate menu item' };
-     }
+    if (error) {
+        logger.error('Failed to validate menu item scope', error);
+        return { valid: false, reason: 'Failed to validate menu item' };
+    }
 
     if (!data) {
         return { valid: false, reason: 'Menu item not found' };
@@ -555,10 +555,10 @@ export async function validateTableTenantScope(
         .eq('id', tableId)
         .maybeSingle();
 
-if (error) {
-         logger.error('Failed to validate table scope', error);
-         return { valid: false, reason: 'Failed to validate table' };
-     }
+    if (error) {
+        logger.error('Failed to validate table scope', error);
+        return { valid: false, reason: 'Failed to validate table' };
+    }
 
     if (!data) {
         return { valid: false, reason: 'Table not found' };

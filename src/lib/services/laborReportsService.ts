@@ -301,10 +301,10 @@ export async function generateLaborReport(
             },
             error: null,
         };
-} catch (error) {
-         log.error('Error generating labor report', error);
-         return { data: null, error: error as Error };
-     }
+    } catch (error) {
+        log.error('Error generating labor report', error);
+        return { data: null, error: error as Error };
+    }
 }
 
 /**
@@ -366,10 +366,10 @@ export async function getLaborCostPercentage(
         });
 
         return { data: metrics.laborCostPercent, error: null };
-} catch (error) {
-         log.error('Error calculating labor cost percentage', error);
-         return { data: null, error: error as Error };
-     }
+    } catch (error) {
+        log.error('Error calculating labor cost percentage', error);
+        return { data: null, error: error as Error };
+    }
 }
 
 // ============================================================================

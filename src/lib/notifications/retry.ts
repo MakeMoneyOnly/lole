@@ -394,10 +394,10 @@ export async function sendSmsWithRetry(params: SendSmsParams): Promise<SmsResult
                 };
             }
 
-// SMS failed - record error
-         lastError = smsResult.error ?? 'Unknown SMS error';
+            // SMS failed - record error
+            lastError = smsResult.error ?? 'Unknown SMS error';
 
-         log.error(`SMS attempt ${attempts} failed: ${lastError}`);
+            log.error(`SMS attempt ${attempts} failed: ${lastError}`);
 
             // Check if we should retry
             if (shouldRetry(attempts, maxRetries)) {

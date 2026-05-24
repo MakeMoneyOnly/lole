@@ -14,7 +14,9 @@ const ENABLE_INTROSPECTION =
 
 // Warn if introspection is enabled in production
 if (ENABLE_INTROSPECTION && process.env.NODE_ENV === 'production') {
-    log.warn('GraphQL introspection is ENABLED in production. This should be disabled for security.');
+    log.warn(
+        'GraphQL introspection is ENABLED in production. This should be disabled for security.'
+    );
 }
 
 export const graphqlConfig = {
@@ -24,5 +26,8 @@ export const graphqlConfig = {
 
 // Log configuration on startup
 if (process.env.NODE_ENV !== 'test') {
-    log.warn('GraphQL Configuration', { introspection: ENABLE_INTROSPECTION, debug: graphqlConfig.debug });
+    log.warn('GraphQL Configuration', {
+        introspection: ENABLE_INTROSPECTION,
+        debug: graphqlConfig.debug,
+    });
 }

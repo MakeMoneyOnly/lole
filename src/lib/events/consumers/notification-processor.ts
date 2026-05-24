@@ -262,7 +262,7 @@ async function handleReservationReminder(
         });
 
         return { success: true, notificationId };
-} catch (error) {
+    } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
 
         if (errorMessage.includes('DUPLICATE_NOTIFICATION')) {

@@ -27,7 +27,9 @@ function isValidStaffRole(role: string | null): role is (typeof STAFF_ROLES)[num
 /**
  * Creates a Next.js API handler for a GraphQL subgraph
  */
-export function createSubgraphHandler(config: SubgraphConfig): (req: NextRequest) => Promise<Response> {
+export function createSubgraphHandler(
+    config: SubgraphConfig
+): (req: NextRequest) => Promise<Response> {
     const server = createSubgraphServer(config);
 
     return startServerAndCreateNextHandler<NextRequest, GraphQLContext>(server, {

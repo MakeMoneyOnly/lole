@@ -50,8 +50,8 @@ function padLeft(value: string, width: number): string {
 }
 
 function money(value: number, _currency: string): string {
-     return `Br ${value.toFixed(2)}`;
- }
+    return `Br ${value.toFixed(2)}`;
+}
 
 function qrStoreBytes(data: string): number[] {
     const payload = textBytes(data);

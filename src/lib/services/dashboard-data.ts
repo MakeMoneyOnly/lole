@@ -272,29 +272,47 @@ export async function getCommandCenterData(
         const timeEntries = timeEntriesResult.data ?? [];
         const tipAllocations = tipAllocationsResult.data ?? [];
 
-        const completedOrders = orders.filter((o: { status: string | null }) => o.status === 'completed');
-        const grossSales = completedOrders.reduce((sum: number, o: { total_price?: number | null }) => sum + (o.total_price ?? 0), 0);
+        const completedOrders = orders.filter(
+            (o: { status: string | null }) => o.status === 'completed'
+        );
+        const grossSales = completedOrders.reduce(
+            (sum: number, o: { total_price?: number | null }) => sum + (o.total_price ?? 0),
+            0
+        );
         const avgTicketTime = calculateAvgTicketTime(orders);
-const activeTables = tables.filter((t: { status: string | null }) => t.status === 'occupied').length;
-         const hourlyRateConfig = await getHourlyRateConfig(supabase, restaurantId);
-         const laborMetrics = calculateLaborMetricsFromTimeEntries({
-             salesTotal: grossSales,
-             timeEntries: timeEntries.map((entry: { staff_id: string; clock_in_at: string | null; clock_out_at: string | null }) => ({
-                 staff_id: entry.staff_id,
-                 clock_in_at: entry.clock_in_at ?? '',
-                 clock_out_at: entry.clock_out_at,
-             })),
-             staffRoles: Object.fromEntries(
-                 staff.map((member: { id: string; role: string | null }) => [member.id, member.role ?? 'default'])
-             ),
-             hourlyRateConfig,
-             tipAllocations,
-             rangeEndAt: new Date().toISOString(),
-         });
+        const activeTables = tables.filter(
+            (t: { status: string | null }) => t.status === 'occupied'
+        ).length;
+        const hourlyRateConfig = await getHourlyRateConfig(supabase, restaurantId);
+        const laborMetrics = calculateLaborMetricsFromTimeEntries({
+            salesTotal: grossSales,
+            timeEntries: timeEntries.map(
+                (entry: {
+                    staff_id: string;
+                    clock_in_at: string | null;
+                    clock_out_at: string | null;
+                }) => ({
+                    staff_id: entry.staff_id,
+                    clock_in_at: entry.clock_in_at ?? '',
+                    clock_out_at: entry.clock_out_at,
+                })
+            ),
+            staffRoles: Object.fromEntries(
+                staff.map((member: { id: string; role: string | null }) => [
+                    member.id,
+                    member.role ?? 'default',
+                ])
+            ),
+            hourlyRateConfig,
+            tipAllocations,
+            rangeEndAt: new Date().toISOString(),
+        });
 
         // Calculate unique tables today
         const uniqueTablesToday = new Set(
-            todayOrders.filter((o: { table_number: string | null }) => o.table_number).map((o: { table_number: string }) => o.table_number)
+            todayOrders
+                .filter((o: { table_number: string | null }) => o.table_number)
+                .map((o: { table_number: string }) => o.table_number)
         ).size;
 
         // Calculate payment success rate (simplified - would need payment_sessions table)
@@ -399,15 +417,25 @@ export async function getTablesPageData(): Promise<TablesPageData | null> {
                 .limit(300),
         ]);
 
-        const tables: TableGridRow[] = (tablesResult.data ?? []).map((table: { id: string; table_number: string | null; status: string | null; qr_code_url: string | null; active_order_id: string | null; zone: string | null; capacity: number | null }) => ({
-            id: table.id,
-            table_number: table.table_number ?? 'N/A',
-            status: (table.status as TableGridRow['status']) ?? 'available',
-            qr_code_url: table.qr_code_url,
-            active_order_id: table.active_order_id,
-            zone: table.zone,
-            capacity: table.capacity ?? 4,
-        }));
+        const tables: TableGridRow[] = (tablesResult.data ?? []).map(
+            (table: {
+                id: string;
+                table_number: string | null;
+                status: string | null;
+                qr_code_url: string | null;
+                active_order_id: string | null;
+                zone: string | null;
+                capacity: number | null;
+            }) => ({
+                id: table.id,
+                table_number: table.table_number ?? 'N/A',
+                status: (table.status as TableGridRow['status']) ?? 'available',
+                qr_code_url: table.qr_code_url,
+                active_order_id: table.active_order_id,
+                zone: table.zone,
+                capacity: table.capacity ?? 4,
+            })
+        );
 
         const zones: string[] = Array.from(
             new Set(tables.map(t => t.zone).filter((z): z is string => !!z))
@@ -515,29 +543,55 @@ export async function getOrdersPageData(
         ]);
 
         return {
-            orders: (ordersResult.data ?? []).map((o: { id: string; table_number: string | null; status: string | null; created_at: string | null; total_price: number | null; order_number: string | null; notes: string | null }) => ({
-                id: o.id,
-                table_number: o.table_number ?? null,
-                status: o.status ?? 'pending',
-                created_at: o.created_at ?? new Date().toISOString(),
-                total_price: o.total_price ?? 0,
-                order_number: o.order_number ?? null,
-                notes: o.notes ?? null,
-            })),
-            service_requests: (serviceRequestsResult.data ?? []).map((sr: { id: string; table_number: string | null; status: string | null; created_at: string | null; request_type: string; notes: string | null }) => ({
-                id: sr.id,
-                table_number: sr.table_number ?? null,
-                status: sr.status ?? 'pending',
-                created_at: sr.created_at ?? new Date().toISOString(),
-                request_type: sr.request_type,
-                notes: sr.notes ?? null,
-            })),
-            staff: (staffResult.data ?? []).map((s: { id: string; user_id: string | null; role: string | null; is_active: boolean | null }) => ({
-                id: s.id,
-                user_id: s.user_id ?? '',
-                role: s.role ?? null,
-                is_active: s.is_active ?? false,
-            })),
+            orders: (ordersResult.data ?? []).map(
+                (o: {
+                    id: string;
+                    table_number: string | null;
+                    status: string | null;
+                    created_at: string | null;
+                    total_price: number | null;
+                    order_number: string | null;
+                    notes: string | null;
+                }) => ({
+                    id: o.id,
+                    table_number: o.table_number ?? null,
+                    status: o.status ?? 'pending',
+                    created_at: o.created_at ?? new Date().toISOString(),
+                    total_price: o.total_price ?? 0,
+                    order_number: o.order_number ?? null,
+                    notes: o.notes ?? null,
+                })
+            ),
+            service_requests: (serviceRequestsResult.data ?? []).map(
+                (sr: {
+                    id: string;
+                    table_number: string | null;
+                    status: string | null;
+                    created_at: string | null;
+                    request_type: string;
+                    notes: string | null;
+                }) => ({
+                    id: sr.id,
+                    table_number: sr.table_number ?? null,
+                    status: sr.status ?? 'pending',
+                    created_at: sr.created_at ?? new Date().toISOString(),
+                    request_type: sr.request_type,
+                    notes: sr.notes ?? null,
+                })
+            ),
+            staff: (staffResult.data ?? []).map(
+                (s: {
+                    id: string;
+                    user_id: string | null;
+                    role: string | null;
+                    is_active: boolean | null;
+                }) => ({
+                    id: s.id,
+                    user_id: s.user_id ?? '',
+                    role: s.role ?? null,
+                    is_active: s.is_active ?? false,
+                })
+            ),
         };
     } catch (error) {
         log.error('Error fetching orders page data', error);
@@ -602,9 +656,16 @@ export async function getAnalyticsPageData(
         const tables = tablesResult.data ?? [];
         const reviews = reviewsResult.data ?? [];
 
-const completedOrders = orders.filter((o: { status: string | null }) => o.status === 'completed');
-         const totalRevenue = completedOrders.reduce((sum: number, o: { total_price?: number | null }) => sum + (o.total_price ?? 0), 0);
-         const activeTables = tables.filter((t: { status: string | null }) => t.status === 'occupied').length;
+        const completedOrders = orders.filter(
+            (o: { status: string | null }) => o.status === 'completed'
+        );
+        const totalRevenue = completedOrders.reduce(
+            (sum: number, o: { total_price?: number | null }) => sum + (o.total_price ?? 0),
+            0
+        );
+        const activeTables = tables.filter(
+            (t: { status: string | null }) => t.status === 'occupied'
+        ).length;
 
         // Build trends data
         const trendsMap = new Map<string, { revenue: number; orders: number }>();
@@ -622,14 +683,18 @@ const completedOrders = orders.filter((o: { status: string | null }) => o.status
 
         const avgRating =
             reviews.length > 0
-                ? reviews.reduce((sum: number, r: { rating: number | null }) => sum + (r.rating ?? 0), 0) / reviews.length
+                ? reviews.reduce(
+                      (sum: number, r: { rating: number | null }) => sum + (r.rating ?? 0),
+                      0
+                  ) / reviews.length
                 : 0;
 
         const metrics: AnalyticsMetrics = {
             total_revenue: totalRevenue,
             total_orders: orders.length,
             completed_orders: completedOrders.length,
-            pending_orders: orders.filter((o: { status: string | null }) => o.status === 'pending').length,
+            pending_orders: orders.filter((o: { status: string | null }) => o.status === 'pending')
+                .length,
             open_requests: 0, // Would need service_requests query
             active_tables: activeTables,
             total_tables: tables.length,

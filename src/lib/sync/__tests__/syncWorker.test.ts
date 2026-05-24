@@ -66,6 +66,9 @@ describe('SyncWorker', () => {
         mockFetch.mockReset();
         vi.useFakeTimers();
 
+        // Mock Math.random to always return >= 0.2 to prevent random validateSyncEndpoints calls
+        vi.spyOn(Math, 'random').mockReturnValue(0.5);
+
         // Reset mocks
         mockedGetPendingSyncOperations.mockResolvedValue([]);
         mockedGetSyncQueueStatus.mockResolvedValue({
@@ -87,6 +90,7 @@ describe('SyncWorker', () => {
 
     afterEach(() => {
         vi.useRealTimers();
+        vi.restoreAllMocks();
         if (worker) {
             worker.stop();
         }
@@ -495,9 +499,11 @@ describe('SyncWorker', () => {
             worker = createSyncWorker();
             await worker.syncOnce();
 
-            // Should have called with empty object as data
-            const callArgs = mockFetch.mock.calls[0];
-            const body = JSON.parse(callArgs[1].body);
+            // Should have called with empty object as data for invalid JSON payload
+            // Find the batch sync call (the one to /api/v1/system/sync)
+            const batchCall = mockFetch.mock.calls.find(call => call[0] === '/api/v1/system/sync');
+            expect(batchCall).toBeDefined();
+            const body = JSON.parse(batchCall![1].body);
             expect(body.operations[0].data).toEqual({});
         });
     });

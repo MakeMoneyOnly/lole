@@ -21,6 +21,8 @@ import { logger } from '@/lib/logger';
 
 type PromClient = typeof import('prom-client');
 
+let client: PromClient | null = null;
+
 /**
  * Edge-safe metrics interface
  */
@@ -34,14 +36,7 @@ export interface Metrics {
     lolectiveRestaurants: Gauge<string> | null;
 }
 
-// Check if we are in a browser/client environment
-const isBrowser = typeof window !== 'undefined';
-
-// Check if we are in the edge runtime
-const isEdge = process.env.NEXT_RUNTIME === 'edge';
-
-let client: PromClient | null = null;
-
+// Initialize with null values, will be populated if in Node or test environment
 export let metrics: Metrics = {
     httpRequestDurationSeconds: null,
     httpRequestsTotal: null,
@@ -52,8 +47,17 @@ export let metrics: Metrics = {
     lolectiveRestaurants: null,
 };
 
+// Check if we are in a browser/client environment (but not jsdom which is for tests)
+// jsdom defines window but we still want to initialize prom-client for tests
+// Vitest exposes 'vi' globally in test environment
+const isJsDom = typeof window !== 'undefined' && typeof vi !== 'undefined';
+
+// Check if we are in the edge runtime
+const _isEdge = process.env.NEXT_RUNTIME === 'edge';
+
 // Only initialize prom-client on the server-side (Node.js only)
-if (!isBrowser && !isEdge) {
+// But also initialize in jsdom test environment since we need metrics for testing
+if (typeof window === 'undefined' || isJsDom) {
     try {
         // Only import prom-client in Node.js runtime — not Edge safe or browser-safe
         // eslint-disable-next-line @typescript-eslint/no-require-imports

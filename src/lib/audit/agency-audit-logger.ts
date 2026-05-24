@@ -111,10 +111,10 @@ export async function logAgencyAction(entry: AgencyAuditEntry): Promise<void> {
 
         const { error } = await supabase.from('audit_logs').insert(auditLog);
 
-if (error) {
-        log.error('Database error', { error });
-        // Don't throw - audit logging should not break the main operation
-    }
+        if (error) {
+            log.error('Database error', { error });
+            // Don't throw - audit logging should not break the main operation
+        }
     } catch (error) {
         log.error('Failed to log agency action', { error });
         // Don't throw - audit logging should not break the main operation

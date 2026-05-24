@@ -155,7 +155,7 @@ describe('TaxClassifier', () => {
 
         it('returns 20% VAT rate for UK', () => {
             const rate = classifier.getVATRate('GBR');
-            expect(rate).toBe(0.20);
+            expect(rate).toBe(0.2);
         });
 
         it('returns default rate for unknown country', () => {

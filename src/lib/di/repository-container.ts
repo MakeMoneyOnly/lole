@@ -3,7 +3,12 @@
 
 import { StaffRepository, StaffRow, StaffListOptions } from '@/domains/staff/repository';
 import { RolePermissionsRepository } from '@/domains/staff/role-permissions-repository';
-import { PaymentsRepository, PaymentRow, PaymentListOptions, PaymentStatus } from '@/domains/payments/repository';
+import {
+    PaymentsRepository,
+    PaymentRow,
+    PaymentListOptions,
+    PaymentStatus,
+} from '@/domains/payments/repository';
 import { menuRepository } from '@/domains/menu/repository';
 import { ordersRepository } from '@/domains/orders/repository';
 import { guestsRepository } from '@/domains/guests/repository';
@@ -27,14 +32,17 @@ export interface IStaffRepository {
         phone?: string;
         is_active?: boolean;
     }): Promise<StaffRow>;
-    updateStaffMember(id: string, data: {
-        name?: string;
-        email?: string;
-        role?: string;
-        pin_code?: string;
-        phone?: string;
-        is_active?: boolean;
-    }): Promise<StaffRow>;
+    updateStaffMember(
+        id: string,
+        data: {
+            name?: string;
+            email?: string;
+            role?: string;
+            pin_code?: string;
+            phone?: string;
+            is_active?: boolean;
+        }
+    ): Promise<StaffRow>;
     deactivateStaffMember(id: string): Promise<StaffRow>;
     verifyPin(staffId: string, pinCode: string): Promise<StaffRow | null>;
     getStaffByIds(ids: string[]): Promise<StaffRow[]>;
@@ -43,7 +51,10 @@ export interface IStaffRepository {
 export interface IPaymentsRepository {
     getPayment(id: string): Promise<PaymentRow | null>;
     getPaymentsByOrder(orderId: string, options?: PaymentListOptions): Promise<PaymentRow[]>;
-    getPaymentsByRestaurant(restaurantId: string, options?: PaymentListOptions): Promise<PaymentRow[]>;
+    getPaymentsByRestaurant(
+        restaurantId: string,
+        options?: PaymentListOptions
+    ): Promise<PaymentRow[]>;
     createPayment(data: {
         restaurant_id: string;
         order_id: string;
@@ -54,7 +65,12 @@ export interface IPaymentsRepository {
         idempotency_key: string;
         metadata?: Record<string, unknown>;
     }): Promise<PaymentRow>;
-    updatePaymentStatus(id: string, status: PaymentStatus, transactionId?: string, metadata?: Record<string, unknown>): Promise<PaymentRow>;
+    updatePaymentStatus(
+        id: string,
+        status: PaymentStatus,
+        transactionId?: string,
+        metadata?: Record<string, unknown>
+    ): Promise<PaymentRow>;
     getPaymentByIdempotencyKey(idempotencyKey: string): Promise<PaymentRow | null>;
     getPaymentsByIds(ids: string[]): Promise<PaymentRow[]>;
 }
@@ -63,7 +79,16 @@ export interface IRolePermissionsRepository {
     getPermissionsByRole(role: string): Promise<string[]>;
     getAllRolePermissions(): Promise<Record<string, string[]>>;
     hasPermissions(): Promise<boolean>;
-    addPermission(role: string, permission: string): Promise<{ id: string; role: string; permission: string; created_at: string; updated_at: string }>;
+    addPermission(
+        role: string,
+        permission: string
+    ): Promise<{
+        id: string;
+        role: string;
+        permission: string;
+        created_at: string;
+        updated_at: string;
+    }>;
     removePermission(role: string, permission: string): Promise<void>;
     setRolePermissions(role: string, permissions: string[]): Promise<void>;
 }
@@ -129,18 +154,21 @@ export function createPaymentsRepository(): PaymentsRepository {
  */
 export function createRepositoryContainer(): RepositoryContainer {
     const container = new RepositoryContainer();
-    
+
     // Register all repository implementations
     container.register<IStaffRepository>('IStaffRepository', createStaffRepository());
     container.register<IPaymentsRepository>('IPaymentsRepository', createPaymentsRepository());
-    container.register<IRolePermissionsRepository>('IRolePermissionsRepository', createRolePermissionsRepository());
-    
+    container.register<IRolePermissionsRepository>(
+        'IRolePermissionsRepository',
+        createRolePermissionsRepository()
+    );
+
     // Also register singleton instances for direct use
     container.register('menuRepository', menuRepository);
     container.register('ordersRepository', ordersRepository);
     container.register('guestsRepository', guestsRepository);
     container.register('cartRepository', cartRepository);
-    
+
     return container;
 }
 

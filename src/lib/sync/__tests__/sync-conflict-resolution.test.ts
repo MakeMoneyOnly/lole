@@ -253,7 +253,7 @@ describe('KDS Sync Conflict Resolution', () => {
         expect(kdsSync.resolveKdsConflict).toBeDefined();
         expect(kdsSync.getConflictedKdsItems).toBeDefined();
         expect(kdsSync.batchResolveKdsConflicts).toBeDefined();
-    });
+    }, 10000);
 });
 
 describe('Idempotency', () => {

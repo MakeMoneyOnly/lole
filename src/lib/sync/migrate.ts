@@ -443,13 +443,11 @@ export async function migrateCartLocalStorageToPowerSync(
 /**
  * Run all migrations with optional resume and hooks
  */
-export async function runAllMigrations(
-    options?: {
-        resume?: boolean;
-        maxRetries?: number;
-        hooks?: MigrationHooks;
-    }
-): Promise<{
+export async function runAllMigrations(options?: {
+    resume?: boolean;
+    maxRetries?: number;
+    hooks?: MigrationHooks;
+}): Promise<{
     dexieOrders: { migrated: number; failed: number; errors: string[]; resumed?: boolean };
     kdsLocalStorage: { migrated: number; failed: number; errors: string[]; resumed?: boolean };
     cartLocalStorage: { migrated: boolean; error?: string; resumed?: boolean };

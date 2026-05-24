@@ -219,8 +219,8 @@ class QueryMonitorService {
         metadata?: Record<string, unknown>,
         isSlow = false,
         error?: Error | null
-): void {
-         const logData = {
+    ): void {
+        const logData = {
             query: queryName,
             durationMs: Math.round(durationMs * 100) / 100,
             isSlow,

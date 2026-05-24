@@ -450,10 +450,19 @@ export async function getCommandCenterData(
     const rawAlerts = alerts as unknown as RawAlert[];
 
     const ordersInFlight = rawOrders.filter((o: RawOrder) => isInFlightStatus(o.status)).length;
-    const completedOrders = rawOrders.filter((o: RawOrder) => o.status === 'completed' || o.status === 'served');
-    const activeTables = rawTables.filter((t: RawTable) => t.is_active !== false && t.status !== 'available').length;
-    const openRequests = rawRequests.filter((r: RawServiceRequest) => (r.status ?? 'pending') === 'pending').length;
-    const grossSalesSantim = rawOrders.reduce((sum: number, o: RawOrder) => sum + Number(o.total_price ?? 0), 0);
+    const completedOrders = rawOrders.filter(
+        (o: RawOrder) => o.status === 'completed' || o.status === 'served'
+    );
+    const activeTables = rawTables.filter(
+        (t: RawTable) => t.is_active !== false && t.status !== 'available'
+    ).length;
+    const openRequests = rawRequests.filter(
+        (r: RawServiceRequest) => (r.status ?? 'pending') === 'pending'
+    ).length;
+    const grossSalesSantim = rawOrders.reduce(
+        (sum: number, o: RawOrder) => sum + Number(o.total_price ?? 0),
+        0
+    );
     const grossSales = grossSalesSantim / 100;
     const grossSalesPrevious =
         previousOrders.reduce(
@@ -461,7 +470,9 @@ export async function getCommandCenterData(
             0
         ) / 100;
     const avgOrderValue = rawOrders.length > 0 ? Math.round(grossSales / rawOrders.length) : 0;
-    const uniqueTablesToday = new Set(rawOrders.map((o: RawOrder) => o.table_number).filter(Boolean)).size;
+    const uniqueTablesToday = new Set(
+        rawOrders.map((o: RawOrder) => o.table_number).filter(Boolean)
+    ).size;
 
     // Calculate average ticket time
     let avgTicketMinutes = 0;
@@ -481,7 +492,7 @@ export async function getCommandCenterData(
     const paymentSuccessRate =
         rawOrders.length > 0 ? Math.round((completedOrders.length / rawOrders.length) * 100) : 0;
 
-// Build attention queue
+    // Build attention queue
     const attentionOrders: AttentionItem[] = rawOrders
         .filter((o: RawOrder) => isInFlightStatus(o.status))
         .slice(0, 10)
@@ -531,7 +542,7 @@ export async function getCommandCenterData(
         }
     );
 
-// Build chart data (last 7 days by default for 'today'/'week', last 30 for 'month')
+    // Build chart data (last 7 days by default for 'today'/'week', last 30 for 'month')
     const chartPoints: ChartPoint[] = [];
     const daysToTrack = range === 'month' ? 30 : 7;
     const now = new Date();
@@ -554,8 +565,14 @@ export async function getCommandCenterData(
         const prevDateStr = prevDate.toISOString().split('T')[0];
         const prevIncome =
             previousOrders
-                .filter((o: { created_at?: string | null }) => o.created_at?.startsWith(prevDateStr))
-                .reduce((sum: number, o: { total_price?: number | null }) => sum + Number(o.total_price ?? 0), 0) / 100;
+                .filter((o: { created_at?: string | null }) =>
+                    o.created_at?.startsWith(prevDateStr)
+                )
+                .reduce(
+                    (sum: number, o: { total_price?: number | null }) =>
+                        sum + Number(o.total_price ?? 0),
+                    0
+                ) / 100;
 
         chartPoints.push({
             label,
@@ -726,7 +743,11 @@ export async function getAnalyticsPageData(
         };
     }
 
-const totalRevenue = orders?.reduce((sum: number, o: { total_price?: number | null }) => sum + Number(o.total_price ?? 0), 0) ?? 0;
+    const totalRevenue =
+        orders?.reduce(
+            (sum: number, o: { total_price?: number | null }) => sum + Number(o.total_price ?? 0),
+            0
+        ) ?? 0;
     const totalOrders = orders?.length ?? 0;
     const avgOrderValue = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
 

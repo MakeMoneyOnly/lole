@@ -453,7 +453,9 @@ export function createDataLoaders(tenantContext: TenantContext): DataLoaders {
             const supabase = createServiceRoleClient();
             const { data, error } = await supabase
                 .from('restaurant_staff')
-                .select('id, restaurant_id, user_id, name, email, phone, role, is_active, pin_code, created_at, updated_at')
+                .select(
+                    'id, restaurant_id, user_id, name, email, phone, role, is_active, pin_code, created_at, updated_at'
+                )
                 .in('id', [...ids]);
 
             if (error) {
@@ -469,43 +471,47 @@ export function createDataLoaders(tenantContext: TenantContext): DataLoaders {
          * Returns an array of staff for each restaurant (empty if none)
          * Note: No tenant verification needed - caller's restaurantId is already the requested one
          */
-        staffByRestaurant: new DataLoader<string, Staff[]>(async (restaurantIds: readonly string[]) => {
-            if (restaurantIds.length === 0) return [];
+        staffByRestaurant: new DataLoader<string, Staff[]>(
+            async (restaurantIds: readonly string[]) => {
+                if (restaurantIds.length === 0) return [];
 
-            // Batch load all staff for the given restaurants at once
-            const supabase = createServiceRoleClient();
-            const { data, error } = await supabase
-                .from('restaurant_staff')
-                .select('id, restaurant_id, user_id, name, email, phone, role, is_active, pin_code, created_at, updated_at')
-                .in('restaurant_id', [...restaurantIds]);
+                // Batch load all staff for the given restaurants at once
+                const supabase = createServiceRoleClient();
+                const { data, error } = await supabase
+                    .from('restaurant_staff')
+                    .select(
+                        'id, restaurant_id, user_id, name, email, phone, role, is_active, pin_code, created_at, updated_at'
+                    )
+                    .in('restaurant_id', [...restaurantIds]);
 
-            if (error) {
-                log.error('Error loading staff by restaurant', { message: error.message });
-                return restaurantIds.map(() => []);
+                if (error) {
+                    log.error('Error loading staff by restaurant', { message: error.message });
+                    return restaurantIds.map(() => []);
+                }
+
+                // Group by restaurant_id
+                const staffByRestaurant = new Map<string, Staff[]>();
+                for (const staff of data ?? []) {
+                    const staffItem: Staff = {
+                        id: staff.id,
+                        restaurant_id: staff.restaurant_id,
+                        user_id: staff.user_id,
+                        name: staff.name,
+                        email: staff.email,
+                        phone: staff.phone,
+                        role: staff.role,
+                        is_active: staff.is_active ?? true,
+                        pin_code: staff.pin_code,
+                        created_at: staff.created_at,
+                        updated_at: staff.updated_at,
+                    };
+                    const existing = staffByRestaurant.get(staff.restaurant_id) || [];
+                    existing.push(staffItem);
+                    staffByRestaurant.set(staff.restaurant_id, existing);
+                }
+
+                return restaurantIds.map(id => staffByRestaurant.get(id) ?? []);
             }
-
-            // Group by restaurant_id
-            const staffByRestaurant = new Map<string, Staff[]>();
-            for (const staff of data ?? []) {
-                const staffItem: Staff = {
-                    id: staff.id,
-                    restaurant_id: staff.restaurant_id,
-                    user_id: staff.user_id,
-                    name: staff.name,
-                    email: staff.email,
-                    phone: staff.phone,
-                    role: staff.role,
-                    is_active: staff.is_active ?? true,
-                    pin_code: staff.pin_code,
-                    created_at: staff.created_at,
-                    updated_at: staff.updated_at,
-                };
-                const existing = staffByRestaurant.get(staff.restaurant_id) || [];
-                existing.push(staffItem);
-                staffByRestaurant.set(staff.restaurant_id, existing);
-            }
-
-            return restaurantIds.map(id => staffByRestaurant.get(id) ?? []);
-        }),
+        ),
     };
 }

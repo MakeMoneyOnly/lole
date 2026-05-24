@@ -30,7 +30,11 @@ type SuccessBody<T> = {
  * BKND-012/013: Generates request ID + API version headers.
  * All success responses include x-request-id and x-api-version for tracing.
  */
-export function apiSuccess<T>(data: T, status: number = 200, headers?: HeadersInit): NextResponse<SuccessBody<T>> {
+export function apiSuccess<T>(
+    data: T,
+    status: number = 200,
+    headers?: HeadersInit
+): NextResponse<SuccessBody<T>> {
     const requestId = randomUUID();
     const allHeaders = new Headers(headers);
     allHeaders.set('x-request-id', requestId);

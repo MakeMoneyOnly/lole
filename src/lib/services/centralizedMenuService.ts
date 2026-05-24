@@ -112,10 +112,10 @@ export async function getMenuLocations(
             )
             .eq('menu_config_id', config.id);
 
-if (error) {
-                log.error('Failed to fetch locations', error);
-                return [];
-            }
+        if (error) {
+            log.error('Failed to fetch locations', error);
+            return [];
+        }
 
         return (links ?? []).map(
             (link: {

@@ -245,6 +245,9 @@ export function createMonetaryValue(
 export function cleanItemTitle(title: string | null | undefined): string {
     if (!title) return '';
     return title
-        .replace(/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Weekend|Weekday|Daily|Weekly)\s+Special\s*([-–—\s]\s*)?/i, '')
+        .replace(
+            /^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Weekend|Weekday|Daily|Weekly)\s+Special\s*([-–—\s]\s*)?/i,
+            ''
+        )
         .trim();
 }

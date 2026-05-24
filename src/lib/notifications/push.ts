@@ -444,13 +444,13 @@ async function sendWithWebPush(params: PushParams): Promise<PushResult> {
         // Since it's not in dependencies, we'll use the fetch API with VAPID authentication
         // This is a simplified implementation - in production, use the web-push library
 
-// Note: Full VAPID signed push requires crypto operations
-         // For now, return a success for development mode
-         log.warn('[push:webpush]', {
-             endpoint,
-             title: params.title,
-             body: params.body,
-         });
+        // Note: Full VAPID signed push requires crypto operations
+        // For now, return a success for development mode
+        log.warn('[push:webpush]', {
+            endpoint,
+            title: params.title,
+            body: params.body,
+        });
 
         return {
             success: true,
@@ -668,9 +668,7 @@ export async function getGuestPushTokens(
 export function generateVapidKeys(): { publicKey: string; privateKey: string } {
     // This is a placeholder - in production, use the web-push library's generateVAPIDKeys()
     // or generate keys using Node's crypto module
-    log.warn(
-        'VAPID key generation not implemented - use web-push library in production'
-    );
+    log.warn('VAPID key generation not implemented - use web-push library in production');
 
     return {
         publicKey: process.env.VAPID_PUBLIC_KEY || '',

@@ -340,10 +340,10 @@ export async function receiveExternalOrder(
             )
             .single();
 
-if (error) {
-        log.error('Failed to create order', { error });
-        return { success: false, error: 'Failed to create order' };
-    }
+        if (error) {
+            log.error('Failed to create order', { error });
+            return { success: false, error: 'Failed to create order' };
+        }
 
         // Check if auto-accept is enabled
         const partner = await db

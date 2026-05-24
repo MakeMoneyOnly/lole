@@ -406,7 +406,9 @@ function mapEsooraStatus(
 /**
  * Get the appropriate parser for a delivery partner
  */
-export function getParserForProvider(provider: string): ((rawOrder: unknown, restaurantId: string) => NormalizedExternalOrder | null) | null {
+export function getParserForProvider(
+    provider: string
+): ((rawOrder: unknown, restaurantId: string) => NormalizedExternalOrder | null) | null {
     switch (provider.toLowerCase()) {
         case 'beu':
             return parseBeuOrder;

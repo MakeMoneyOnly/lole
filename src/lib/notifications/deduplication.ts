@@ -496,16 +496,16 @@ export async function clearOldEntries(olderThanHours: number = 24): Promise<numb
             .eq('metadata->>is_dedup_marker', 'true')
             .lt('created_at', olderThan);
 
-if (error) {
-        log.error('Database cleanup error', error);
+        if (error) {
+            log.error('Database cleanup error', error);
+            return 0;
+        }
+
+        return Array.isArray(data) ? data.length : 0;
+    } catch (error) {
+        log.error('Unexpected cleanup error', error);
         return 0;
     }
-
-    return Array.isArray(data) ? data.length : 0;
-} catch (error) {
-    log.error('Unexpected cleanup error', error);
-    return 0;
-}
 }
 
 /**

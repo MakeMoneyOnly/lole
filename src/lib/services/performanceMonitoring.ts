@@ -172,10 +172,10 @@ class PerformanceMonitorService {
             }
 
             return duration ?? null;
-} catch (error) {
-                log.warn('Measure failed', { error });
-                return null;
-            }
+        } catch (error) {
+            log.warn('Measure failed', { error });
+            return null;
+        }
     }
 
     /**
@@ -369,19 +369,22 @@ export function timeSync<T>(name: string, fn: () => T): T {
  * @param componentName - Name of the component
  * @returns Object with start and end functions
  */
-export function usePerformanceTracking(componentName: string): { trackRender: () => (metadata?: Record<string, unknown>) => number; trackEffect: (effectName: string) => (metadata?: Record<string, unknown>) => number } {
-     const monitor = getPerformanceMonitor();
+export function usePerformanceTracking(componentName: string): {
+    trackRender: () => (metadata?: Record<string, unknown>) => number;
+    trackEffect: (effectName: string) => (metadata?: Record<string, unknown>) => number;
+} {
+    const monitor = getPerformanceMonitor();
 
-     const trackRender = (): ((metadata?: Record<string, unknown>) => number) => {
-         return monitor.startTimer(`render_${componentName}`);
-     };
+    const trackRender = (): ((metadata?: Record<string, unknown>) => number) => {
+        return monitor.startTimer(`render_${componentName}`);
+    };
 
-     const trackEffect = (effectName: string): ((metadata?: Record<string, unknown>) => number) => {
-         return monitor.startTimer(`effect_${componentName}_${effectName}`);
-     };
+    const trackEffect = (effectName: string): ((metadata?: Record<string, unknown>) => number) => {
+        return monitor.startTimer(`effect_${componentName}_${effectName}`);
+    };
 
-     return { trackRender, trackEffect };
- }
+    return { trackRender, trackEffect };
+}
 
 // Export types and class
 export type { PerformanceMetric, PerformanceEvent };

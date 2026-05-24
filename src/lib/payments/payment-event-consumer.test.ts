@@ -38,12 +38,27 @@ function createPaymentEvent(overrides?: Partial<PaymentLifecycleEvent>): Payment
         ...overrides,
     };
 }
-function createSupabaseMock(params: {
-    order?: { id: string; restaurant_id: string; total_price?: number; status?: string; order_number?: string; paid_at?: null };
-    payment?: { id: string; status: string; order_id: string; restaurant_id: string } | null;
-    paymentSession?: { id: string; order_id: string; restaurant_id: string; status: string; metadata: Record<string, unknown> };
-    insertedPaymentId?: string;
-} = {}): any {
+function createSupabaseMock(
+    params: {
+        order?: {
+            id: string;
+            restaurant_id: string;
+            total_price?: number;
+            status?: string;
+            order_number?: string;
+            paid_at?: null;
+        };
+        payment?: { id: string; status: string; order_id: string; restaurant_id: string } | null;
+        paymentSession?: {
+            id: string;
+            order_id: string;
+            restaurant_id: string;
+            status: string;
+            metadata: Record<string, unknown>;
+        };
+        insertedPaymentId?: string;
+    } = {}
+): any {
     const paymentsUpdateEq = vi.fn().mockResolvedValue({ error: null });
     const ordersUpdateEq = vi.fn().mockResolvedValue({ error: null });
     const paymentSessionsUpdateEq = vi.fn().mockResolvedValue({ error: null });

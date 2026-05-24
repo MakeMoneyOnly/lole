@@ -94,10 +94,10 @@ async function validateSyncEndpoints(): Promise<void> {
 }
 
 /**
-  * Check if a table's endpoint is reachable.
-  * If health cache is empty (never validated), assume reachable.
-  */
- function _isEndpointReachable(tableName: string): boolean {
+ * Check if a table's endpoint is reachable.
+ * If health cache is empty (never validated), assume reachable.
+ */
+function _isEndpointReachable(tableName: string): boolean {
     if (Object.keys(endpointHealthCache).length === 0) {
         return true; // Not yet validated, assume reachable
     }
@@ -211,14 +211,14 @@ export function createSyncWorker(config: Partial<SyncWorkerConfig> = {}): SyncWo
         }
     }
 
-/**
-      * HIGH-013: Calculate exponential backoff delay
-      */
-     function _calculateBackoffDelay(retryCount: number): number {
-         const delay = Math.min(BASE_DELAY_MS * Math.pow(2, retryCount), MAX_DELAY_MS);
-         // Add jitter to prevent thundering herd
-         return delay + Math.random() * 1000;
-     }
+    /**
+     * HIGH-013: Calculate exponential backoff delay
+     */
+    function _calculateBackoffDelay(retryCount: number): number {
+        const delay = Math.min(BASE_DELAY_MS * Math.pow(2, retryCount), MAX_DELAY_MS);
+        // Add jitter to prevent thundering herd
+        return delay + Math.random() * 1000;
+    }
 
     /**
      * HIGH-013: Execute batch sync via unified /api/sync endpoint
@@ -512,10 +512,10 @@ export function createSyncWorker(config: Partial<SyncWorkerConfig> = {}): SyncWo
         try {
             const syncResult = await processSyncOperations();
 
-let _printerResult = { processed: 0, succeeded: 0, failed: 0 };
-             if (cfg.enablePrinterQueue) {
-                 _printerResult = await processPrinterQueue();
-             }
+            let _printerResult = { processed: 0, succeeded: 0, failed: 0 };
+            if (cfg.enablePrinterQueue) {
+                _printerResult = await processPrinterQueue();
+            }
 
             lastSyncAt = new Date().toISOString();
 
@@ -568,7 +568,7 @@ let _printerResult = { processed: 0, succeeded: 0, failed: 0 };
     /**
      * Start the sync worker
      */
-function start(): void {
+    function start(): void {
         if (isRunning) return;
 
         isRunning = true;
@@ -583,7 +583,7 @@ function start(): void {
     /**
      * Stop the sync worker
      */
-function stop(): void {
+    function stop(): void {
         if (!isRunning) return;
 
         if (intervalId) {

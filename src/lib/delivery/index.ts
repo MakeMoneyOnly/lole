@@ -240,7 +240,9 @@ const clients: Record<
 /**
  * Get the appropriate delivery client for a provider
  */
-export function getDeliveryClient(provider: SupportedProvider): typeof BeuClient | typeof DeliverAddisClient | typeof ZmallClient | typeof EsooraClient {
+export function getDeliveryClient(
+    provider: SupportedProvider
+): typeof BeuClient | typeof DeliverAddisClient | typeof ZmallClient | typeof EsooraClient {
     const client = clients[provider];
     if (!client) {
         throw new Error(`Unsupported delivery provider: ${provider}`);

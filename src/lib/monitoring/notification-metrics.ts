@@ -161,11 +161,11 @@ function getRedisClient(): Redis | null {
         return redisClient;
     }
 
-if (!REDIS_URL || !REDIS_TOKEN) {
-         logger.warn(
-             '[notification-metrics] Redis not configured, metrics will not be aggregated in real-time'
-         );
-         return null;
+    if (!REDIS_URL || !REDIS_TOKEN) {
+        logger.warn(
+            '[notification-metrics] Redis not configured, metrics will not be aggregated in real-time'
+        );
+        return null;
     }
 
     try {
@@ -215,12 +215,12 @@ async function _incrementCounter(key: string, amount: number = 1): Promise<void>
 async function _addLatency(key: string, latencyMs: number): Promise<void> {
     const redis = getRedisClient();
     if (redis) {
-try {
-        await redis.incrbyfloat(key, latencyMs);
-        await redis.expire(key, 30 * 24 * 60 * 60);
-    } catch (error) {
-        logger.error('[notification-metrics] Redis latency error', error);
-    }
+        try {
+            await redis.incrbyfloat(key, latencyMs);
+            await redis.expire(key, 30 * 24 * 60 * 60);
+        } catch (error) {
+            logger.error('[notification-metrics] Redis latency error', error);
+        }
     }
 }
 
@@ -296,20 +296,20 @@ export async function recordNotificationSent(params: MetricParams): Promise<void
         }
     }
 
-// Also record to database for persistence
-     try {
-         const supabase = createServiceRoleClient();
-         await supabase.from('notification_metrics').insert({
-             restaurant_id: restaurantId,
-             channel,
-             status: 'sent',
-             latency_ms: latencyMs,
-             notification_id: notificationId,
-             recorded_at: new Date().toISOString(),
-         });
-     } catch (error) {
-         logger.error('[notification-metrics] Database insert error', error);
-     }
+    // Also record to database for persistence
+    try {
+        const supabase = createServiceRoleClient();
+        await supabase.from('notification_metrics').insert({
+            restaurant_id: restaurantId,
+            channel,
+            status: 'sent',
+            latency_ms: latencyMs,
+            notification_id: notificationId,
+            recorded_at: new Date().toISOString(),
+        });
+    } catch (error) {
+        logger.error('[notification-metrics] Database insert error', error);
+    }
 }
 
 /**
@@ -385,19 +385,19 @@ export async function recordNotificationFailed(params: MetricParams): Promise<vo
     // Record to database
     try {
         const supabase = createServiceRoleClient();
-await supabase.from('notification_metrics').insert({
-             restaurant_id: restaurantId,
-             channel,
-             status: 'failed',
-             latency_ms: latencyMs,
-             notification_id: notificationId,
-             error_code: errorCode,
-             error_message: errorMessage,
-             recorded_at: new Date().toISOString(),
-         });
-     } catch (error) {
-         logger.error('[notification-metrics] Database insert error', error);
-     }
+        await supabase.from('notification_metrics').insert({
+            restaurant_id: restaurantId,
+            channel,
+            status: 'failed',
+            latency_ms: latencyMs,
+            notification_id: notificationId,
+            error_code: errorCode,
+            error_message: errorMessage,
+            recorded_at: new Date().toISOString(),
+        });
+    } catch (error) {
+        logger.error('[notification-metrics] Database insert error', error);
+    }
 }
 
 /**

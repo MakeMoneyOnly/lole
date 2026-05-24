@@ -13,12 +13,7 @@
 // Types and Enums
 // ============================================================================
 
-export type TaxCategory =
-    | 'VAT'
-    | 'INCOME_TAX'
-    | 'SOCIAL_SECURITY'
-    | 'OPERATING_EXPENSE'
-    | 'OTHER';
+export type TaxCategory = 'VAT' | 'INCOME_TAX' | 'SOCIAL_SECURITY' | 'OPERATING_EXPENSE' | 'OTHER';
 
 export interface TaxRateResult {
     category: TaxCategory;
@@ -72,22 +67,22 @@ const COUNTRY_CONFIGS: Record<string, CountryConfig> = {
         vatRate: 0.15,
         vatLabel: 'Ethiopian VAT (15%)',
         incomeTaxRates: { min: 0.01, max: 0.35 },
-        socialSecurityRate: 0.10,
+        socialSecurityRate: 0.1,
     },
     USA: {
         code: 'USA',
         name: 'United States',
         vatRate: 0,
         vatLabel: 'Sales Tax (varies by state)',
-        incomeTaxRates: { min: 0.10, max: 0.37 },
+        incomeTaxRates: { min: 0.1, max: 0.37 },
         socialSecurityRate: 0.062,
     },
     GBR: {
         code: 'GBR',
         name: 'United Kingdom',
-        vatRate: 0.20,
+        vatRate: 0.2,
         vatLabel: 'UK VAT (20%)',
-        incomeTaxRates: { min: 0.20, max: 0.45 },
+        incomeTaxRates: { min: 0.2, max: 0.45 },
         socialSecurityRate: 0,
     },
     DEU: {
@@ -96,12 +91,12 @@ const COUNTRY_CONFIGS: Record<string, CountryConfig> = {
         vatRate: 0.19,
         vatLabel: 'German VAT (19%)',
         incomeTaxRates: { min: 0.14, max: 0.42 },
-        socialSecurityRate: 0.20,
+        socialSecurityRate: 0.2,
     },
     FRA: {
         code: 'FRA',
         name: 'France',
-        vatRate: 0.20,
+        vatRate: 0.2,
         vatLabel: 'French VAT (20%)',
         incomeTaxRates: { min: 0.0, max: 0.45 },
         socialSecurityRate: 0.28,
@@ -111,7 +106,7 @@ const COUNTRY_CONFIGS: Record<string, CountryConfig> = {
         name: 'Kenya',
         vatRate: 0.16,
         vatLabel: 'Kenyan VAT (16%)',
-        incomeTaxRates: { min: 0.10, max: 0.30 },
+        incomeTaxRates: { min: 0.1, max: 0.3 },
         socialSecurityRate: 0.06,
     },
     // Default fallback - will be extended to 134+ countries
@@ -120,8 +115,8 @@ const COUNTRY_CONFIGS: Record<string, CountryConfig> = {
         name: 'International',
         vatRate: 0.15,
         vatLabel: 'Standard VAT (15%)',
-        incomeTaxRates: { min: 0.10, max: 0.30 },
-        socialSecurityRate: 0.10,
+        incomeTaxRates: { min: 0.1, max: 0.3 },
+        socialSecurityRate: 0.1,
     },
 };
 
@@ -139,30 +134,78 @@ interface ClassificationRule {
 const CLASSIFICATION_RULES: ClassificationRule[] = [
     // VAT-related keywords
     { pattern: /\b(vat|sales tax|gst|tax invoice|taxable)\b/i, category: 'VAT', weight: 10 },
-    { pattern: /\b(food|meal|lunch|dinner|restaurant|cafe|beverage|drink)\b/i, category: 'VAT', weight: 8 },
-    { pattern: /\b(grocery|supermarket|market|produce|meat|fish|vegetable)\b/i, category: 'VAT', weight: 8 },
+    {
+        pattern: /\b(food|meal|lunch|dinner|restaurant|cafe|beverage|drink)\b/i,
+        category: 'VAT',
+        weight: 8,
+    },
+    {
+        pattern: /\b(grocery|supermarket|market|produce|meat|fish|vegetable)\b/i,
+        category: 'VAT',
+        weight: 8,
+    },
     { pattern: /\b(office supply|stationery|paper|pen|pencil)\b/i, category: 'VAT', weight: 7 },
     { pattern: /\b(uniform|clothing|apparel)\b/i, category: 'VAT', weight: 5 },
 
     // Income tax keywords (specific to rental income, not office rent)
     { pattern: /\b(salary|wage|payroll|commission|bonus)\b/i, category: 'INCOME_TAX', weight: 10 },
-    { pattern: /\b(consulting fee|service fee|professional fee|contractor)\b/i, category: 'INCOME_TAX', weight: 9 },
-    { pattern: /\b(rental income|lease income|royalty|licensing fee)\b/i, category: 'INCOME_TAX', weight: 8 },
+    {
+        pattern: /\b(consulting fee|service fee|professional fee|contractor)\b/i,
+        category: 'INCOME_TAX',
+        weight: 9,
+    },
+    {
+        pattern: /\b(rental income|lease income|royalty|licensing fee)\b/i,
+        category: 'INCOME_TAX',
+        weight: 8,
+    },
     { pattern: /\b(dividend|interest|capital gain|profit)\b/i, category: 'INCOME_TAX', weight: 9 },
 
     // Social security keywords
-    { pattern: /\b(pension|social security|insurance|provident)\b/i, category: 'SOCIAL_SECURITY', weight: 8 },
-    { pattern: /\b(payroll tax|employment tax|worker compensation)\b/i, category: 'SOCIAL_SECURITY', weight: 9 },
-    { pattern: /\b(benefits|hmo|medical insurance|health plan)\b/i, category: 'SOCIAL_SECURITY', weight: 7 },
+    {
+        pattern: /\b(pension|social security|insurance|provident)\b/i,
+        category: 'SOCIAL_SECURITY',
+        weight: 8,
+    },
+    {
+        pattern: /\b(payroll tax|employment tax|worker compensation)\b/i,
+        category: 'SOCIAL_SECURITY',
+        weight: 9,
+    },
+    {
+        pattern: /\b(benefits|hmo|medical insurance|health plan)\b/i,
+        category: 'SOCIAL_SECURITY',
+        weight: 7,
+    },
 
     // Operating expense keywords (includes office rent, utilities, etc.)
-    { pattern: /\b(office rent|rent payment|utilities|electricity|water|gas)\b/i, category: 'OPERATING_EXPENSE', weight: 8 },
-    { pattern: /\b(equipment|furniture|fixture|machinery|tool)\b/i, category: 'OPERATING_EXPENSE', weight: 7 },
-    { pattern: /\b(marketing|advertising|promotion|seo|ppc)\b/i, category: 'OPERATING_EXPENSE', weight: 7 },
-    { pattern: /\b(software|subscription|saas|license)\b/i, category: 'OPERATING_EXPENSE', weight: 6 },
+    {
+        pattern: /\b(office rent|rent payment|utilities|electricity|water|gas)\b/i,
+        category: 'OPERATING_EXPENSE',
+        weight: 8,
+    },
+    {
+        pattern: /\b(equipment|furniture|fixture|machinery|tool)\b/i,
+        category: 'OPERATING_EXPENSE',
+        weight: 7,
+    },
+    {
+        pattern: /\b(marketing|advertising|promotion|seo|ppc)\b/i,
+        category: 'OPERATING_EXPENSE',
+        weight: 7,
+    },
+    {
+        pattern: /\b(software|subscription|saas|license)\b/i,
+        category: 'OPERATING_EXPENSE',
+        weight: 6,
+    },
     { pattern: /\b(liability|coverage)\b/i, category: 'OPERATING_EXPENSE', weight: 6 },
     { pattern: /\b(repair maintenance|fix|upgrade)\b/i, category: 'OPERATING_EXPENSE', weight: 6 },
-    { pattern: /\b(travel|transport|fuel|delivery|shipping)\b/i, category: 'OPERATING_EXPENSE', weight: 6 },
+    {
+        pattern: /\b(travel|transport|fuel|delivery|shipping)\b/i,
+        category: 'OPERATING_EXPENSE',
+        weight: 6,
+    },
 ];
 
 // ============================================================================

@@ -142,7 +142,9 @@ export async function getHourlySalesData(
         .order('hour', { ascending: true });
 
     if (aggError) {
-        log.warn('Continuous aggregate not available, falling back to hypertable', { error: aggError });
+        log.warn('Continuous aggregate not available, falling back to hypertable', {
+            error: aggError,
+        });
 
         // Fallback to hypertable
         const { data, error } = await supabase
@@ -194,7 +196,9 @@ export async function getDailySalesData(
         .order('date', { ascending: true });
 
     if (aggError) {
-        log.warn('Continuous aggregate not available, falling back to hypertable', { error: aggError });
+        log.warn('Continuous aggregate not available, falling back to hypertable', {
+            error: aggError,
+        });
 
         // Fallback to hypertable
         // HIGH-013: Explicit column selection

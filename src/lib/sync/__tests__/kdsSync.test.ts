@@ -112,7 +112,8 @@ describe('KDS Sync Manager', () => {
                     'test-kds-id-456' as `${string}-${string}-${string}-${string}-${string}`
                 );
 
-            mockGetFirstAsync.mockResolvedValueOnce({
+            // Set up mock to return the KDS item when getKdsItem is called after creation
+            mockGetFirstAsync.mockResolvedValue({
                 id: 'test-kds-id-456',
                 order_id: 'order-1',
                 order_item_id: 'item-1',

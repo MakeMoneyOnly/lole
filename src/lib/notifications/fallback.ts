@@ -541,9 +541,9 @@ export async function processSmsFailuresForPush(limit: number = 50): Promise<num
                 .eq('id', notification.id);
 
             queued++;
-} catch (err) {
-        log.error('Error processing SMS failure', err);
-    }
+        } catch (err) {
+            log.error('Error processing SMS failure', err);
+        }
     }
 
     return queued;

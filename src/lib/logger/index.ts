@@ -203,8 +203,8 @@ export class Logger {
     }
 
     /**
-      * Output JSON format for production
-      */
+     * Output JSON format for production
+     */
     private outputJson(entry: LogEntry): void {
         const output = JSON.stringify(entry);
         switch (entry.level) {

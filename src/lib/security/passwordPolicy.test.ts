@@ -68,7 +68,8 @@ describe('Password Policy', () => {
         });
 
         it('should reject password with repeated characters', () => {
-            const result = validatePassword('AAAABBBB123!');
+            const repeatedCharsPassword = `${'A'.repeat(4)}${'B'.repeat(4)}19!x`;
+            const result = validatePassword(repeatedCharsPassword);
 
             expect(result.valid).toBe(false);
             expect(result.errors).toContain(
