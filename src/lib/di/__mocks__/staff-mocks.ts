@@ -16,9 +16,7 @@ type MockFn = ReturnType<typeof vi.fn>;
  * Creates a mock staff repository for testing
  * Override any methods as needed for specific test cases
  */
-export function createMockStaffRepository(
-    overrides?: Partial<IStaffRepository>
-): IStaffRepository {
+export function createMockStaffRepository(overrides?: Partial<IStaffRepository>): IStaffRepository {
     const defaultStaff: StaffRow = {
         id: 'mock-staff-id',
         restaurant_id: 'mock-restaurant-id',
@@ -93,7 +91,19 @@ export function createMockStaffService(): {
  * Setup DI container with mocks for testing
  * Call this in beforeEach or individual tests
  */
-export function setupDIMocks() {
+export function setupDIMocks(): {
+    mockRepo: IStaffRepository;
+    mockService: {
+        getStaffMember: MockFn;
+        getStaffByUserId: MockFn;
+        getStaff: MockFn;
+        createStaffMember: MockFn;
+        updateStaffMember: MockFn;
+        deactivateStaffMember: MockFn;
+        verifyPin: MockFn;
+        hasPermission: MockFn;
+    };
+} {
     const mockRepo = createMockStaffRepository();
     const mockService = createMockStaffService();
 

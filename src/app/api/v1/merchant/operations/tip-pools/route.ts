@@ -1,121 +1,59 @@
-import { z } from 'zod';
-import { apiError, apiSuccess, handleApiError } from '@/lib/api/response';
-import { getAuthenticatedUser, getAuthorizedRestaurantContext } from '@/lib/api/authz';
-import { parseJsonBody } from '@/lib/api/validation';
-import { writeAuditLog } from '@/lib/api/audit';
+import { listPools, allocatePools } from '@/features/operations/tip-pools';
 
-const CreateTipPoolSchema = z.object({
-    name: z.string().trim().min(1).max(120),
-    name_am: z.string().trim().max(120).optional().nullable(),
-    description: z.string().trim().max(500).optional().nullable(),
-    is_active: z.boolean().optional().default(true),
-    pool_type: z.enum(['percentage', 'fixed_amount']).default('percentage'),
-    pool_value: z.number().int().min(0).default(0),
-    calculated_from: z.enum(['tips', 'total']).default('tips'),
-    valid_from: z.string().datetime().optional().nullable(),
-    valid_until: z.string().datetime().optional().nullable(),
-    allocation_mode: z.enum(['shift', 'daily', 'weekly']).default('shift'),
-});
-
-const _UpdateTipPoolSchema = CreateTipPoolSchema.partial();
-
-const TipPoolShareSchema = z.object({
-    role: z.enum([
-        'server',
-        'bartender',
-        'host',
-        'busser',
-        'kitchen',
-        'manager',
-        'cook',
-        'barista',
-    ]),
-    percentage: z.number().int().min(0).max(10000),
-});
-
-const CreateTipPoolWithSharesSchema = z.object({
-    tip_pool: CreateTipPoolSchema,
-    shares: z.array(TipPoolShareSchema).min(1),
-});
-
-export async function GET(_request: Request): Promise<Response> {
-    const auth = await getAuthenticatedUser();
-    if (!auth.ok) {
-        return auth.response;
-    }
-
-    const context = await getAuthorizedRestaurantContext(auth.user.id, { phase: 'p1' });
-    if (!context.ok) {
-        return context.response;
-    }
-
-    try {
-        const db = context.supabase;
-
-        // Get tip pools with their shares
-        const { data: pools, error: poolsError } = await db
-            .from('tip_pools')
-            // HIGH-013: Explicit column selection
-            .select(
-                'id, restaurant_id, name, name_am, description, description_am, is_active, pool_type, pool_value, calculated_from, valid_from, valid_until, allocation_mode, created_by, created_at, updated_at'
-            )
-            .eq('restaurant_id', context.restaurantId)
-            .order('created_at', { ascending: false });
-
-        if (poolsError) {
-            return apiError(
-                'Failed to load tip pools',
-                500,
-                'TIP_POOL_FETCH_FAILED',
-                poolsError.message
-            );
-        }
-
-        if (!pools || pools.length === 0) {
-            return apiSuccess({ tip_pools: [], shares: {} });
-        }
-
-        const poolIds = pools.map((p: { id: string }) => p.id);
-
-        // Get shares for all pools
-        const { data: shares, error: sharesError } = await db
-            .from('tip_pool_shares')
-            // HIGH-013: Explicit column selection
-            .select('id, tip_pool_id, restaurant_id, role, percentage, created_at, updated_at')
-            .in('tip_pool_id', poolIds)
-            .order('role', { ascending: true });
-
-        if (sharesError) {
-            return apiError(
-                'Failed to load tip pool shares',
-                500,
-                'TIP_POOL_SHARES_FETCH_FAILED',
-                sharesError.message
-            );
-        }
-
-        // Group shares by pool
-        const sharesByPool: Record<string, Array<Record<string, unknown>>> = {};
-        (shares ?? []).forEach((share: Record<string, unknown>) => {
-            const tipPoolId = share.tip_pool_id as string;
-            if (!sharesByPool[tipPoolId]) {
-                sharesByPool[tipPoolId] = [];
-            }
-            sharesByPool[tipPoolId].push(share);
-        });
-
-        return apiSuccess({
-            tip_pools: pools ?? [],
-            shares: sharesByPool,
-        });
-    } catch (error) {
-        return handleApiError(error, {
-            operation: 'tip-pools.GET',
-        });
-    }
+export async function GET(request: Request): Promise<Response> {
+    return listPools(request);
 }
 
 export async function POST(request: Request): Promise<Response> {
+    // This endpoint handles both list creation and allocation
+    // Based on the body content, route to appropriate handler
+    const url = new URL(request.url);
+    const action = url.searchParams.get('action');
+
+    if (action === 'allocate') {
+        return allocatePools(request);
+    }
+
+    // Default: create tip pool (handled by existing logic)
+    const { apiError, apiSuccess } = await import('@/lib/api/response');
+    const { getAuthenticatedUser, getAuthorizedRestaurantContext } =
+        await import('@/lib/api/authz');
+    const { parseJsonBody } = await import('@/lib/api/validation');
+    const { writeAuditLog } = await import('@/lib/api/audit');
+    const { z } = await import('zod');
+
+    const CreateTipPoolSchema = z.object({
+        name: z.string().trim().min(1).max(120),
+        name_am: z.string().trim().max(120).optional().nullable(),
+        description: z.string().trim().max(500).optional().nullable(),
+        is_active: z.boolean().optional().default(true),
+        pool_type: z.enum(['percentage', 'fixed_amount']).default('percentage'),
+        pool_value: z.number().int().min(0).default(0),
+        calculated_from: z.enum(['tips', 'total']).default('tips'),
+        valid_from: z.string().datetime().optional().nullable(),
+        valid_until: z.string().datetime().optional().nullable(),
+        allocation_mode: z.enum(['shift', 'daily', 'weekly']).default('shift'),
+    });
+
+    const TipPoolShareSchema = z.object({
+        role: z.enum([
+            'server',
+            'bartender',
+            'host',
+            'busser',
+            'kitchen',
+            'manager',
+            'cook',
+            'barista',
+        ]),
+        percentage: z.number().int().min(0).max(10000),
+    });
+
+    const CreateTipPoolWithSharesSchema = z.object({
+        tip_pool: CreateTipPoolSchema,
+        shares: z.array(TipPoolShareSchema).min(1),
+    });
+
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -133,7 +71,6 @@ export async function POST(request: Request): Promise<Response> {
 
     const { tip_pool, shares } = parsed.data;
 
-    // Validate shares total doesn't exceed 100%
     const totalPercentage = shares.reduce((sum, s) => sum + s.percentage, 0);
     if (totalPercentage > 10000) {
         return apiError('Total shares cannot exceed 100%', 400, 'TIP_POOL_SHARES_EXCEED_100');
@@ -141,7 +78,6 @@ export async function POST(request: Request): Promise<Response> {
 
     const db = context.supabase;
 
-    // Create the tip pool
     const { data: pool, error: poolError } = await db
         .from('tip_pools')
         .insert({
@@ -149,7 +85,6 @@ export async function POST(request: Request): Promise<Response> {
             created_by: auth.user.id,
             ...tip_pool,
         })
-        // HIGH-013: Explicit column selection
         .select(
             'id, restaurant_id, name, name_am, description, description_am, is_active, pool_type, pool_value, calculated_from, valid_from, valid_until, allocation_mode, created_by, created_at, updated_at'
         )
@@ -164,7 +99,6 @@ export async function POST(request: Request): Promise<Response> {
         );
     }
 
-    // Create shares
     const sharesData = shares.map(share => ({
         restaurant_id: context.restaurantId,
         tip_pool_id: pool.id,
@@ -175,7 +109,6 @@ export async function POST(request: Request): Promise<Response> {
     const { error: sharesError } = await db.from('tip_pool_shares').insert(sharesData);
 
     if (sharesError) {
-        // Rollback pool creation
         await db.from('tip_pools').delete().eq('id', pool.id);
         return apiError(
             'Failed to create tip pool shares',

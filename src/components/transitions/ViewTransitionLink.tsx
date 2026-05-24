@@ -86,17 +86,7 @@ function isViewTransitionsSupported(): boolean {
  */
 export const ViewTransitionLink = React.forwardRef<HTMLAnchorElement, ViewTransitionLinkProps>(
     (
-        {
-            href,
-            children,
-            className,
-            transitionName,
-            transitionType = 'auto',
-            duration,
-            scroll = true,
-            onClick,
-            ...props
-        },
+        { href, children, className, transitionName, duration, scroll = true, onClick, ...props },
         ref
     ) => {
         const handleClick = React.useCallback(
@@ -137,18 +127,24 @@ ViewTransitionLink.displayName = 'ViewTransitionLink';
 /**
  * Custom hook to programmatically trigger view transitions
  */
-export function useViewTransition() {
+export function useViewTransition(): {
+    supported: boolean;
+    startTransition: (updateCallback: () => void | Promise<void>) => Promise<void>;
+} {
     const supported = isViewTransitionsSupported();
 
     const startTransition = React.useCallback(
-        async (updateCallback: () => void | Promise<void>) => {
+        async (updateCallback: () => void | Promise<void>): Promise<void> => {
             if (!supported) {
                 updateCallback();
                 return;
             }
 
-            const transition = (document as any).startViewTransition(updateCallback);
-            return transition.ready;
+            const doc = document as Document & {
+                startViewTransition?: (cb: () => void) => { ready: Promise<void> };
+            };
+            const transition = doc.startViewTransition?.(updateCallback);
+            await transition?.ready;
         },
         [supported]
     );
@@ -156,11 +152,7 @@ export function useViewTransition() {
     return { supported, startTransition };
 }
 
-/**
- * Utility function to set up shared element transitions
- * Call this in your page components to configure transition elements
- */
-export function setupSharedElement(name: string, element: HTMLElement) {
+export function setupSharedElement(name: string, element: HTMLElement): void {
     if (!isViewTransitionsSupported()) return;
     element.style.viewTransitionName = name;
 }

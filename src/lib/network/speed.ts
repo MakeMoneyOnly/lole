@@ -11,7 +11,7 @@
  * - Bandwidth estimation via performance APIs
  */
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { t } from '@/lib/i18n/translations';
 import type { AppLocale } from '@/lib/i18n/locale';
 

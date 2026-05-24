@@ -13,7 +13,7 @@ import { apiSuccess, apiError, handleApiError } from '@/lib/api/response';
 
 export async function POST(request: NextRequest): Promise<Response> {
     const startTime = Date.now();
-    const requestId = crypto.randomUUID();
+    const _requestId = crypto.randomUUID();
 
     try {
         // Get raw body for signature verification

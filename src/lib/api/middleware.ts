@@ -8,10 +8,9 @@
  */
 
 import { type NextRequest, NextResponse } from 'next/server';
-import { z, ZodSchema } from 'zod';
-import { apiError, apiSuccess, handleApiError, type ApiErrorResponse } from './response';
+import { ZodSchema } from 'zod';
+import { apiError, handleApiError, type ApiErrorResponse } from './response';
 import { checkRateLimit, type RateLimitConfig } from '@/lib/rate-limit';
-import type { RequestContext } from './error-handler';
 
 // =============================================================================
 // Validation Middleware
@@ -117,7 +116,7 @@ export function parsePathParams<T>(
 export async function checkRateLimitMiddleware(
     request: NextRequest,
     config: RateLimitConfig,
-    keyPrefix?: string
+    _keyPrefix?: string
 ): Promise<NextResponse | null> {
     const result = await checkRateLimit(request, config);
 

@@ -255,7 +255,9 @@ export class OrdersRepository {
             .order('created_at', { ascending: true });
 
         if (error) {
-            logger.error('Error fetching order items by order IDs', error, { source: '[orders/repository]' });
+            logger.error('Error fetching order items by order IDs', error, {
+                source: '[orders/repository]',
+            });
             throw new Error(error.message);
         }
 
@@ -277,7 +279,10 @@ export class OrdersRepository {
         try {
             // Cast for custom RPC function not in generated types
             const client = getRepositoryClient() as unknown as {
-                rpc: (name: string, params: Record<string, unknown>) => Promise<{
+                rpc: (
+                    name: string,
+                    params: Record<string, unknown>
+                ) => Promise<{
                     data: unknown;
                     error: { message: string; code?: string } | null;
                 }>;
@@ -308,5 +313,7 @@ export class OrdersRepository {
         }
     }
 }
+
+export type { OrderRepositoryInterface } from './repository.interface';
 
 export const ordersRepository = new OrdersRepository();

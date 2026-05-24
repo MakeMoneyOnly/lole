@@ -89,12 +89,33 @@ export function useNewFeature() {
 
 ## Available Features
 
+### Core Features (Direct `src/features/`)
+
 - `merchant` - Merchant management UI
 - `kds` - Kitchen Display System
 - `auth` - Authentication flows
-- `orders` - Order management (expanding to full feature-slice structure)
+- `orders` - Order management (full feature-slice structure)
+- `menu` - Menu management UI
+
+### Operations Features (`src/features/operations/`)
+
+- `delivery` - Aggregator order handling, fee calculation
+- `kds` - Status updates, queue management, telemetry
+- `orders` - List, create, cancel, status updates
+- `payments` - Session creation, Stripe integration
+- `waitlist` - Create entry, list waitlist, notifications
+- `table-sessions` - Open/close/transfer sessions
+- `service-requests` - Create, update, list requests
+- `tip-pools` - Allocation, listing
+
+## Core vs Operations Features
+
+**Core features** contain complete implementations including UI components, hooks, and business logic for the frontend layer. **Operations features** are backend-focused modules under `src/features/operations/` that provide standardized API handlers for specific operational domains.
+
+See [Core Features Organization](../../docs/reference/core-features-organization.md) for detailed structure, migration status, and gap analysis.
 
 ## References
 
+- [Core Features Organization](../../docs/reference/core-features-organization.md)
 - [Architecture Documentation](../../docs/architecture/README.md)
 - [ADR-002: Feature-Sliced Design](../../docs/architecture/adr/002-feature-slice-design.md)

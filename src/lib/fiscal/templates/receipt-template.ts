@@ -4,14 +4,18 @@
  */
 
 import type { LocalFiscalSignatureEnvelope } from '../local-signing';
-import type { NutrientReceiptPayload, NutrientReceiptItem } from '../nutrient-client';
+import type { NutrientReceiptPayload } from '../nutrient-client';
 
 // ============================================================================
 // Receipt Template Interface
 // ============================================================================
 
 export interface ReceiptTemplate {
-    render(payload: NutrientReceiptPayload, signature: LocalFiscalSignatureEnvelope, qrPayload: string): string;
+    render(
+        payload: NutrientReceiptPayload,
+        signature: LocalFiscalSignatureEnvelope,
+        qrPayload: string
+    ): string;
 }
 
 // ============================================================================
@@ -35,7 +39,11 @@ abstract class BaseTemplate implements ReceiptTemplate {
         this.locale = locale;
     }
 
-    abstract render(payload: NutrientReceiptPayload, signature: LocalFiscalSignatureEnvelope, qrPayload: string): string;
+    abstract render(
+        payload: NutrientReceiptPayload,
+        signature: LocalFiscalSignatureEnvelope,
+        qrPayload: string
+    ): string;
 
     protected escapeHtml(text: string): string {
         return text
@@ -66,7 +74,11 @@ export class StandardReceiptTemplate extends BaseTemplate {
         super(locale);
     }
 
-    render(payload: NutrientReceiptPayload, signature: LocalFiscalSignatureEnvelope, qrPayload: string): string {
+    render(
+        payload: NutrientReceiptPayload,
+        signature: LocalFiscalSignatureEnvelope,
+        qrPayload: string
+    ): string {
         const isTaxInclusive = payload.tax_inclusive;
 
         return `<!DOCTYPE html>
@@ -129,7 +141,9 @@ export class StandardReceiptTemplate extends BaseTemplate {
                 </tr>
             </thead>
             <tbody>
-                ${payload.items.map(item => `
+                ${payload.items
+                    .map(
+                        item => `
                 <tr>
                     <td>
                         <div>${this.escapeHtml(item.name_am ?? item.name)}</div>
@@ -138,7 +152,9 @@ export class StandardReceiptTemplate extends BaseTemplate {
                     <td style="text-align: center;">${item.quantity}</td>
                     <td style="text-align: right;">${this.formatSantim(item.total_santim)}</td>
                 </tr>
-                `).join('')}
+                `
+                    )
+                    .join('')}
             </tbody>
         </table>
 
@@ -147,12 +163,16 @@ export class StandardReceiptTemplate extends BaseTemplate {
                 <td><strong>${this.bilingual('Subtotal:', 'ከፊል ድምረ Ṡ፣')}</strong></td>
                 <td style="text-align: right;">${this.formatSantim(payload.subtotal_santim)} ETB</td>
             </tr>
-            ${payload.tax_total_santim > 0 ? `
+            ${
+                payload.tax_total_santim > 0
+                    ? `
             <tr>
                 <td><strong>${this.bilingual('VAT (15%):', 'የታወቁ ክፍል (15%):')}</strong></td>
                 <td style="text-align: right;">${this.formatSantim(payload.tax_total_santim)} ETB</td>
             </tr>
-            ` : ''}
+            `
+                    : ''
+            }
             <tr class="total-row">
                 <td><strong>${this.bilingual('TOTAL:', 'ጠቅላላ:')}</strong></td>
                 <td style="text-align: right;"><strong>${this.formatSantim(payload.grand_total_santim)} ETB</strong></td>
@@ -199,7 +219,11 @@ export class StandardReceiptTemplate extends BaseTemplate {
 // ============================================================================
 
 export class CompactReceiptTemplate extends BaseTemplate {
-    render(payload: NutrientReceiptPayload, signature: LocalFiscalSignatureEnvelope, qrPayload: string): string {
+    render(
+        payload: NutrientReceiptPayload,
+        signature: LocalFiscalSignatureEnvelope,
+        qrPayload: string
+    ): string {
         return `<!DOCTYPE html>
 <html>
 <head>
@@ -222,14 +246,18 @@ export class CompactReceiptTemplate extends BaseTemplate {
     <div>Date: ${new Date(payload.occurred_at).toISOString().split('T')[0]}</div>
     <div class="line"></div>
     <table class="items" width="100%">
-        ${payload.items.map(item => `
+        ${payload.items
+            .map(
+                item => `
         <tr>
             <td>${this.escapeHtml(item.name)}</td>
         </tr>
         <tr>
             <td><span class="right">${item.quantity} x ${this.formatSantim(item.unit_price_santim)}</span></td>
         </tr>
-        `).join('')}
+        `
+            )
+            .join('')}
     </table>
     <div class="line"></div>
     <div class="right bold">TOTAL: ${this.formatSantim(payload.grand_total_santim)} ETB</div>

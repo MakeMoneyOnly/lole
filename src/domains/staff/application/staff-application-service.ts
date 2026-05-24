@@ -8,8 +8,6 @@ import type { StaffRow, StaffListOptions } from '../repository';
 import type { CreateStaffInput, UpdateStaffInput } from '../crud-service';
 import { STAFF_ROLES } from '@/types/status';
 import { verifyStoredStaffPin } from '../pin';
-import type { IStaffRepository } from '@/lib/di/repository-container';
-import type { StaffServiceInterface } from '../service.interface';
 import { staffService } from '../service';
 
 // ============================================================================

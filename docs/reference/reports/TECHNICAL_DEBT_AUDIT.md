@@ -415,9 +415,9 @@ Status constants are defined in `src/types/status.ts` and reused across the code
 | ID     | Issue                        | Effort | Notes                                                                                 | Status      |
 | ------ | ---------------------------- | ------ | ------------------------------------------------------------------------------------- | ----------- |
 | LOW-01 | Amharic translation coverage | Low    | 100% coverage - all success messages translated. File: `src/lib/i18n/translations.ts` | ✅ Resolved |
-| LOW-02 | Network speed detection      | Medium | Adaptive loading. File: `src/lib/network/speed.ts`                                    | ✅ Resolved |
+| LOW-02 | Network speed detection      | Medium | Adaptive loading hook at `src/hooks/useNetworkSpeed.ts`                               | ✅ Resolved |
 | LOW-03 | Query performance monitoring | Low    | Dashboards. File: `src/lib/monitoring/query-performance.ts`                           | ✅ Resolved |
-| LOW-04 | Bundle size budgets          | Low    | File: `src/lib/build/bundle-budgets.json`                                             | ✅ Resolved |
+| LOW-04 | Bundle size budgets          | Low    | File: `src/lib/bundle-budgets.ts` - TypeScript module with checkBudget, formatBytes   | ✅ Resolved |
 
 ---
 

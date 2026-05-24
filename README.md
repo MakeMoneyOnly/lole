@@ -63,21 +63,48 @@ Open [http://localhost:4000](http://localhost:4000) to view the application.
 ```
 lole/
 ├── src/
-│   ├── app/              # Next.js App Router pages and layouts
-│   ├── components/       # Reusable React components
-│   ├── lib/              # Core libraries and utilities
-│   │   ├── graphql/      # GraphQL schema and resolvers
-│   │   ├── supabase/     # Supabase client and types
-│   │   └── utils/        # Helper functions
-│   ├── hooks/            # Custom React hooks
-│   ├── store/            # State management (Zustand)
-│   └── styles/           # Global styles and Tailwind config
-├── docs/                 # Project documentation
-├── graphql/              # GraphQL federation subgraphs
-├── tests/                # Test files (unit, e2e, load)
-├── public/               # Static assets
-└── config/               # Grafana dashboards, configuration
+│   ├── app/                # Next.js App Router pages and layouts
+│   ├── features/           # Feature-slice organized modules
+│   │   ├── merchant/       # Merchant profile & settings
+│   │   ├── orders/         # Order management
+│   │   ├── menu/           # Menu management
+│   │   ├── kds/            # Kitchen Display System
+│   │   └── ...             # Additional features
+│   ├── shared/             # Cross-cutting concerns
+│   │   ├── components/     # Reusable components
+│   │   ├── hooks/          # Generic hooks
+│   │   ├── lib/            # Shared utilities
+│   │   └── types/          # Shared types
+│   ├── components/         # Legacy/shared components
+│   ├── lib/                # Core libraries and utilities
+│   │   ├── graphql/        # GraphQL schema and resolvers
+│   │   ├── supabase/       # Supabase client and types
+│   │   └── utils/          # Helper functions
+│   ├── hooks/              # Custom React hooks
+│   ├── store/              # State management (Zustand)
+│   └── styles/             # Global styles and Tailwind config
+├── docs/                   # Project documentation
+│   └── architecture/       # Architecture decision records
+├── graphql/                # GraphQL federation subgraphs
+├── tests/                  # Test files (unit, e2e, load)
+├── public/                 # Static assets
+└── config/                 # Grafana dashboards, configuration
 ```
+
+## Feature Structure
+
+Each feature in `src/features/[feature]/` is self-contained:
+
+```
+features/orders/
+├── components/      # Order-specific UI components
+├── hooks/           # Order-related hooks (useOrders, useOrderStatus)
+├── lib/             # Order business logic and utilities
+├── types/           # Order TypeScript types
+└── index.ts         # Public API exports
+```
+
+See [ADR-001: Feature-Slice Architecture](docs/architecture/adr-001-feature-slice-architecture.md) for details.
 
 ## Documentation
 

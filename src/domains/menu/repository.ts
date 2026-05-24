@@ -186,7 +186,9 @@ export async function getModifierGroupsByMenuItemIds(
         .eq('is_active', true);
 
     if (error) {
-        logger.error('Error fetching modifier groups by menu item IDs', error, { source: '[menu/repository]' });
+        logger.error('Error fetching modifier groups by menu item IDs', error, {
+            source: '[menu/repository]',
+        });
         throw error;
     }
 
@@ -211,7 +213,9 @@ export async function getModifierOptionsByGroupIds(
         .eq('is_available', true);
 
     if (error) {
-        logger.error('Error fetching modifier options by group IDs', error, { source: '[menu/repository]' });
+        logger.error('Error fetching modifier options by group IDs', error, {
+            source: '[menu/repository]',
+        });
         throw error;
     }
 
@@ -255,7 +259,9 @@ export async function getModifierGroupsByIds(ids: string[]): Promise<Record<stri
         .in('id', ids);
 
     if (error) {
-        logger.error('Error fetching modifier groups by IDs', error, { source: '[menu/repository]' });
+        logger.error('Error fetching modifier groups by IDs', error, {
+            source: '[menu/repository]',
+        });
         throw error;
     }
 
@@ -277,12 +283,16 @@ export async function getModifierOptionsByIds(ids: string[]): Promise<Record<str
         .in('id', ids);
 
     if (error) {
-        logger.error('Error fetching modifier options by IDs', error, { source: '[menu/repository]' });
+        logger.error('Error fetching modifier options by IDs', error, {
+            source: '[menu/repository]',
+        });
         throw error;
     }
 
     return (data as unknown as Record<string, unknown>[]) || [];
 }
+
+export type { MenuRepositoryInterface } from './repository.interface';
 
 export const menuRepository = {
     getMenuItems,

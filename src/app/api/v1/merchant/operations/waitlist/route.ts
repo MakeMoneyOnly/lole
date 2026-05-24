@@ -6,119 +6,16 @@
  * - GET /api/waitlist - List waitlist entries (staff)
  */
 
-import { z } from 'zod';
-import { apiError, apiSuccess, handleApiError } from '@/lib/api/response';
-import { getAuthenticatedUser, getAuthorizedRestaurantContext } from '@/lib/api/authz';
-import { parseJsonBody } from '@/lib/api/validation';
-import { writeAuditLog } from '@/lib/api/audit';
-import { addToWaitlist, getWaitlist, getWaitlistStats } from '@/lib/waitlist/service';
-import type { WaitlistStatus } from '@/lib/waitlist/types';
-
-/**
- * Schema for adding a guest to waitlist
- */
-const AddToWaitlistSchema = z.object({
-    guestName: z.string().trim().min(1, 'Guest name is required').max(120),
-    guestPhone: z.string().regex(/^(\+?251|0)?[9]\d{8}$/, 'Invalid Ethiopian phone number'),
-    guestCount: z
-        .number()
-        .int()
-        .min(1, 'At least 1 guest required')
-        .max(20, 'Maximum 20 guests allowed'),
-    notes: z.string().trim().max(500).optional(),
-});
+import { listWaitlist, createEntry } from '@/features/operations/waitlist/api';
 
 /**
  * GET /api/waitlist
  * List waitlist entries for a restaurant
  */
-export async function GET(request: Request): Promise<Response> {
-    const auth = await getAuthenticatedUser();
-    if (!auth.ok) {
-        return auth.response;
-    }
-
-    const context = await getAuthorizedRestaurantContext(auth.user.id);
-    if (!context.ok) {
-        return context.response;
-    }
-
-    try {
-        const { searchParams } = new URL(request.url);
-        const status = searchParams.get('status') as WaitlistStatus | null;
-        const includeStats = searchParams.get('includeStats') === 'true';
-
-        // Validate status if provided
-        if (status && !['waiting', 'notified', 'seated', 'cancelled', 'expired'].includes(status)) {
-            return apiError('Invalid status filter', 400, 'INVALID_STATUS');
-        }
-
-        const entries = await getWaitlist(context.restaurantId, status ?? undefined);
-
-        const responseData: Record<string, unknown> = { entries };
-
-        // Optionally include statistics
-        if (includeStats) {
-            const stats = await getWaitlistStats(context.restaurantId);
-            responseData.stats = stats;
-        }
-
-        return apiSuccess(responseData);
-    } catch (error) {
-        return handleApiError(error, {
-            operation: 'waitlist.GET',
-        });
-    }
-}
+export const GET = listWaitlist;
 
 /**
  * POST /api/waitlist
  * Add a guest to the waitlist
  */
-export async function POST(request: Request): Promise<Response> {
-    const auth = await getAuthenticatedUser();
-    if (!auth.ok) {
-        return auth.response;
-    }
-
-    const context = await getAuthorizedRestaurantContext(auth.user.id);
-    if (!context.ok) {
-        return context.response;
-    }
-
-    const parsed = await parseJsonBody(request, AddToWaitlistSchema);
-    if (!parsed.success) {
-        return parsed.response;
-    }
-
-    try {
-        const entry = await addToWaitlist({
-            restaurantId: context.restaurantId,
-            guestName: parsed.data.guestName,
-            guestPhone: parsed.data.guestPhone,
-            guestCount: parsed.data.guestCount,
-            notes: parsed.data.notes,
-            createdBy: auth.user.id,
-        });
-
-        await writeAuditLog(context.supabase, {
-            restaurant_id: context.restaurantId,
-            user_id: auth.user.id,
-            action: 'waitlist_added',
-            entity_type: 'waitlist_entry',
-            entity_id: entry.id,
-            metadata: {
-                guestName: entry.guest_name,
-                guestPhone: entry.guest_phone,
-                guestCount: entry.guest_count,
-                position: entry.position,
-            },
-        });
-
-        return apiSuccess({ entry }, 201);
-    } catch (error) {
-        return handleApiError(error, {
-            operation: 'waitlist.POST',
-        });
-    }
-}
+export const POST = createEntry;

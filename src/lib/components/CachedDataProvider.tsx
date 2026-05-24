@@ -102,6 +102,8 @@ async function fetchMenuItems(
     const { data, error } = await query;
 
     if (error) {
+        if (error.code === 'PGRST116') return [];
+        // eslint-disable-next-line no-console
         console.error('Error fetching menu items:', error);
         return [];
     }
@@ -143,6 +145,7 @@ async function fetchCategories(restaurantId: string): Promise<Category[]> {
         .order('order_index');
 
     if (error) {
+        // eslint-disable-next-line no-console
         console.error('Error fetching categories:', error);
         return [];
     }
@@ -179,6 +182,7 @@ async function fetchRestaurant(restaurantId: string): Promise<Restaurant | null>
 
     if (error) {
         if (error.code === 'PGRST116') return null;
+        // eslint-disable-next-line no-console
         console.error('Error fetching restaurant:', error);
         return null;
     }

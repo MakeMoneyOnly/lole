@@ -100,7 +100,7 @@ function generateIdempotencyKey(baseKey: string, channel: CourierChannel): strin
     return `${baseKey}_${channel}`;
 }
 
-function buildCourierTo(recipient: CourierRecipient, tenantId?: string) {
+function buildCourierTo(recipient: CourierRecipient, tenantId?: string): Record<string, unknown> {
     const to: Record<string, unknown> = {};
 
     if (recipient.user_id) {
@@ -120,7 +120,7 @@ function buildCourierTo(recipient: CourierRecipient, tenantId?: string) {
 
 function buildCourierRouting(
     channel: CourierChannel,
-    recipient: CourierRecipient
+    _recipient: CourierRecipient
 ): { method: 'single'; channels: string[] } {
     return {
         method: 'single',

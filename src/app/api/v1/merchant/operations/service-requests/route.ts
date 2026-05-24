@@ -1,12 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
+/**
+ * Service Requests API Routes
+ *
+ * RESTful endpoints for service request management.
+ * - GET /api/v1/merchant/operations/service-requests - List service requests (staff)
+ */
+
+import { listRequests } from '@/features/operations/service-requests/api';
+import { apiError, apiSuccess } from '@/lib/api/response';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { insertServiceRequest } from '@/lib/supabase/queries';
 import { resolveGuestContext } from '@/lib/security/guestContext';
-import { apiError, apiSuccess } from '@/lib/api/response';
-import { getAuthorizedRestaurantContext, getAuthenticatedUser } from '@/lib/api/authz';
-import { parseQuery } from '@/lib/api/validation';
+import { z } from 'zod';
 import { logger } from '@/lib/logger';
 
 const log = logger.child('service-requests');
@@ -19,95 +24,37 @@ const CreateServiceRequestSchema = z.object({
         exp: z.union([z.string(), z.number()]),
     }),
     request_type: z.enum(['waiter', 'bill', 'cutlery', 'other']),
-    notes: z.string().max(500, 'Notes too long').optional(),
+    notes: z.string().max(500).optional(),
 });
 
-const ListServiceRequestsQuerySchema = z.object({
-    status: z.string().optional(),
-    search: z.string().optional(),
-    limit: z.coerce.number().int().positive().max(200).optional().default(100),
-    offset: z.coerce.number().int().nonnegative().optional().default(0),
-});
+/**
+ * GET /api/v1/merchant/operations/service-requests
+ * List service requests for a restaurant
+ */
+export const GET = listRequests;
 
-export async function GET(request: NextRequest): Promise<Response> {
-    const auth = await getAuthenticatedUser();
-    if (!auth.ok) {
-        return auth.response;
-    }
-
-    const context = await getAuthorizedRestaurantContext(auth.user.id);
-    if (!context.ok) {
-        return context.response;
-    }
-
-    const parsed = parseQuery(
-        {
-            status: request.nextUrl.searchParams.get('status') ?? undefined,
-            search: request.nextUrl.searchParams.get('search') ?? undefined,
-            limit: request.nextUrl.searchParams.get('limit') ?? undefined,
-            offset: request.nextUrl.searchParams.get('offset') ?? undefined,
-        },
-        ListServiceRequestsQuerySchema
-    );
-    if (!parsed.success) {
-        return parsed.response;
-    }
-
-    let query = context.supabase
-        .from('service_requests')
-        .select('*', { count: 'exact' })
-        .eq('restaurant_id', context.restaurantId)
-        .order('created_at', { ascending: false })
-        .range(parsed.data.offset, parsed.data.offset + parsed.data.limit - 1);
-
-    if (parsed.data.status && parsed.data.status !== 'all') {
-        query = query.eq('status', parsed.data.status);
-    }
-
-    if (parsed.data.search) {
-        const search = parsed.data.search.trim();
-        if (search.length > 0) {
-            query = query.or(
-                `table_number.ilike.%${search}%,request_type.ilike.%${search}%,notes.ilike.%${search}%`
-            );
-        }
-    }
-
-    const { data, error, count } = await query;
-    if (error) {
-        return apiError(
-            'Failed to load service requests',
-            500,
-            'SERVICE_REQUESTS_FETCH_FAILED',
-            error.message
-        );
-    }
-
-    return apiSuccess({
-        requests: data ?? [],
-        total: count ?? 0,
-    });
-}
-
-export async function POST(request: NextRequest): Promise<Response> {
+/**
+ * POST /api/v1/merchant/operations/service-requests
+ * Create a service request (guest endpoint)
+ */
+export async function POST(request: Request): Promise<Response> {
     try {
         const body = await request.json();
         const parsed = CreateServiceRequestSchema.safeParse(body);
 
         if (!parsed.success) {
-            return NextResponse.json(
-                { error: 'Invalid request payload', details: parsed.error.flatten() },
-                { status: 400 }
+            return apiError(
+                'Invalid request payload',
+                400,
+                'INVALID_PAYLOAD',
+                parsed.error.flatten()
             );
         }
 
         const supabase = await createClient();
         const guestContext = await resolveGuestContext(supabase, parsed.data.guest_context);
         if (!guestContext.valid) {
-            return NextResponse.json(
-                { error: guestContext.reason },
-                { status: guestContext.status }
-            );
+            return apiError(guestContext.reason, guestContext.status, 'INVALID_GUEST_CONTEXT');
         }
 
         const adminSupabase = createServiceRoleClient();
@@ -119,29 +66,27 @@ export async function POST(request: NextRequest): Promise<Response> {
         });
 
         if (error || !data) {
-            return NextResponse.json(
-                { error: error?.message ?? 'Failed to create service request' },
-                { status: 400 }
+            return apiError(
+                error?.message ?? 'Failed to create service request',
+                400,
+                'CREATE_FAILED'
             );
         }
 
         if (parsed.data.request_type === 'bill') {
-            const { error: tableStateError } = await adminSupabase
+            await adminSupabase
                 .from('tables')
-                .update({
-                    status: 'bill_requested',
-                    updated_at: new Date().toISOString(),
-                })
+                .update({ status: 'bill_requested', updated_at: new Date().toISOString() })
                 .eq('restaurant_id', guestContext.data.restaurantId)
                 .eq('table_number', guestContext.data.tableNumber)
-                .neq('status', 'available');
-
-            if (tableStateError) {
-                log.warn('failed to promote table to bill_requested', { message: tableStateError.message });
-            }
+                .neq('status', 'available')
+                .then(({ error: tableStateError }) => {
+                    if (tableStateError)
+                        log.warn('failed to promote table', { message: tableStateError.message });
+                });
         }
 
-        const { error: auditError } = await adminSupabase.from('audit_logs').insert({
+        await adminSupabase.from('audit_logs').insert({
             restaurant_id: guestContext.data.restaurantId,
             action: 'service_request_created_guest',
             entity_type: 'service_request',
@@ -152,25 +97,12 @@ export async function POST(request: NextRequest): Promise<Response> {
                 source: 'guest_web',
                 slug: guestContext.data.slug,
             },
-            new_value: {
-                status: data.status,
-            },
+            new_value: { status: data.status },
         });
-        if (auditError) {
-            log.warn('audit insert failed', { message: auditError.message });
-        }
 
-        return NextResponse.json({ data }, { status: 201 });
+        return apiSuccess(data, 201);
     } catch (error) {
         log.error('failed', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        return apiError('Internal server error', 500, 'INTERNAL_ERROR');
     }
 }
-
-
-
-
-
-
-
-

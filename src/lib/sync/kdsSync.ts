@@ -22,6 +22,50 @@ import {
     type ConflictStrategy,
 } from './conflict-resolution';
 import { logger } from '@/lib/logger';
+import { tracePerformance } from '@/lib/monitoring';
+
+// ============================================================================
+// Trace Context Utilities for KDS Operations
+// ============================================================================
+
+let activeTraceContext: { traceId: string; spanId: string } | null = null;
+
+/**
+ * Get or create a trace context for KDS operations
+ */
+export function getKdsTraceContext(): { traceId: string; spanId: string } {
+    if (activeTraceContext) {
+        return activeTraceContext;
+    }
+    return {
+        traceId: crypto.randomUUID(),
+        spanId: crypto.randomUUID(),
+    };
+}
+
+/**
+ * Set the active trace context for async propagation
+ */
+export function setKdsTraceContext(context: { traceId: string; spanId: string } | null): void {
+    activeTraceContext = context;
+}
+
+/**
+ * Execute a KDS operation with trace context propagation
+ */
+export async function withKdsTraceContext<T>(
+    operation: () => Promise<T>,
+    traceId?: string
+): Promise<T> {
+    const ctx = traceId ? { traceId, spanId: crypto.randomUUID() } : getKdsTraceContext();
+    const previousContext = activeTraceContext;
+    activeTraceContext = ctx;
+    try {
+        return await operation();
+    } finally {
+        activeTraceContext = previousContext;
+    }
+}
 
 /**
  * KDS item status
@@ -79,6 +123,7 @@ async function appendKdsCommandJournal(
     }
 ): Promise<void> {
     const context = getKdsCommandContext();
+    const traceCtx = getKdsTraceContext();
 
     await appendLocalJournalEntryInDatabase(db, {
         restaurantId: context.restaurantId,
@@ -89,7 +134,10 @@ async function appendKdsCommandJournal(
         aggregateType: 'kds_item',
         aggregateId: input.aggregateId,
         operationType: input.operationType,
-        payload: input.payload,
+        payload: {
+            ...input.payload,
+            trace_id: traceCtx.traceId,
+        },
         idempotencyKey: input.idempotencyKey,
     });
 }
@@ -110,80 +158,97 @@ export async function createKdsItem(
         notes?: string;
     }
 ): Promise<OfflineKdsItem | null> {
-    const db = getPowerSync();
-    if (!db) return null;
+    return tracePerformance(
+        'kds.create_item',
+        async () => {
+            const db = getPowerSync();
+            if (!db) return null;
 
-    const now = new Date().toISOString();
-    const kdsId = crypto.randomUUID();
-    const idempotencyKey = generateIdempotencyKey('kds-create');
-    const commandContext = getKdsCommandContext();
-    const createCommand = buildCreateKdsItemCommand(
-        commandContext,
-        {
-            kds_id: kdsId,
-            order_id: orderId,
-            order_item_id: orderItemId,
-            station,
-            priority,
-            status: 'queued',
-            display_data: displayData,
-        },
-        idempotencyKey
-    );
+            const now = new Date().toISOString();
+            const kdsId = crypto.randomUUID();
+            const idempotencyKey = generateIdempotencyKey('kds-create');
+            const commandContext = getKdsCommandContext();
+            const traceCtx = getKdsTraceContext();
 
-    try {
-        await db.write(async () => {
-            await appendKdsCommandJournal(db, {
-                aggregateId: kdsId,
-                operationType: 'kds.create',
-                idempotencyKey,
-                payload: createCommand as unknown as Record<string, unknown>,
-            });
-
-            await db.execute(
-                `INSERT INTO kds_items (
-                    id, order_id, order_item_id, station, status, priority, created_at
-                ) VALUES (?, ?, ?, ?, 'queued', ?, ?)`,
-                [kdsId, orderId, orderItemId, station, priority, now]
-            );
-
-            if (displayData) {
-                await db.execute(
-                    `UPDATE order_items SET station = ?, status = 'queued' WHERE id = ?`,
-                    [station, orderItemId]
-                );
-            }
-
-            await queueSyncOperationInDatabase(
-                db,
-                'create',
-                'kds_items',
-                kdsId,
+            const createCommand = buildCreateKdsItemCommand(
+                commandContext,
                 {
+                    kds_id: kdsId,
                     order_id: orderId,
                     order_item_id: orderItemId,
                     station,
                     priority,
                     status: 'queued',
-                    domain_command: createCommand,
+                    display_data: displayData,
                 },
-                {
-                    restaurantId: commandContext.restaurantId,
-                    locationId: commandContext.locationId,
-                    deviceId: commandContext.deviceId,
-                    actorId: commandContext.actor.actorId,
-                }
+                idempotencyKey
             );
-        });
 
-        const item = await getKdsItem(kdsId);
-        return item;
-    } catch (error) {
-        logger.error('[KdsSync] Failed to create KDS item', {
-            error: error instanceof Error ? error.message : String(error),
-        });
-        return null;
-    }
+            try {
+                await db.write(async () => {
+                    await appendKdsCommandJournal(db, {
+                        aggregateId: kdsId,
+                        operationType: 'kds.create',
+                        idempotencyKey,
+                        payload: createCommand as unknown as Record<string, unknown>,
+                    });
+
+                    await db.execute(
+                        `INSERT INTO kds_items (
+                            id, order_id, order_item_id, station, status, priority, created_at
+                        ) VALUES (?, ?, ?, ?, 'queued', ?, ?)`,
+                        [kdsId, orderId, orderItemId, station, priority, now]
+                    );
+
+                    if (displayData) {
+                        await db.execute(
+                            `UPDATE order_items SET station = ?, status = 'queued' WHERE id = ?`,
+                            [station, orderItemId]
+                        );
+                    }
+
+                    await queueSyncOperationInDatabase(
+                        db,
+                        'create',
+                        'kds_items',
+                        kdsId,
+                        {
+                            order_id: orderId,
+                            order_item_id: orderItemId,
+                            station,
+                            priority,
+                            status: 'queued',
+                            domain_command: createCommand,
+                        },
+                        {
+                            restaurantId: commandContext.restaurantId,
+                            locationId: commandContext.locationId,
+                            deviceId: commandContext.deviceId,
+                            actorId: commandContext.actor.actorId,
+                        }
+                    );
+                });
+
+                const item = await getKdsItem(kdsId);
+                return item;
+            } catch (error) {
+                logger.error('[KdsSync] Failed to create KDS item', {
+                    error: error instanceof Error ? error.message : String(error),
+                    traceId: traceCtx.traceId,
+                });
+                return null;
+            }
+        },
+        {
+            tags: {
+                order_id: orderId,
+                order_item_id: orderItemId,
+                station,
+                priority: String(priority),
+            },
+            description: `Create KDS item for order ${orderId}`,
+        }
+    );
 }
 
 /**
@@ -208,19 +273,30 @@ export async function getKdsItem(kdsId: string): Promise<OfflineKdsItem | null> 
  * Get KDS items by station
  */
 export async function getKdsItemsByStation(station: string): Promise<OfflineKdsItem[]> {
-    const db = getPowerSync();
-    if (!db) return [];
+    return tracePerformance(
+        'kds.get_by_station',
+        async () => {
+            const db = getPowerSync();
+            if (!db) return [];
 
-    const items = await db.getAllAsync<OfflineKdsItem>(
-        `SELECT k.*, oi.menu_item_name, oi.menu_item_name_am, oi.quantity, oi.modifiers_json, oi.notes
-         FROM kds_items k
-         JOIN order_items oi ON k.order_item_id = oi.id
-         WHERE k.station = ? AND k.status != 'bumped'
-         ORDER BY k.priority DESC, k.created_at ASC`,
-        [station]
+            const items = await db.getAllAsync<OfflineKdsItem>(
+                `SELECT k.*, oi.menu_item_name, oi.menu_item_name_am, oi.quantity, oi.modifiers_json, oi.notes
+                 FROM kds_items k
+                 JOIN order_items oi ON k.order_item_id = oi.id
+                 WHERE k.station = ? AND k.status != 'bumped'
+                 ORDER BY k.priority DESC, k.created_at ASC`,
+                [station]
+            );
+
+            return items;
+        },
+        {
+            tags: {
+                station,
+            },
+            description: `Get KDS items for station ${station}`,
+        }
     );
-
-    return items;
 }
 
 /**
@@ -246,116 +322,130 @@ export async function getKdsItemsByOrder(orderId: string): Promise<OfflineKdsIte
  * Execute a KDS action
  */
 export async function executeKdsAction(kdsId: string, action: KdsAction): Promise<boolean> {
-    const db = getPowerSync();
-    if (!db) return false;
+    return tracePerformance(
+        `kds.action.${action}`,
+        async () => {
+            const db = getPowerSync();
+            if (!db) return false;
 
-    const now = new Date().toISOString();
-    const idempotencyKey = generateIdempotencyKey(`kds-${action}`);
-    const commandContext = getKdsCommandContext();
+            const now = new Date().toISOString();
+            const idempotencyKey = generateIdempotencyKey(`kds-${action}`);
+            const commandContext = getKdsCommandContext();
+            const traceCtx = getKdsTraceContext();
 
-    try {
-        let newStatus: KdsItemStatus;
-        let updateFields: string[] = [];
-        let updateValues: (string | null)[] = [];
+            try {
+                let newStatus: KdsItemStatus;
+                let updateFields: string[] = [];
+                let updateValues: (string | null)[] = [];
 
-        switch (action) {
-            case 'start':
-                newStatus = 'in_progress';
-                updateFields = ['status = ?', 'started_at = ?'];
-                updateValues = [newStatus, now];
-                break;
-            case 'hold':
-                newStatus = 'on_hold';
-                updateFields = ['status = ?'];
-                updateValues = [newStatus];
-                break;
-            case 'ready':
-                newStatus = 'ready';
-                updateFields = ['status = ?', 'ready_at = ?'];
-                updateValues = [newStatus, now];
-                break;
-            case 'recall':
-                newStatus = 'recalled';
-                updateFields = ['status = ?', 'recalled_at = ?'];
-                updateValues = [newStatus, now];
-                break;
-            case 'bump':
-                newStatus = 'bumped';
-                updateFields = ['status = ?', 'bumped_at = ?'];
-                updateValues = [newStatus, now];
-                break;
-            default:
+                switch (action) {
+                    case 'start':
+                        newStatus = 'in_progress';
+                        updateFields = ['status = ?', 'started_at = ?'];
+                        updateValues = [newStatus, now];
+                        break;
+                    case 'hold':
+                        newStatus = 'on_hold';
+                        updateFields = ['status = ?'];
+                        updateValues = [newStatus];
+                        break;
+                    case 'ready':
+                        newStatus = 'ready';
+                        updateFields = ['status = ?', 'ready_at = ?'];
+                        updateValues = [newStatus, now];
+                        break;
+                    case 'recall':
+                        newStatus = 'recalled';
+                        updateFields = ['status = ?', 'recalled_at = ?'];
+                        updateValues = [newStatus, now];
+                        break;
+                    case 'bump':
+                        newStatus = 'bumped';
+                        updateFields = ['status = ?', 'bumped_at = ?'];
+                        updateValues = [newStatus, now];
+                        break;
+                    default:
+                        return false;
+                }
+
+                const actionCommand = buildUpdateKdsActionCommand(
+                    commandContext,
+                    {
+                        kds_id: kdsId,
+                        action,
+                        status: newStatus,
+                    },
+                    idempotencyKey
+                );
+
+                await db.write(async () => {
+                    await appendKdsCommandJournal(db, {
+                        aggregateId: kdsId,
+                        operationType: `kds.${action}`,
+                        idempotencyKey,
+                        payload: actionCommand as unknown as Record<string, unknown>,
+                    });
+
+                    await db.execute(
+                        `UPDATE kds_items SET ${updateFields.join(', ')} WHERE id = ?`,
+                        [...updateValues, kdsId]
+                    );
+
+                    const kdsItem = await getKdsItem(kdsId);
+                    if (kdsItem) {
+                        let itemStatus: string;
+                        if (action === 'bump') {
+                            itemStatus = 'completed';
+                        } else if (action === 'ready') {
+                            itemStatus = 'ready';
+                        } else if (newStatus === 'on_hold') {
+                            itemStatus = 'pending';
+                        } else {
+                            itemStatus = 'cooking';
+                        }
+                        await db.execute(`UPDATE order_items SET status = ? WHERE id = ?`, [
+                            itemStatus,
+                            kdsItem.order_item_id,
+                        ]);
+                    }
+
+                    await queueSyncOperationInDatabase(
+                        db,
+                        'update',
+                        'kds_items',
+                        kdsId,
+                        {
+                            action,
+                            idempotency_key: idempotencyKey,
+                            status: newStatus,
+                            domain_command: actionCommand,
+                        },
+                        {
+                            restaurantId: commandContext.restaurantId,
+                            locationId: commandContext.locationId,
+                            deviceId: commandContext.deviceId,
+                            actorId: commandContext.actor.actorId,
+                        }
+                    );
+                });
+
+                return true;
+            } catch (error) {
+                logger.error('[KdsSync] Failed to execute KDS action', {
+                    error: error instanceof Error ? error.message : String(error),
+                    traceId: traceCtx.traceId,
+                });
                 return false;
-        }
-
-        const actionCommand = buildUpdateKdsActionCommand(
-            commandContext,
-            {
+            }
+        },
+        {
+            tags: {
                 kds_id: kdsId,
                 action,
-                status: newStatus,
             },
-            idempotencyKey
-        );
-
-        await db.write(async () => {
-            await appendKdsCommandJournal(db, {
-                aggregateId: kdsId,
-                operationType: `kds.${action}`,
-                idempotencyKey,
-                payload: actionCommand as unknown as Record<string, unknown>,
-            });
-
-            await db.execute(`UPDATE kds_items SET ${updateFields.join(', ')} WHERE id = ?`, [
-                ...updateValues,
-                kdsId,
-            ]);
-
-            const kdsItem = await getKdsItem(kdsId);
-            if (kdsItem) {
-                let itemStatus: string;
-                if (action === 'bump') {
-                    itemStatus = 'completed';
-                } else if (action === 'ready') {
-                    itemStatus = 'ready';
-                } else if (newStatus === 'on_hold') {
-                    itemStatus = 'pending';
-                } else {
-                    itemStatus = 'cooking';
-                }
-                await db.execute(`UPDATE order_items SET status = ? WHERE id = ?`, [
-                    itemStatus,
-                    kdsItem.order_item_id,
-                ]);
-            }
-
-            await queueSyncOperationInDatabase(
-                db,
-                'update',
-                'kds_items',
-                kdsId,
-                {
-                    action,
-                    idempotency_key: idempotencyKey,
-                    status: newStatus,
-                    domain_command: actionCommand,
-                },
-                {
-                    restaurantId: commandContext.restaurantId,
-                    locationId: commandContext.locationId,
-                    deviceId: commandContext.deviceId,
-                    actorId: commandContext.actor.actorId,
-                }
-            );
-        });
-
-        return true;
-    } catch (error) {
-        logger.error('[KdsSync] Failed to execute KDS action', {
-            error: error instanceof Error ? error.message : String(error),
-        });
-        return false;
-    }
+            description: `Execute KDS action ${action} on item ${kdsId}`,
+        }
+    );
 }
 
 /**
@@ -454,109 +544,121 @@ export async function resolveKdsConflict(
     serverData: Record<string, unknown> & { version: number; last_modified: string },
     preferredStrategy?: ConflictStrategy
 ): Promise<KdsConflictResult> {
-    const db = getPowerSync();
-    if (!db) {
-        return {
-            resolved: false,
-            strategy: 'server_wins',
-            error: 'PowerSync not initialized',
-        };
-    }
+    return tracePerformance(
+        'kds.resolve_conflict',
+        async () => {
+            const db = getPowerSync();
+            if (!db) {
+                return {
+                    resolved: false,
+                    strategy: 'server_wins',
+                    error: 'PowerSync not initialized',
+                };
+            }
+            const traceCtx = getKdsTraceContext();
 
-    try {
-        // Detect conflict type
-        const conflictType = getConflictType(
-            clientData as unknown as { deleted_at?: string | null; version: number },
-            serverData as { deleted_at?: string | null; version: number }
-        );
+            try {
+                const conflictType = getConflictType(
+                    clientData as unknown as { deleted_at?: string | null; version: number },
+                    serverData as { deleted_at?: string | null; version: number }
+                );
 
-        // KDS uses server_wins by default - kitchen state is authoritative
-        const strategy: ConflictStrategy = preferredStrategy ?? 'server_wins';
+                const strategy: ConflictStrategy = preferredStrategy ?? 'server_wins';
 
-        // Resolve the conflict
-        const {
-            resolvedData,
-            strategy: usedStrategy,
-            auditDetails,
-        } = resolveConflict(
-            'kds_items',
-            clientData as unknown as Record<string, unknown> & {
-                version: number;
-                last_modified: string;
+                const {
+                    resolvedData,
+                    strategy: usedStrategy,
+                    auditDetails,
+                } = resolveConflict(
+                    'kds_items',
+                    clientData as unknown as Record<string, unknown> & {
+                        version: number;
+                        last_modified: string;
+                    },
+                    serverData,
+                    strategy
+                );
+
+                await db.execute(
+                    `UPDATE kds_items SET
+                        status = ?,
+                        started_at = ?,
+                        ready_at = ?,
+                        recalled_at = ?,
+                        bumped_at = ?,
+                        priority = ?,
+                        version = ?,
+                        last_modified = ?
+                    WHERE id = ?`,
+                    [
+                        resolvedData.status ?? 'queued',
+                        resolvedData.started_at ?? null,
+                        resolvedData.ready_at ?? null,
+                        resolvedData.recalled_at ?? null,
+                        resolvedData.bumped_at ?? null,
+                        resolvedData.priority ?? 0,
+                        resolvedData.version,
+                        resolvedData.last_modified,
+                        kdsId,
+                    ]
+                );
+
+                await logConflictResolution({
+                    entityType: 'kds_items',
+                    entityId: kdsId,
+                    conflictType,
+                    clientData: clientData as unknown as Record<string, unknown>,
+                    serverData,
+                    resolvedData,
+                    strategy: usedStrategy,
+                    auditDetails,
+                });
+
+                await logKdsConflictToAuditLog(
+                    kdsId,
+                    clientData,
+                    serverData,
+                    usedStrategy,
+                    auditDetails
+                );
+
+                logger.info('[KdsSync] Conflict resolved', {
+                    kdsId,
+                    strategy: usedStrategy,
+                    conflictType,
+                    winner: auditDetails.winner,
+                    traceId: traceCtx.traceId,
+                });
+
+                const resolvedItem = await getKdsItem(kdsId);
+
+                return {
+                    resolved: true,
+                    strategy: usedStrategy,
+                    resolvedData: resolvedItem ?? undefined,
+                    conflictType,
+                };
+            } catch (error) {
+                logger.error('[KdsSync] Failed to resolve conflict', {
+                    kdsId,
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                });
+
+                return {
+                    resolved: false,
+                    strategy: preferredStrategy ?? 'server_wins',
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                };
+            }
+        },
+        {
+            tags: {
+                kds_id: kdsId,
+                strategy: preferredStrategy ?? 'server_wins',
             },
-            serverData,
-            strategy
-        );
-
-        // Update local record with resolved data
-        const _now = new Date().toISOString();
-        await db.execute(
-            `UPDATE kds_items SET
-                status = ?,
-                started_at = ?,
-                ready_at = ?,
-                recalled_at = ?,
-                bumped_at = ?,
-                priority = ?,
-                version = ?,
-                last_modified = ?
-            WHERE id = ?`,
-            [
-                resolvedData.status ?? 'queued',
-                resolvedData.started_at ?? null,
-                resolvedData.ready_at ?? null,
-                resolvedData.recalled_at ?? null,
-                resolvedData.bumped_at ?? null,
-                resolvedData.priority ?? 0,
-                resolvedData.version,
-                resolvedData.last_modified,
-                kdsId,
-            ]
-        );
-
-        // Log conflict resolution to sync_conflict_logs table
-        await logConflictResolution({
-            entityType: 'kds_items',
-            entityId: kdsId,
-            conflictType,
-            clientData: clientData as unknown as Record<string, unknown>,
-            serverData,
-            resolvedData,
-            strategy: usedStrategy,
-            auditDetails,
-        });
-
-        // Also log to audit_logs for compliance
-        await logKdsConflictToAuditLog(kdsId, clientData, serverData, usedStrategy, auditDetails);
-
-        logger.info('[KdsSync] Conflict resolved', {
-            kdsId,
-            strategy: usedStrategy,
-            conflictType,
-            winner: auditDetails.winner,
-        });
-
-        // Get the resolved KDS item
-        const resolvedItem = await getKdsItem(kdsId);
-
-        return {
-            resolved: true,
-            strategy: usedStrategy,
-            resolvedData: resolvedItem ?? undefined,
-            conflictType,
-        };
-    } catch (error) {
-        logger.error('[KdsSync] Failed to resolve conflict', {
-            kdsId,
-            error: error instanceof Error ? error.message : 'Unknown error',
-        });
-
-        return {
-            resolved: false,
-            strategy: preferredStrategy ?? 'server_wins',
-            error: error instanceof Error ? error.message : 'Unknown error',
-        };
-    }
+            description: `Resolve KDS conflict for item ${kdsId}`,
+        }
+    );
 }
 
 /**

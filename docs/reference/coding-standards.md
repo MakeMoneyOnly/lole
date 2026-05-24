@@ -1,7 +1,7 @@
 # lole - Coding Standards
 
-**Version:** 1.2.0  
-**Last Updated:** 2026-05-18
+**Version:** 1.3.0  
+**Last Updated:** 2026-05-23
 
 ---
 
@@ -73,9 +73,141 @@ type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 ---
 
-## 3. React Standards
+## 3. Feature-Slice Architecture
 
-### 3.1 Component Structure
+### 3.1 Feature-First Placement
+
+Organize code by feature first, then by layer. This colocates related functionality and reduces cognitive load when navigating the codebase.
+
+```typescript
+// ❌ By type (traditional layers)
+src/
+  components/
+  services/
+  hooks/
+  utils/
+
+// ✅ By feature (feature-slice)
+src/
+  features/
+    orders/
+    menu/
+    tables/
+    staff/
+```
+
+### 3.2 Directory Structure Conventions
+
+```
+features/[feature]/
+├── api/           # API route handlers
+├── services/      # Feature orchestration logic
+├── domain/        # Re-exports from src/domains/
+├── contracts/     # Zod schemas for validation
+├── events/        # Event types and handlers
+├── hooks/         # React hooks
+└── tests/         # Feature tests
+```
+
+#### Layer Responsibilities
+
+- **api/** - API route handlers following Next.js App Router conventions
+- **services/** - Business logic orchestration, feature-specific operations
+- **domain/** - Re-exports shared domain types (see Cross-Feature Communication)
+- **contracts/** - Zod schemas for input validation and type inference
+- **events/** - Domain events and event handlers for inter-feature communication
+- **hooks/** - React hooks for feature UI state and data fetching
+- **tests/** - Unit and integration tests specific to the feature
+
+### 3.3 Shared Layer Usage
+
+The `src/domains/` layer contains shared types and business rules:
+
+- Types used across multiple features
+- Core domain logic not owned by a single feature
+- Utilities and helpers used by multiple features
+
+Features should import from `domains/` for shared concerns, not from other features.
+
+### 3.4 Cross-Feature Dependencies
+
+```typescript
+// ❌ Direct feature import (creates tight coupling)
+import { useOrders } from '@/features/orders';
+
+// ✅ Use shared types from domains layer
+import type { OrderSummary } from '@/domains/orders/types';
+
+// ✅ Use event-based communication for cross-feature actions
+import { publishEvent } from '@/lib/events';
+```
+
+#### Dependency Rules
+
+1. Features can import from:
+    - `src/domains/*` for shared types
+    - `src/shared/*` for utilities
+    - `src/lib/*` for infrastructure
+
+2. Features should NOT import from:
+    - Other feature directories (breaks encapsulation)
+    - Direct feature hooks in non-related code
+
+3. Use dependency injection for shared services:
+
+```typescript
+// ✅ Inject shared dependencies
+const orderService = createOrderService(supabaseClient, eventBus);
+
+// Pass to feature services
+const useOrders = createUseOrders(orderService);
+```
+
+### 3.5 Creating New Features
+
+#### Directory Creation
+
+```bash
+# Create feature directory structure
+mkdir -p src/features/{feature}/{api,services,domain,contracts,events,hooks,tests}
+```
+
+#### Barrel Exports Pattern
+
+Each feature directory should have an `index.ts` that exports the public API:
+
+```typescript
+// features/orders/index.ts
+export { OrderCard } from './components/OrderCard';
+export { useOrders } from './hooks/useOrders';
+export { getOrders } from './services/orderService';
+export { OrderSchema } from './contracts/schemas';
+export type { Order, OrderStatus } from './domain/types';
+```
+
+#### Integration with Domains Layer
+
+1. Define core types in `src/domains/[domain]/types.ts`
+2. Re-export from feature's `domain/` directory
+3. Features consume domain types through the domains layer
+
+```typescript
+// src/domains/orders/types.ts (shared)
+export interface Order {
+    id: string;
+    status: OrderStatus;
+    items: OrderItem[];
+}
+
+// features/orders/domain/types.ts (re-export)
+export type { Order, OrderStatus } from '@/domains/orders/types';
+```
+
+---
+
+## 4. React Standards
+
+### 4.1 Component Structure
 
 ```typescript
 // ✅ Function components only
@@ -111,14 +243,14 @@ export function OrderCard({ order, onStatusChange }: OrderCardProps) {
 }
 ```
 
-### 3.2 Hooks Rules
+### 4.2 Hooks Rules
 
 - Always call hooks at the top level
 - Only call hooks from React functions
 - Use `useCallback` for handlers passed to children
 - Use `useMemo` for expensive computations
 
-### 3.3 Component Organization
+### 4.3 Component Organization
 
 ```
 OrderCard/
@@ -131,9 +263,9 @@ OrderCard/
 
 ---
 
-## 4. Next.js Standards
+## 5. Next.js Standards
 
-### 4.1 Server vs Client Components
+### 5.1 Server vs Client Components
 
 ```typescript
 // ✅ Server Component (default)
@@ -157,7 +289,7 @@ export function OrdersList({ orders }: OrdersListProps) {
 }
 ```
 
-### 4.2 Server Actions
+### 5.2 Server Actions
 
 ```typescript
 // ✅ Server Actions for mutations
@@ -179,7 +311,10 @@ const CreateOrderSchema = z.object({
 
 export async function createOrder(input: unknown) {
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+        data: { user },
+        error: authError,
+    } = await supabase.auth.getUser();
 
     if (authError || !user) {
         return { error: 'UNAUTHORIZED' };
@@ -203,7 +338,7 @@ export async function createOrder(input: unknown) {
 }
 ```
 
-### 4.3 API Routes
+### 5.3 API Routes
 
 ```typescript
 // src/app/api/orders/route.ts
@@ -254,7 +389,7 @@ export async function POST(request: Request) {
 }
 ```
 
-### 4.4 Zod v4 Best Practices
+### 5.4 Zod v4 Best Practices
 
 ```typescript
 // ✅ Use parseAsync() for async contexts
@@ -263,7 +398,7 @@ const validated = await Schema.parseAsync(data);
 
 // ✅ .email() requires RFC 5322 compliant emails by default
 const EmailSchema = z.object({
-    email: z.email() // Stricter validation in v4
+    email: z.email(), // Stricter validation in v4
 });
 
 // ✅ safeParse still works, but parseAsync is preferred for async code
@@ -283,9 +418,9 @@ try {
 
 ---
 
-## 5. Error Handling
+## 6. Error Handling
 
-### 5.1 Error Types
+### 6.1 Error Types
 
 ```typescript
 // src/lib/errors.ts
@@ -320,7 +455,7 @@ export class ForbiddenError extends AppError {
 }
 ```
 
-### 5.2 Error Responses
+### 6.2 Error Responses
 
 ```typescript
 // ✅ Structured error response
@@ -337,7 +472,7 @@ export class ForbiddenError extends AppError {
 }
 ```
 
-### 5.3 User-Facing Errors
+### 6.3 User-Facing Errors
 
 ```typescript
 // ✅ User-friendly messages
@@ -352,9 +487,9 @@ const ERROR_MESSAGES: Record<ErrorCode, string> = {
 
 ---
 
-## 6. Naming Conventions
+## 7. Naming Conventions
 
-### 6.1 Files
+### 7.1 Files
 
 | Type      | Convention     | Example              |
 | --------- | -------------- | -------------------- |
@@ -365,7 +500,7 @@ const ERROR_MESSAGES: Record<ErrorCode, string> = {
 | API Route | route.ts       | `route.ts`           |
 | Test      | \*.test.ts(x)  | `OrderCard.test.tsx` |
 
-### 6.2 Code
+### 7.2 Code
 
 | Type      | Convention           | Example                 |
 | --------- | -------------------- | ----------------------- |
@@ -377,7 +512,7 @@ const ERROR_MESSAGES: Record<ErrorCode, string> = {
 | Type      | PascalCase           | `OrderStatus`           |
 | Enum      | PascalCase           | `OrderStatus`           |
 
-### 6.3 Database
+### 7.3 Database
 
 | Type     | Convention              | Example                        |
 | -------- | ----------------------- | ------------------------------ |
@@ -388,9 +523,9 @@ const ERROR_MESSAGES: Record<ErrorCode, string> = {
 
 ---
 
-## 6.4 Git Standards
+## 8. Git Standards
 
-### 6.4.1 Commit Messages
+### 8.1 Commit Messages
 
 ```
 type(scope): description
@@ -418,7 +553,7 @@ Examples:
 - docs(readme): update installation instructions
 ```
 
-### 6.4.2 Branch Names
+### 8.2 Branch Names
 
 - Feature: `feat/description`
 - Fix: `fix/description`
@@ -427,9 +562,9 @@ Examples:
 
 ---
 
-## 6.5 Logging
+## 9. Logging
 
-### Structured Logging
+### 9.1 Structured Logging
 
 Use the structured logger for all server-side logging:
 
@@ -446,7 +581,7 @@ log.warn('Rate limit approaching', { remaining: 10 });
 log.error('Operation failed', error, { orderId: '123', attempt: 2 });
 ```
 
-### Logging Guidelines
+### 9.2 Logging Guidelines
 
 - **Import**: Always `import { logger } from '@/lib/logger'`
 - **Child loggers**: Use `const log = logger.child('[source]')` for context
@@ -455,9 +590,9 @@ log.error('Operation failed', error, { orderId: '123', attempt: 2 });
 
 ---
 
-## 7. Testing Standards
+## 10. Testing Standards
 
-### 7.1 Unit Tests
+### 10.1 Unit Tests
 
 ```typescript
 // OrderCard.test.tsx
@@ -491,7 +626,7 @@ describe('OrderCard', () => {
 })
 ```
 
-### 7.2 Coverage Requirements
+### 10.2 Coverage Requirements
 
 | Metric     | Target |
 | ---------- | ------ |
@@ -502,7 +637,7 @@ describe('OrderCard', () => {
 
 ---
 
-## 8. Security Checklist
+## 11. Security Checklist
 
 Before merging any code:
 

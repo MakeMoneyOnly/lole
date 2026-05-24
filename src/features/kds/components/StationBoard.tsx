@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useRole } from '@/features/auth/hooks/useRole';
-import type { UnifiedKDSOrder } from '@/app/api/v1/merchant/operations/kds/queue/route';
+import type { UnifiedKDSOrder } from '@/features/operations/kds';
 import { useSearchParams } from 'next/navigation';
 import _Link from 'next/link';
 import { useKDSRealtime } from '@/features/kds/hooks/useKDSRealtime';

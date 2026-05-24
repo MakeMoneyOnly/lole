@@ -3,7 +3,11 @@
  * MED-024: Compliant PDF generation for Ethiopian ERCA requirements
  */
 
-import { signFiscalPayload, getLocalFiscalSigningConfig, type LocalFiscalSignatureEnvelope } from './local-signing';
+import {
+    signFiscalPayload,
+    getLocalFiscalSigningConfig,
+    type LocalFiscalSignatureEnvelope,
+} from './local-signing';
 import type { ReceiptTemplate } from './templates/receipt-template';
 
 // ============================================================================
@@ -93,7 +97,7 @@ export class NutrientClient {
         // Use provided template or default
         const html = template
             ? template.render(orderData, signatureEnvelope, qrPayload)
-            : this.buildDefaultTemplate(orderData, signatureEnvelope, qrPayload);
+            : await this.buildDefaultTemplate(orderData, signatureEnvelope, qrPayload);
 
         // Convert HTML to PDF/A via Nutrient DWS
         const pdfBytes = await this.htmlToPdfA(html);
@@ -109,14 +113,19 @@ export class NutrientClient {
     /**
      * Build QR payload for ERCA verification
      */
-    private buildQrPayload(payload: NutrientReceiptPayload, envelope: LocalFiscalSignatureEnvelope): string {
+    private buildQrPayload(
+        payload: NutrientReceiptPayload,
+        envelope: LocalFiscalSignatureEnvelope
+    ): string {
         return `lole:${payload.restaurant_tin}:${payload.transaction_number}:${envelope.digest}`;
     }
 
     /**
      * Generate digital signature using local-signing
      */
-    private async generateSignature(payload: NutrientReceiptPayload): Promise<LocalFiscalSignatureEnvelope> {
+    private async generateSignature(
+        payload: NutrientReceiptPayload
+    ): Promise<LocalFiscalSignatureEnvelope> {
         const signingConfig = getLocalFiscalSigningConfig();
 
         if (!signingConfig) {
@@ -151,7 +160,7 @@ export class NutrientClient {
         const response = await fetch(`${this.apiUrl}/process`, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${this.apiKey}`,
+                Authorization: `Bearer ${this.apiKey}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
@@ -172,14 +181,14 @@ export class NutrientClient {
     }
 
     /**
- * Build default HTML template (bilingual English/Amharic)
+     * Build default HTML template (bilingual English/Amharic)
      */
-    private buildDefaultTemplate(
+    private async buildDefaultTemplate(
         payload: NutrientReceiptPayload,
         envelope: LocalFiscalSignatureEnvelope,
         qrPayload: string
-    ): string {
-        const { StandardReceiptTemplate } = require('./templates/receipt-template') as typeof import('./templates/receipt-template');
+    ): Promise<string> {
+        const { StandardReceiptTemplate } = await import('./templates/receipt-template');
         const template = new StandardReceiptTemplate(payload.locale ?? 'both');
         return template.render(payload, envelope, qrPayload);
     }
@@ -222,7 +231,11 @@ export function formatDateTime(isoDate: string, locale: 'en' | 'am' = 'en'): str
 // Bilingual Text Helper
 // ============================================================================
 
-export function bilingualText(en: string, am: string | null | undefined, locale: 'en' | 'am' | 'both' = 'both'): string {
+export function bilingualText(
+    en: string,
+    am: string | null | undefined,
+    locale: 'en' | 'am' | 'both' = 'both'
+): string {
     if (locale === 'en') return en;
     if (locale === 'am') return am ?? en;
     return am ? `${en} / ${am}` : en;

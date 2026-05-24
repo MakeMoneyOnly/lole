@@ -14,7 +14,7 @@ process.env.DEVICE_TOKEN_SIGNATURE_SECRET = 'test-secret-key-that-is-long-enough
 // Mock bcryptjs before any imports that use it
 vi.mock('bcryptjs', () => ({
     default: {
-        hash: vi.fn(async (pin: string) => {
+        hash: vi.fn(async (_pin: string) => {
             // Generate a properly formatted bcrypt hash: exactly 60 chars
             // $2b$10$ + 53 chars (22 salt + 31 hash)
             const hash = `$2b$10$eWmWcJN1zOaNmQcQhQhQhOeWmWcJN1zOaNmQcQhQhQhO123456789`;

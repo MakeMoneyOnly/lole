@@ -1,5 +1,3 @@
-import type { AppError } from '../errors';
-
 /**
  * Payment amount DTO
  */

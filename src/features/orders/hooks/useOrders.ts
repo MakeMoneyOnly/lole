@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { ordersService } from '../domain';
 import type { OrderStatus } from '@/types/status';
+import type { OrderRow } from '../domain';
 
 interface UseOrdersOptions {
     restaurantId: string;
@@ -11,7 +12,12 @@ interface UseOrdersOptions {
     enabled?: boolean;
 }
 
-export function useOrders({ restaurantId, status, tableId, enabled = true }: UseOrdersOptions) {
+export function useOrders({
+    restaurantId,
+    status,
+    tableId,
+    enabled = true,
+}: UseOrdersOptions): ReturnType<typeof useQuery<OrderRow[]>> {
     return useQuery({
         queryKey: ['orders', restaurantId, status, tableId],
         queryFn: () => ordersService.getOrders(restaurantId, { status, tableId }),

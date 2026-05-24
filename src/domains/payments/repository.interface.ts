@@ -1,7 +1,7 @@
 // Payments Domain - Repository Interface (Ports Layer)
 // Defines the contract for payments data persistence operations
 
-import type { PaymentRow, PaymentStatus, PaymentProvider, PaymentListOptions } from './repository';
+import type { PaymentRow, PaymentStatus, PaymentListOptions } from './repository';
 
 /**
  * Interface defining the contract for payments repository operations.
