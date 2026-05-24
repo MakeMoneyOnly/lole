@@ -5,7 +5,9 @@ import RevenueChart from '../shared/RevenueChart';
 // Mock next/dynamic to return a simple component
 vi.mock('next/dynamic', () => ({
     default: () => {
-        const MockChart = (): React.JSX.Element => <div data-testid="mock-chart">Chart Content</div>;
+        const MockChart = (): React.JSX.Element => (
+            <div data-testid="mock-chart">Chart Content</div>
+        );
         return MockChart;
     },
 }));

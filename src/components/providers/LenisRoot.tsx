@@ -12,7 +12,7 @@ export function LenisRoot({ children }: { children: ReactNode }): React.JSX.Elem
 
     // Keep server and first client render identical to avoid hydration mismatches.
     if (!isMounted) {
-        return <>{children}</> as React.JSX.Element;
+        return (<>{children}</>) as React.JSX.Element;
     }
 
     return <ReactLenis root>{children}</ReactLenis>;

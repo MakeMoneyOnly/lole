@@ -51,7 +51,11 @@ function DashboardShell({ children }: { children: React.ReactNode }): React.JSX.
     );
 }
 
-export function DashboardLayoutClient({ children }: { children: React.ReactNode }): React.JSX.Element {
+export function DashboardLayoutClient({
+    children,
+}: {
+    children: React.ReactNode;
+}): React.JSX.Element {
     // Lock scroll for dashboard experience
     React.useLayoutEffect(() => {
         const html = document.documentElement;

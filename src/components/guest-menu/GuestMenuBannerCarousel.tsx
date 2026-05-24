@@ -8,9 +8,9 @@ export const GuestMenuBannerCarousel: React.FC = () => {
     // For now, we'll implement a static premium banner matching the design.
     return (
         <div className="w-full px-5 py-3">
-            <div className="relative aspect-[16/8] w-full overflow-hidden rounded-[24px] bg-white border border-brand-neutral-soft/10">
-                <Image 
-                    src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80" 
+            <div className="border-brand-neutral-soft/10 relative aspect-[16/8] w-full overflow-hidden rounded-[24px] border bg-white">
+                <Image
+                    src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80"
                     alt="Premium Banner"
                     fill
                     className="object-cover"

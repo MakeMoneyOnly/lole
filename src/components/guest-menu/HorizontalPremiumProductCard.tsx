@@ -16,9 +16,9 @@ export const HorizontalPremiumProductCard: React.FC<{
     const cleanedTitle = cleanItemTitle(item.title);
 
     return (
-        <div 
+        <div
             onClick={() => onSelect?.(item)}
-            className="mb-[15px] flex w-full flex-col gap-3 rounded-[24px] bg-[#FFFFFF] border border-brand-neutral-soft/10 p-4 transition-all active:scale-[0.98]"
+            className="border-brand-neutral-soft/10 mb-[15px] flex w-full flex-col gap-3 rounded-[24px] border bg-[#FFFFFF] p-4 transition-all active:scale-[0.98]"
         >
             <div className="flex gap-[15px]">
                 <div className="relative h-[100px] w-[100px] shrink-0">
@@ -30,26 +30,26 @@ export const HorizontalPremiumProductCard: React.FC<{
                         unoptimized={true}
                     />
                 </div>
-                
+
                 <div className="flex flex-1 flex-col gap-1">
                     <div className="flex items-center justify-between">
-                        <h3 className="line-clamp-1 text-[17px] font-bold text-[#1A1C1E] tracking-[-0.04em]">
+                        <h3 className="line-clamp-1 text-[17px] font-bold tracking-[-0.04em] text-[#1A1C1E]">
                             {cleanedTitle}
                         </h3>
-                        <button className="flex h-7 w-7 items-center justify-center rounded-full bg-[#FFFFFF] border border-brand-neutral-soft/10">
+                        <button className="border-brand-neutral-soft/10 flex h-7 w-7 items-center justify-center rounded-full border bg-[#FFFFFF]">
                             <Heart className="h-[14px] w-[14px] text-black" />
                         </button>
                     </div>
-                    
-                    <span className="text-[13px] font-medium text-gray-400 tracking-[-0.04em]">
+
+                    <span className="text-[13px] font-medium tracking-[-0.04em] text-gray-400">
                         Size : M
                     </span>
 
                     <div className="mt-auto flex items-center justify-between">
-                        <span className="text-[18px] font-bold text-[#1A1C1E] tracking-[-0.04em]">
+                        <span className="text-[18px] font-bold tracking-[-0.04em] text-[#1A1C1E]">
                             {formatCurrency(item.price)}
                         </span>
-                        <span className="text-[13px] font-medium text-gray-400 tracking-[-0.04em]">
+                        <span className="text-[13px] font-medium tracking-[-0.04em] text-gray-400">
                             X2
                         </span>
                     </div>
@@ -60,24 +60,26 @@ export const HorizontalPremiumProductCard: React.FC<{
 
             <div className="flex items-center justify-between">
                 <div className="flex flex-col">
-                    <span className="text-[13px] font-medium text-gray-400 tracking-[-0.04em]">Estimate Total</span>
-                    <span className="text-[20px] font-bold text-[#1A1C1E] tracking-[-0.04em]">
+                    <span className="text-[13px] font-medium tracking-[-0.04em] text-gray-400">
+                        Estimate Total
+                    </span>
+                    <span className="text-[20px] font-bold tracking-[-0.04em] text-[#1A1C1E]">
                         {formatCurrency(item.price)}
                     </span>
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <button 
-                        onClick={(e) => {
+                    <button
+                        onClick={e => {
                             e.stopPropagation();
                             onAddToCart?.(item);
                         }}
-                        className="rounded-[20px] px-4 py-2 text-[12px] font-bold text-black tracking-[-0.04em] transition-transform active:scale-95"
+                        className="rounded-[20px] px-4 py-2 text-[12px] font-bold tracking-[-0.04em] text-black transition-transform active:scale-95"
                         style={{ background: GUEST_MENU_GRADIENT }}
                     >
                         Shop
                     </button>
-                    <div 
+                    <div
                         className="flex h-11 w-11 items-center justify-center rounded-full"
                         style={{ background: GUEST_MENU_GRADIENT }}
                     >

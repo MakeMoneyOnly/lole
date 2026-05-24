@@ -8,88 +8,88 @@ interface VisitHeatmapProps {
 }
 
 const VisitHeatmap = ({ columns = 19 }: VisitHeatmapProps): React.JSX.Element => {
-     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-     // Generate data for 20 columns starting from 7AM
-     const startHour = 7;
-     const endHour = 23; // 11 PM
-     const totalHours = endHour - startHour;
+    // Generate data for 20 columns starting from 7AM
+    const startHour = 7;
+    const endHour = 23; // 11 PM
+    const totalHours = endHour - startHour;
 
-     type HeatmapPoint = {
-         intensity: number;
-         visits: number;
-         hour: number;
-         minutes: number;
-     };
+    type HeatmapPoint = {
+        intensity: number;
+        visits: number;
+        hour: number;
+        minutes: number;
+    };
 
-     const generateIntensities = (day: string): HeatmapPoint[] => {
-         return Array.from({ length: columns }, (_, i) => {
-             const progress = i / (columns - 1);
-             const hour = startHour + progress * totalHours;
+    const generateIntensities = (day: string): HeatmapPoint[] => {
+        return Array.from({ length: columns }, (_, i) => {
+            const progress = i / (columns - 1);
+            const hour = startHour + progress * totalHours;
 
-             // Seed randomness based on day and hour for consistent-ish lookup if re-rendered
-             const seed = day.charCodeAt(0) + day.charCodeAt(1) + i;
-             const pseudoRandom = (Math.sin(seed) + 1) / 2;
+            // Seed randomness based on day and hour for consistent-ish lookup if re-rendered
+            const seed = day.charCodeAt(0) + day.charCodeAt(1) + i;
+            const pseudoRandom = (Math.sin(seed) + 1) / 2;
 
-             let intensity = 10 + pseudoRandom * 10;
+            let intensity = 10 + pseudoRandom * 10;
 
-             // Lunch Peak (varies by day)
-             const lunchPeak = day === 'Sun' ? 13 : day === 'Sat' ? 12.5 : 12;
-             const lunchSpread = 1.5;
-             if (Math.abs(hour - lunchPeak) < lunchSpread) {
-                 const factor = 1 - Math.abs(hour - lunchPeak) / lunchSpread;
-                 intensity += factor * (50 + pseudoRandom * 30);
-             }
+            // Lunch Peak (varies by day)
+            const lunchPeak = day === 'Sun' ? 13 : day === 'Sat' ? 12.5 : 12;
+            const lunchSpread = 1.5;
+            if (Math.abs(hour - lunchPeak) < lunchSpread) {
+                const factor = 1 - Math.abs(hour - lunchPeak) / lunchSpread;
+                intensity += factor * (50 + pseudoRandom * 30);
+            }
 
-             // Dinner Peak (varies by day)
-             const dinnerPeak = ['Fri', 'Sat'].includes(day) ? 19.5 : 19;
-             const dinnerSpread = 2;
-             if (Math.abs(hour - dinnerPeak) < dinnerSpread) {
-                 const factor = 1 - Math.abs(hour - dinnerPeak) / dinnerSpread;
-                 intensity += factor * (60 + pseudoRandom * 40);
-             }
+            // Dinner Peak (varies by day)
+            const dinnerPeak = ['Fri', 'Sat'].includes(day) ? 19.5 : 19;
+            const dinnerSpread = 2;
+            if (Math.abs(hour - dinnerPeak) < dinnerSpread) {
+                const factor = 1 - Math.abs(hour - dinnerPeak) / dinnerSpread;
+                intensity += factor * (60 + pseudoRandom * 40);
+            }
 
-             // Morning breakfast peak for weekdays
-             if (!['Sat', 'Sun'].includes(day) && Math.abs(hour - 8.5) < 1) {
-                 intensity += (1 - Math.abs(hour - 8.5)) * 30;
-             }
+            // Morning breakfast peak for weekdays
+            if (!['Sat', 'Sun'].includes(day) && Math.abs(hour - 8.5) < 1) {
+                intensity += (1 - Math.abs(hour - 8.5)) * 30;
+            }
 
-             // Weekend late night
-             if (['Fri', 'Sat'].includes(day) && hour > 21) {
-                 intensity += (hour - 21) * 10;
-             }
+            // Weekend late night
+            if (['Fri', 'Sat'].includes(day) && hour > 21) {
+                intensity += (hour - 21) * 10;
+            }
 
-             // Global scaling per day
-             const scaling: Record<string, number> = {
-                 Mon: 0.8,
-                 Tue: 0.7,
-                 Wed: 0.85,
-                 Thu: 0.9,
-                 Fri: 1.1,
-                 Sat: 1.25,
-                 Sun: 1.0,
-             };
-             intensity *= scaling[day] || 1;
+            // Global scaling per day
+            const scaling: Record<string, number> = {
+                Mon: 0.8,
+                Tue: 0.7,
+                Wed: 0.85,
+                Thu: 0.9,
+                Fri: 1.1,
+                Sat: 1.25,
+                Sun: 1.0,
+            };
+            intensity *= scaling[day] || 1;
 
-             const rowVisitsAvg: Record<string, number> = {
-                 Mon: 2500,
-                 Tue: 2100,
-                 Wed: 2800,
-                 Thu: 3100,
-                 Fri: 4500,
-                 Sat: 5200,
-                 Sun: 3800,
-             };
-             const visits = Math.floor(intensity * (rowVisitsAvg[day] / 100));
+            const rowVisitsAvg: Record<string, number> = {
+                Mon: 2500,
+                Tue: 2100,
+                Wed: 2800,
+                Thu: 3100,
+                Fri: 4500,
+                Sat: 5200,
+                Sun: 3800,
+            };
+            const visits = Math.floor(intensity * (rowVisitsAvg[day] / 100));
 
-             return {
-                 intensity: Math.min(100, Math.max(0, Math.floor(intensity / 10) * 10)),
-                 visits,
-                 hour: Math.floor(hour),
-                 minutes: Math.floor((hour % 1) * 60),
-             };
-         });
-     };
+            return {
+                intensity: Math.min(100, Math.max(0, Math.floor(intensity / 10) * 10)),
+                visits,
+                hour: Math.floor(hour),
+                minutes: Math.floor((hour % 1) * 60),
+            };
+        });
+    };
 
     const data = days.map(day => ({
         day,

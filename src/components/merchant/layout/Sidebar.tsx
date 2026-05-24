@@ -39,7 +39,7 @@ function SidebarTooltip({ children, label }: SidebarTooltipProps): React.JSX.Ele
     const { isCollapsed } = useSidebar();
 
     // Early return if not collapsed
-    if (!isCollapsed) return <React.Fragment>{children}</React.Fragment> as React.JSX.Element;
+    if (!isCollapsed) return (<React.Fragment>{children}</React.Fragment>) as React.JSX.Element;
 
     const handleMouseEnter = (): void => {
         if (triggerRef.current) {

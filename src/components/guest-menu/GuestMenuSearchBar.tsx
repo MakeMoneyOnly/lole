@@ -33,18 +33,18 @@ export const GuestMenuSearchBar: React.FC<{
     return (
         <div className="flex w-full translate-y-[10px] items-center gap-3 px-5 py-3">
             <div className="flex h-[56px] flex-1 items-center gap-3 rounded-[22px] border border-white/10 bg-[#FFFFFF]/10 px-5 backdrop-blur-md transition-all focus-within:bg-white/20">
-<Image
-                     src="/icons/Guest Menu/search-line.svg?v=2"
-                     alt="Search"
-                     className="h-[18px] w-[18px]"
-                     width={18}
-                     height={18}
-                     unoptimized={true}
-                 />
+                <Image
+                    src="/icons/Guest Menu/search-line.svg?v=2"
+                    alt="Search"
+                    className="h-[18px] w-[18px]"
+                    width={18}
+                    height={18}
+                    unoptimized={true}
+                />
                 <div className="relative flex h-[24px] flex-1 items-center overflow-hidden">
                     {!value && (
                         <div className="pointer-events-none absolute inset-0 flex items-center">
-                            <span className="mr-1.5 text-[15px] font-semibold text-white/40 tracking-[-0.04em]">
+                            <span className="mr-1.5 text-[15px] font-semibold tracking-[-0.04em] text-white/40">
                                 Search for
                             </span>
                             <div className="relative h-full flex-1 overflow-hidden">
@@ -69,7 +69,7 @@ export const GuestMenuSearchBar: React.FC<{
                         type="text"
                         value={value || ''}
                         onChange={e => onChange?.(e.target.value)}
-                        className="z-10 w-full bg-transparent text-[15px] font-medium text-white tracking-[-0.04em] focus:outline-none"
+                        className="z-10 w-full bg-transparent text-[15px] font-medium tracking-[-0.04em] text-white focus:outline-none"
                     />
                 </div>
             </div>
@@ -77,7 +77,14 @@ export const GuestMenuSearchBar: React.FC<{
                 onClick={onFilterTap}
                 className="flex h-[56px] w-[56px] items-center justify-center rounded-[22px] border border-white/10 bg-white/10 backdrop-blur-md transition-all active:scale-95"
             >
-                <Image src="/icons/Guest Menu/filter-line.svg?v=2" alt="Filter" className="h-5 w-5" width={20} height={20} unoptimized={true} />
+                <Image
+                    src="/icons/Guest Menu/filter-line.svg?v=2"
+                    alt="Filter"
+                    className="h-5 w-5"
+                    width={20}
+                    height={20}
+                    unoptimized={true}
+                />
             </button>
         </div>
     );

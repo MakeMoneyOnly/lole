@@ -8,7 +8,11 @@ interface PricingAnimationProps {
     annuallyPrice: number;
 }
 
-export function PricingAnimation({ billPlan, monthlyPrice, annuallyPrice }: PricingAnimationProps): React.JSX.Element {
+export function PricingAnimation({
+    billPlan,
+    monthlyPrice,
+    annuallyPrice,
+}: PricingAnimationProps): React.JSX.Element {
     return (
         <AnimatePresence mode="wait">
             <motion.span

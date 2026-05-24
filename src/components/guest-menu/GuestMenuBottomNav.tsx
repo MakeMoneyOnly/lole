@@ -86,19 +86,23 @@ export const GuestMenuBottomNav: React.FC<{
                                 )}
                             >
                                 <div className="relative">
-<Image
-                                            src={isActive ? tab.iconFill : tab.iconLine}
-                                            alt={tab.label}
-                                            className="h-[22px] w-[22px]"
-                                            width={22}
-                                            height={22}
-                                            unoptimized={true}
-                                        />
+                                    <Image
+                                        src={isActive ? tab.iconFill : tab.iconLine}
+                                        alt={tab.label}
+                                        className="h-[22px] w-[22px]"
+                                        width={22}
+                                        height={22}
+                                        unoptimized={true}
+                                    />
                                     {tab.id === 3 && cartCount > 0 && (
-                                        <span className={cn(
-                                            "absolute -top-2 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold shadow-sm border border-black transition-all",
-                                            isActive ? "bg-[#000000] text-[#DDF853] border-white/20" : "bg-[#DDF853] text-[#000000]"
-                                        )}>
+                                        <span
+                                            className={cn(
+                                                'absolute -top-2 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full border border-black px-1 text-[9px] font-bold shadow-sm transition-all',
+                                                isActive
+                                                    ? 'border-white/20 bg-[#000000] text-[#DDF853]'
+                                                    : 'bg-[#DDF853] text-[#000000]'
+                                            )}
+                                        >
                                             {cartCount}
                                         </span>
                                     )}

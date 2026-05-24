@@ -4,7 +4,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
-const AnimatedNavLink = ({ href, children }: { href: string; children: React.ReactNode }): React.JSX.Element => {
+const AnimatedNavLink = ({
+    href,
+    children,
+}: {
+    href: string;
+    children: React.ReactNode;
+}): React.JSX.Element => {
     const defaultTextColor = 'text-white/70 dark:text-gray-300';
     const hoverTextColor = 'text-white dark:text-white';
     const textSizeClass = 'text-sm font-bold';
@@ -27,9 +33,9 @@ export function MiniNavbar(): React.JSX.Element {
     const [headerShapeClass, setHeaderShapeClass] = useState('rounded-full');
     const shapeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-const toggleMenu = (): void => {
-         setIsOpen(!isOpen);
-     };
+    const toggleMenu = (): void => {
+        setIsOpen(!isOpen);
+    };
 
     useEffect(() => {
         if (shapeTimeoutRef.current) {

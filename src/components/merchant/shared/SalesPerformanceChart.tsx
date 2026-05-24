@@ -17,7 +17,10 @@ interface SalesPerformanceChartProps {
     averageSales: number;
 }
 
-const SalesPerformanceChart = ({ totalSales, averageSales }: SalesPerformanceChartProps): React.JSX.Element => {
+const SalesPerformanceChart = ({
+    totalSales,
+    averageSales,
+}: SalesPerformanceChartProps): React.JSX.Element => {
     const [mounted, setMounted] = useState(false);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const [chartSize, setChartSize] = useState({ width: 0, height: 0 });

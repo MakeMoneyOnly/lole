@@ -25,7 +25,10 @@ function SkeletonBlock({ className }: { className?: string }): React.JSX.Element
     return <div className={cn('animate-pulse rounded-lg bg-neutral-200', className)} />;
 }
 
-export function PageSkeleton({ variant = 'dashboard', className }: PageSkeletonProps): React.JSX.Element {
+export function PageSkeleton({
+    variant = 'dashboard',
+    className,
+}: PageSkeletonProps): React.JSX.Element {
     if (variant === 'pos') {
         return (
             <div className={cn('flex h-screen flex-col gap-4 p-4', className)}>
@@ -88,7 +91,10 @@ export function PageSkeleton({ variant = 'dashboard', className }: PageSkeletonP
     );
 }
 
-export function ChartSkeleton({ height = 'h-64', className }: ChartSkeletonProps): React.JSX.Element {
+export function ChartSkeleton({
+    height = 'h-64',
+    className,
+}: ChartSkeletonProps): React.JSX.Element {
     return (
         <div className={cn('flex flex-col gap-4', className)}>
             <SkeletonBlock className="h-6 w-32" />
@@ -101,7 +107,11 @@ export function ChartSkeleton({ height = 'h-64', className }: ChartSkeletonProps
     );
 }
 
-export function TableSkeleton({ rows = 5, cols = 4, className }: TableSkeletonProps): React.JSX.Element {
+export function TableSkeleton({
+    rows = 5,
+    cols = 4,
+    className,
+}: TableSkeletonProps): React.JSX.Element {
     return (
         <div className={cn('flex flex-col gap-3', className)}>
             <div className="flex gap-4">

@@ -43,7 +43,10 @@ interface TestimonialsSectionProps {
     onScroll: (direction: 'left' | 'right') => void;
 }
 
-export function TestimonialsSection({ scrollRef, onScroll }: TestimonialsSectionProps): React.JSX.Element {
+export function TestimonialsSection({
+    scrollRef,
+    onScroll,
+}: TestimonialsSectionProps): React.JSX.Element {
     return (
         <section className="w-full overflow-hidden px-4 py-16 md:px-10 lg:px-20">
             <div className="w-full">

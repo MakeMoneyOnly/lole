@@ -17,7 +17,13 @@ export function PriceBurst({ className }: { className?: string }): React.JSX.Ele
     );
 }
 
-export function ScallopBg({ className, active }: { className?: string; active?: boolean }): React.JSX.Element {
+export function ScallopBg({
+    className,
+    active,
+}: {
+    className?: string;
+    active?: boolean;
+}): React.JSX.Element {
     return (
         <div className={cn('relative h-full w-full', className)}>
             {/* This approximates the scallop shape using CSS mask or SVG. 

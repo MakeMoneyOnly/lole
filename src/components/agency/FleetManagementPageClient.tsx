@@ -36,10 +36,14 @@ export interface FleetActionRecord {
 function formatTime(value: string | null | undefined): React.JSX.Element | null {
     if (!value) return null;
 
-    return <>{new Intl.DateTimeFormat('en-US', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-    }).format(new Date(value))}</>;
+    return (
+        <>
+            {new Intl.DateTimeFormat('en-US', {
+                dateStyle: 'medium',
+                timeStyle: 'short',
+            }).format(new Date(value))}
+        </>
+    );
 }
 
 export function FleetManagementPageClient(args: {
