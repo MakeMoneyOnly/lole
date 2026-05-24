@@ -4,6 +4,3 @@ import { PayrollPageClient } from '@/components/merchant/payroll/PayrollPageClie
 export default function PayrollPage(): React.JSX.Element {
     return <PayrollPageClient />;
 }
-
-
-

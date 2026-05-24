@@ -7,8 +7,6 @@ import { getAgencyFleetAccess } from '@/lib/agency/access';
 import { requireAdminOrManager } from '@/lib/auth/requireAuth';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 
-
-
 function readRecord(value: unknown): Record<string, unknown> {
     return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};
 }
@@ -50,62 +48,65 @@ export default async function AgencyFleetPage(): Promise<React.ReactElement | nu
         ])
     );
 
-    const fleetDevices: FleetDeviceRecord[] = (devices ?? []).map((device: Record<string, unknown>) => {
-        const metadata = readRecord(device.metadata);
-        const management = readRecord(metadata.management);
+    const fleetDevices: FleetDeviceRecord[] = (devices ?? []).map(
+        (device: Record<string, unknown>) => {
+            const metadata = readRecord(device.metadata);
+            const management = readRecord(metadata.management);
 
-        return {
-            id: String(device.id),
-            restaurantId: String(device.restaurant_id),
-            restaurantName: restaurantNames.get(String(device.restaurant_id)) ?? 'Restaurant',
-            name: String(device.name ?? 'Managed Device'),
-            deviceProfile: String(device.device_profile ?? 'waiter'),
-            deviceType: String(device.device_type ?? 'pos'),
-            pairingState: String(device.pairing_state ?? 'ready'),
-            managementProvider: String(device.management_provider ?? 'none'),
-            managementStatus: String(device.management_status ?? 'unmanaged'),
-            managementDeviceId:
-                device.management_device_id !== null && device.management_device_id !== undefined
-                    ? String(device.management_device_id)
-                    : null,
-            appVersion:
-                device.app_version !== null && device.app_version !== undefined
-                    ? String(device.app_version)
-                    : null,
-            appChannel:
-                device.app_channel !== null && device.app_channel !== undefined
-                    ? String(device.app_channel)
-                    : typeof management.app_channel === 'string'
-                      ? management.app_channel
-                      : null,
-            targetAppVersion:
-                device.target_app_version !== null && device.target_app_version !== undefined
-                    ? String(device.target_app_version)
-                    : typeof management.target_app_version === 'string'
-                      ? management.target_app_version
-                      : null,
-            otaStatus:
-                device.ota_status !== null && device.ota_status !== undefined
-                    ? String(device.ota_status)
-                    : typeof management.ota_status === 'string'
-                      ? management.ota_status
-                      : 'current',
-            otaError:
-                device.ota_error !== null && device.ota_error !== undefined
-                    ? String(device.ota_error)
-                    : typeof management.ota_error === 'string'
-                      ? management.ota_error
-                      : null,
-            lastActiveAt:
-                device.last_active_at !== null && device.last_active_at !== undefined
-                    ? String(device.last_active_at)
-                    : null,
-            lastBootAt:
-                device.last_boot_at !== null && device.last_boot_at !== undefined
-                    ? String(device.last_boot_at)
-                    : null,
-        };
-    });
+            return {
+                id: String(device.id),
+                restaurantId: String(device.restaurant_id),
+                restaurantName: restaurantNames.get(String(device.restaurant_id)) ?? 'Restaurant',
+                name: String(device.name ?? 'Managed Device'),
+                deviceProfile: String(device.device_profile ?? 'waiter'),
+                deviceType: String(device.device_type ?? 'pos'),
+                pairingState: String(device.pairing_state ?? 'ready'),
+                managementProvider: String(device.management_provider ?? 'none'),
+                managementStatus: String(device.management_status ?? 'unmanaged'),
+                managementDeviceId:
+                    device.management_device_id !== null &&
+                    device.management_device_id !== undefined
+                        ? String(device.management_device_id)
+                        : null,
+                appVersion:
+                    device.app_version !== null && device.app_version !== undefined
+                        ? String(device.app_version)
+                        : null,
+                appChannel:
+                    device.app_channel !== null && device.app_channel !== undefined
+                        ? String(device.app_channel)
+                        : typeof management.app_channel === 'string'
+                          ? management.app_channel
+                          : null,
+                targetAppVersion:
+                    device.target_app_version !== null && device.target_app_version !== undefined
+                        ? String(device.target_app_version)
+                        : typeof management.target_app_version === 'string'
+                          ? management.target_app_version
+                          : null,
+                otaStatus:
+                    device.ota_status !== null && device.ota_status !== undefined
+                        ? String(device.ota_status)
+                        : typeof management.ota_status === 'string'
+                          ? management.ota_status
+                          : 'current',
+                otaError:
+                    device.ota_error !== null && device.ota_error !== undefined
+                        ? String(device.ota_error)
+                        : typeof management.ota_error === 'string'
+                          ? management.ota_error
+                          : null,
+                lastActiveAt:
+                    device.last_active_at !== null && device.last_active_at !== undefined
+                        ? String(device.last_active_at)
+                        : null,
+                lastBootAt:
+                    device.last_boot_at !== null && device.last_boot_at !== undefined
+                        ? String(device.last_boot_at)
+                        : null,
+            };
+        }
+    );
 
     const fleetActions: FleetActionRecord[] = (actions ?? []).map(action => ({
         id: String(action.id),
@@ -124,4 +125,3 @@ export default async function AgencyFleetPage(): Promise<React.ReactElement | nu
 
     return <FleetManagementPageClient devices={fleetDevices} actions={fleetActions} />;
 }
-

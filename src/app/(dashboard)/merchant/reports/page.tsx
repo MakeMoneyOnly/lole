@@ -4,6 +4,3 @@ import { ReportsPageClient } from '@/components/merchant/reports/ReportsPageClie
 export default function ReportsPage(): React.JSX.Element {
     return <ReportsPageClient />;
 }
-
-
-

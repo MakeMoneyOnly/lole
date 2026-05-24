@@ -4,6 +4,3 @@ import { MarketingPageClient } from '@/components/merchant/marketing/MarketingPa
 export default function MarketingPage(): React.JSX.Element {
     return <MarketingPageClient />;
 }
-
-
-

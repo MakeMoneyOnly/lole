@@ -4,6 +4,3 @@ import { PaymentsPageClient } from '@/components/merchant/payments/PaymentsPageC
 export default function PaymentsPage(): React.JSX.Element {
     return <PaymentsPageClient />;
 }
-
-
-

@@ -68,6 +68,3 @@ export default function GuestPostLoginPage(): React.JSX.Element {
         </main>
     );
 }
-
-
-

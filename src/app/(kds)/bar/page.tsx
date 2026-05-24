@@ -11,6 +11,3 @@ export default function BarPage(): React.JSX.Element {
         />
     );
 }
-
-
-

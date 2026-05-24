@@ -814,6 +814,3 @@ export default function WaiterPosPage(): React.JSX.Element {
         </div>
     );
 }
-
-
-

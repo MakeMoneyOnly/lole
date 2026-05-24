@@ -486,4 +486,3 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
         </div>
     );
 }
-

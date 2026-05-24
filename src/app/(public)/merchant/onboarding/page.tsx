@@ -451,7 +451,13 @@ function StepBrand({
 }
 
 // Step 4: Go Live
-function StepGoLive({ data, loading }: { data: OnboardingData; loading: boolean }): React.JSX.Element {
+function StepGoLive({
+    data,
+    loading,
+}: {
+    data: OnboardingData;
+    loading: boolean;
+}): React.JSX.Element {
     const checks = [
         { label: 'Restaurant profile created', done: true },
         { label: 'Merchant payout account connected', done: true },
@@ -538,7 +544,8 @@ export default function OnboardingPage(): React.JSX.Element {
         settlement_account_number: '',
     });
 
-    const merge = (patch: Partial<OnboardingData>): void => setData(prev => ({ ...prev, ...patch }));
+    const merge = (patch: Partial<OnboardingData>): void =>
+        setData(prev => ({ ...prev, ...patch }));
 
     useEffect(() => {
         let cancelled = false;
@@ -546,7 +553,9 @@ export default function OnboardingPage(): React.JSX.Element {
         async function loadBanks(): Promise<void> {
             try {
                 setLoadingBanks(true);
-                const response = await fetch('/api/v1/merchant/core/onboarding/banks', { cache: 'no-store' });
+                const response = await fetch('/api/v1/merchant/core/onboarding/banks', {
+                    cache: 'no-store',
+                });
                 const payload = (await response.json()) as {
                     data?: { banks?: ChapaBankOption[] };
                     error?: string;
@@ -812,4 +821,3 @@ export default function OnboardingPage(): React.JSX.Element {
         </main>
     );
 }
-

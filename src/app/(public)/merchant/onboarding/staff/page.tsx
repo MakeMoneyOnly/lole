@@ -126,4 +126,3 @@ export default function OnboardingPage(): React.JSX.Element {
         </div>
     );
 }
-

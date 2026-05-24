@@ -25,7 +25,10 @@ const signupSchema = z.object({
         .transform(value => (value ? value : undefined)),
 });
 
-export async function login(prevState: unknown, formData: FormData): Promise<{ error: string | null; message?: string }> {
+export async function login(
+    prevState: unknown,
+    formData: FormData
+): Promise<{ error: string | null; message?: string }> {
     // CSRF Protection - verify origin before processing
     await verifyOrigin();
 
@@ -62,7 +65,10 @@ export async function login(prevState: unknown, formData: FormData): Promise<{ e
     redirect('/auth/post-login');
 }
 
-export async function signup(prevState: unknown, formData: FormData): Promise<{ error: string | null; message?: string }> {
+export async function signup(
+    prevState: unknown,
+    formData: FormData
+): Promise<{ error: string | null; message?: string }> {
     // CSRF Protection - verify origin before processing
     await verifyOrigin();
 
@@ -119,4 +125,3 @@ export async function logout(): Promise<never> {
     revalidatePath('/', 'layout');
     redirect('/');
 }
-

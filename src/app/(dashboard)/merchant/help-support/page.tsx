@@ -4,6 +4,3 @@ import { HelpSupportPageClient } from '@/components/merchant/help-support/HelpSu
 export default function HelpSupportPage(): React.JSX.Element {
     return <HelpSupportPageClient initialArticles={[]} initialTickets={[]} />;
 }
-
-
-

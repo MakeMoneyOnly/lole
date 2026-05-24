@@ -65,16 +65,16 @@ function WaiterPinContent(): React.JSX.Element {
     const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     return (
-        <main className="font-inter tracking-[-0.04em] flex min-h-screen flex-col items-center justify-center bg-[#F7F5F2] px-6 antialiased">
-            <div className="w-full max-w-[440px] bg-white border border-gray-100 rounded-[2rem] p-12">
+        <main className="font-inter flex min-h-screen flex-col items-center justify-center bg-[#F7F5F2] px-6 tracking-[-0.04em] antialiased">
+            <div className="w-full max-w-[440px] rounded-[2rem] border border-gray-100 bg-white p-12">
                 <div className="mb-10 flex flex-col items-center text-center">
                     <div className="mb-8 flex h-20 w-20 items-center justify-center rounded-3xl bg-[#F7F5F2] text-[#1A1C1E]">
                         <ShieldCheck className="h-10 w-10" />
                     </div>
-                    <h1 className="text-4xl font-bold text-[#1A1C1E] leading-none mb-4">
+                    <h1 className="mb-4 text-4xl leading-none font-bold text-[#1A1C1E]">
                         Terminal Locked.
                     </h1>
-                    <p className="text-gray-500 font-medium text-lg leading-relaxed">
+                    <p className="text-lg leading-relaxed font-medium text-gray-500">
                         Enter your 4-digit staff PIN <br /> to resume service.
                     </p>
                 </div>
@@ -90,7 +90,7 @@ function WaiterPinContent(): React.JSX.Element {
                             }`}
                         >
                             {i < pin.length && (
-                                <div className="h-3 w-3 rounded-full bg-[#DDF853] animate-pulse" />
+                                <div className="h-3 w-3 animate-pulse rounded-full bg-[#DDF853]" />
                             )}
                         </div>
                     ))}
@@ -118,7 +118,7 @@ function WaiterPinContent(): React.JSX.Element {
                     <button
                         onClick={handleDelete}
                         disabled={loading || pin.length === 0}
-                        className="flex h-20 items-center justify-center rounded-2xl border border-transparent bg-[#F7F5F2] text-sm font-black uppercase tracking-widest text-gray-400 transition-all hover:text-red-500 active:scale-95 disabled:opacity-30"
+                        className="flex h-20 items-center justify-center rounded-2xl border border-transparent bg-[#F7F5F2] text-sm font-black tracking-widest text-gray-400 uppercase transition-all hover:text-red-500 active:scale-95 disabled:opacity-30"
                     >
                         Clear
                     </button>
@@ -127,7 +127,9 @@ function WaiterPinContent(): React.JSX.Element {
                 {loading && (
                     <div className="mt-10 flex flex-col items-center gap-3">
                         <Loader2 className="h-6 w-6 animate-spin text-[#DDF853]" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Verifying Identity</span>
+                        <span className="text-[10px] font-black tracking-[0.2em] text-gray-400 uppercase">
+                            Verifying Identity
+                        </span>
                     </div>
                 )}
             </div>
@@ -139,10 +141,12 @@ export default function WaiterPinPage(): React.JSX.Element {
     return (
         <Suspense
             fallback={
-                <main className="font-inter tracking-[-0.04em] flex min-h-screen items-center justify-center bg-[#F7F5F2]">
+                <main className="font-inter flex min-h-screen items-center justify-center bg-[#F7F5F2] tracking-[-0.04em]">
                     <div className="flex flex-col items-center gap-4">
                         <div className="h-10 w-10 animate-spin rounded-full border-2 border-gray-200 border-t-[#DDF853]" />
-                        <p className="text-[11px] font-black uppercase tracking-widest text-gray-400">Loading Terminal</p>
+                        <p className="text-[11px] font-black tracking-widest text-gray-400 uppercase">
+                            Loading Terminal
+                        </p>
                     </div>
                 </main>
             }
@@ -151,4 +155,3 @@ export default function WaiterPinPage(): React.JSX.Element {
         </Suspense>
     );
 }
-

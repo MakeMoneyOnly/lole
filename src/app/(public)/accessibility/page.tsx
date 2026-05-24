@@ -229,6 +229,3 @@ export default function AccessibilityPage(): React.JSX.Element {
         </div>
     );
 }
-
-
-

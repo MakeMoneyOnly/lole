@@ -134,6 +134,3 @@ export default function KdsPage(): React.JSX.Element {
         </div>
     );
 }
-
-
-

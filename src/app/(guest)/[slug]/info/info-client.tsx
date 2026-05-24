@@ -18,7 +18,7 @@ interface LocationMapProps {
 // Lazy load map component to avoid SSR issues
 const LocationMap = dynamic<LocationMapProps>(
     () =>
-        import('react').then((_mod) => ({
+        import('react').then(_mod => ({
             default: function LocationMapFallback() {
                 return null;
             },

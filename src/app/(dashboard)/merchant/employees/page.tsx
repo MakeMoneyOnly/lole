@@ -4,6 +4,3 @@ import { EmployeesPageClient } from '@/components/merchant/employees/EmployeesPa
 export default function EmployeesPage(): React.JSX.Element {
     return <EmployeesPageClient />;
 }
-
-
-

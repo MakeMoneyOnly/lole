@@ -4,6 +4,3 @@ import { SettingsPageClient } from '@/components/merchant/settings/SettingsPageC
 export default function SettingsPage(): React.JSX.Element {
     return <SettingsPageClient />;
 }
-
-
-

@@ -291,6 +291,3 @@ export default function GuestSignUpPage(): React.JSX.Element {
         </Suspense>
     );
 }
-
-
-

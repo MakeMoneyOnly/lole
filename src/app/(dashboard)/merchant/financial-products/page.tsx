@@ -4,6 +4,3 @@ import { FinancialProductsPageClient } from '@/components/merchant/financial-pro
 export default function FinancialProductsPage(): React.JSX.Element {
     return <FinancialProductsPageClient />;
 }
-
-
-

@@ -15,6 +15,3 @@ export const metadata: Metadata = {
 export default function OfflinePage(): React.JSX.Element {
     return <OfflineContent />;
 }
-
-
-

@@ -6,6 +6,3 @@ import { TakeoutPageClient } from '@/components/merchant/takeout/TakeoutPageClie
 export default function TakeoutPage(): React.JSX.Element {
     return <TakeoutPageClient />;
 }
-
-
-

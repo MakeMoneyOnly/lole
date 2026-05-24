@@ -88,4 +88,3 @@ export async function acceptInvite(code: string): Promise<{ error?: string; succ
     revalidatePath('/', 'layout');
     return { success: true };
 }
-

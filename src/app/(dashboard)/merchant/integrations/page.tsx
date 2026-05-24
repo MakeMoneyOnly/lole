@@ -4,6 +4,3 @@ import { IntegrationsPageClient } from '@/components/merchant/integrations/Integ
 export default function IntegrationsPage(): React.JSX.Element {
     return <IntegrationsPageClient />;
 }
-
-
-

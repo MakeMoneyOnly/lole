@@ -4,6 +4,3 @@ import { FOHPageClient } from '@/components/merchant/front-of-house/FOHPageClien
 export default function FOHPage(): React.JSX.Element {
     return <FOHPageClient />;
 }
-
-
-

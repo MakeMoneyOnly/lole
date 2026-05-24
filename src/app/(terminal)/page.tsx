@@ -2,15 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-    AlertCircle,
-    Banknote,
-    CreditCard,
-    Receipt,
-    RefreshCw,
-    UserX,
-    Store,
-} from 'lucide-react';
+import { AlertCircle, Banknote, CreditCard, Receipt, RefreshCw, UserX, Store } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { ManagedDeviceBanner } from '@/components/device/shell/ManagedDeviceBanner';
 import { useManagedDeviceSession } from '@/features/merchant/hooks/useManagedDeviceSession';
@@ -144,9 +136,10 @@ export default function TerminalPage(): React.JSX.Element {
 
         try {
             setLoading(true);
-const deviceName = deviceInfo?.name ?? 'Terminal';
-                                                             const deviceType = deviceInfo?.device_type ?? 'terminal';
-                                                             const metadata = (deviceInfo?.metadata as TerminalOverview['device']['metadata']) ?? null;
+            const deviceName = deviceInfo?.name ?? 'Terminal';
+            const deviceType = deviceInfo?.device_type ?? 'terminal';
+            const metadata =
+                (deviceInfo?.metadata as TerminalOverview['device']['metadata']) ?? null;
             const result = await readTerminalOverview({
                 device: {
                     id: deviceInfo?.device_token ?? 'paired-terminal',
@@ -170,7 +163,13 @@ const deviceName = deviceInfo?.name ?? 'Terminal';
         } finally {
             setLoading(false);
         }
-    }, [deviceToken, deviceInfo?.device_token, deviceInfo?.name, deviceInfo?.device_type, deviceInfo?.metadata]);
+    }, [
+        deviceToken,
+        deviceInfo?.device_token,
+        deviceInfo?.name,
+        deviceInfo?.device_type,
+        deviceInfo?.metadata,
+    ]);
 
     useEffect(() => {
         void loadOverview();
@@ -973,4 +972,3 @@ const deviceName = deviceInfo?.name ?? 'Terminal';
         </div>
     );
 }
-

@@ -39,4 +39,3 @@ export function InviteAcceptButton({ code }: { code: string }): React.ReactEleme
         </button>
     );
 }
-

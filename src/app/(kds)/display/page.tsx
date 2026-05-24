@@ -11,4 +11,3 @@ export default async function KdsDisplayRedirectPage({ searchParams }: PageProps
     const nextUrl = restaurantValue ? `/kds?restaurantId=${restaurantValue}` : '/kds';
     redirect(nextUrl);
 }
-

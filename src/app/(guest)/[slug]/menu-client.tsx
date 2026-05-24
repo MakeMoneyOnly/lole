@@ -147,7 +147,8 @@ export function useGuestMenuData(): GuestMenuData {
     const params = useParams<{ slug: string }>();
     const searchParams = useSearchParams();
 
-    const getQueryParam = (key: string): string | null => searchParams.get(key) ?? searchParams.get(`amp;${key}`);
+    const getQueryParam = (key: string): string | null =>
+        searchParams.get(key) ?? searchParams.get(`amp;${key}`);
     const tableNumber = getQueryParam('table');
     const signature = getQueryParam('sig');
     const expiresAt = getQueryParam('exp');
@@ -462,13 +463,13 @@ export function useGuestMenuData(): GuestMenuData {
     });
 
     const handleAddToCart = (item: MenuItem, quantity = 1): void => {
-addToCart({
-             menuItemId: item.id,
-             title: item.title,
-             price: item.price,
-             image: item.imageUrl ?? undefined,
-             quantity,
-         });
+        addToCart({
+            menuItemId: item.id,
+            title: item.title,
+            price: item.price,
+            image: item.imageUrl ?? undefined,
+            quantity,
+        });
     };
 
     return {
@@ -541,7 +542,7 @@ export function MenuClientContent(): React.JSX.Element {
     if (data.contextError) {
         return (
             <div className="flex min-h-screen w-full flex-col items-center justify-center bg-white px-4 text-center">
-                <p className="text-red-500 font-medium">{data.contextError}</p>
+                <p className="font-medium text-red-500">{data.contextError}</p>
                 <button
                     onClick={() => window.location.reload()}
                     className="mt-4 rounded-xl bg-black px-6 py-2 text-sm font-medium text-white"
@@ -555,7 +556,7 @@ export function MenuClientContent(): React.JSX.Element {
     if (!data.guestContext) {
         return (
             <div className="flex min-h-screen w-full flex-col items-center justify-center bg-white px-4 text-center">
-                <p className="text-yellow-600 font-medium">Invalid or expired link.</p>
+                <p className="font-medium text-yellow-600">Invalid or expired link.</p>
                 <p className="mt-2 text-sm text-black/40">Please scan the table QR code again.</p>
             </div>
         );
@@ -581,13 +582,17 @@ export function MenuClientContent(): React.JSX.Element {
                     />
                 );
             case 2: // Profile
-                return <GuestMenuProfile onLogout={(): void => {
-                    // TODO: Implement logout
-                }} />;
+                return (
+                    <GuestMenuProfile
+                        onLogout={(): void => {
+                            // TODO: Implement logout
+                        }}
+                    />
+                );
             case 0: // Home
             default:
                 return (
-                    <div className="mx-auto max-w-md bg-white min-h-screen">
+                    <div className="mx-auto min-h-screen max-w-md bg-white">
                         {/* DARK HERO SECTION WITH ROUNDED BOTTOM */}
                         <div className="relative z-20 overflow-hidden rounded-b-[28px] bg-[#1A1A1A] pb-4 shadow-xl shadow-black/10">
                             {/* Background Texture Placeholder */}
@@ -604,16 +609,28 @@ export function MenuClientContent(): React.JSX.Element {
                                 <GuestMenuHeader />
 
                                 {/* HORIZONTAL TEXT FILTERS */}
-                                <div className="flex w-full items-center gap-6 overflow-x-auto px-5 py-2 no-scrollbar">
+                                <div className="no-scrollbar flex w-full items-center gap-6 overflow-x-auto px-5 py-2">
                                     <div className="flex flex-col items-center">
-                                        <span className="text-[14px] font-bold text-white tracking-[-0.04em] whitespace-nowrap">Home</span>
-                                        <div className="mt-1 h-0.5 w-full bg-white rounded-full" />
+                                        <span className="text-[14px] font-bold tracking-[-0.04em] whitespace-nowrap text-white">
+                                            Home
+                                        </span>
+                                        <div className="mt-1 h-0.5 w-full rounded-full bg-white" />
                                     </div>
-                                    <span className="text-[14px] font-semibold text-white/60 tracking-[-0.04em] whitespace-nowrap">Burgers</span>
-                                    <span className="text-[14px] font-semibold text-white/60 tracking-[-0.04em] whitespace-nowrap">Pizza</span>
-                                    <span className="text-[14px] font-semibold text-white/60 tracking-[-0.04em] whitespace-nowrap">Sushi</span>
-                                    <span className="text-[14px] font-semibold text-white/60 tracking-[-0.04em] whitespace-nowrap">Drinks</span>
-                                    <span className="text-[14px] font-semibold text-white/60 tracking-[-0.04em] whitespace-nowrap">Desserts</span>
+                                    <span className="text-[14px] font-semibold tracking-[-0.04em] whitespace-nowrap text-white/60">
+                                        Burgers
+                                    </span>
+                                    <span className="text-[14px] font-semibold tracking-[-0.04em] whitespace-nowrap text-white/60">
+                                        Pizza
+                                    </span>
+                                    <span className="text-[14px] font-semibold tracking-[-0.04em] whitespace-nowrap text-white/60">
+                                        Sushi
+                                    </span>
+                                    <span className="text-[14px] font-semibold tracking-[-0.04em] whitespace-nowrap text-white/60">
+                                        Drinks
+                                    </span>
+                                    <span className="text-[14px] font-semibold tracking-[-0.04em] whitespace-nowrap text-white/60">
+                                        Desserts
+                                    </span>
                                 </div>
 
                                 {/* SPACER FOR HEIGHT */}
@@ -634,11 +651,11 @@ export function MenuClientContent(): React.JSX.Element {
 
                             {/* FEATURED SPECIALS */}
                             <section className="mt-4">
-                                <div className="mb-4 px-5 flex items-end justify-between">
-                                    <h2 className="text-[26px] font-bold text-[#1A1C1E] tracking-[-0.04em] leading-none">
+                                <div className="mb-4 flex items-end justify-between px-5">
+                                    <h2 className="text-[26px] leading-none font-bold tracking-[-0.04em] text-[#1A1C1E]">
                                         Featured specials
                                     </h2>
-                                    <button className="text-[13px] font-semibold text-[#A3A3A3] hover:text-black/60 tracking-[-0.04em] transition-colors pb-0.5">
+                                    <button className="pb-0.5 text-[13px] font-semibold tracking-[-0.04em] text-[#A3A3A3] transition-colors hover:text-black/60">
                                         See all
                                     </button>
                                 </div>
@@ -652,11 +669,11 @@ export function MenuClientContent(): React.JSX.Element {
 
                             {/* MORE FOR YOU (GRID) */}
                             <section className="mt-10">
-                                <div className="mb-4 px-5 flex items-end justify-between">
-                                    <h2 className="text-[26px] font-bold text-[#1A1C1E] tracking-[-0.04em] leading-none">
+                                <div className="mb-4 flex items-end justify-between px-5">
+                                    <h2 className="text-[26px] leading-none font-bold tracking-[-0.04em] text-[#1A1C1E]">
                                         More for You
                                     </h2>
-                                    <button className="text-[13px] font-semibold text-[#A3A3A3] hover:text-black/60 tracking-[-0.04em] transition-colors pb-0.5">
+                                    <button className="pb-0.5 text-[13px] font-semibold tracking-[-0.04em] text-[#A3A3A3] transition-colors hover:text-black/60">
                                         View All
                                     </button>
                                 </div>
@@ -672,10 +689,11 @@ export function MenuClientContent(): React.JSX.Element {
         }
     };
 
-    const cartCount = data.cartItems?.reduce((acc: number, curr: CartItem) => acc + (curr.quantity || 0), 0) || 0;
+    const cartCount =
+        data.cartItems?.reduce((acc: number, curr: CartItem) => acc + (curr.quantity || 0), 0) || 0;
 
     return (
-        <main className="min-h-screen w-full bg-[#FFFFFF] pb-32 font-inter">
+        <main className="font-inter min-h-screen w-full bg-[#FFFFFF] pb-32">
             {renderScreen()}
 
             {/* Cloned Bottom Navigation Bar */}

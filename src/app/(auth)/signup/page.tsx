@@ -292,6 +292,3 @@ export default function SignUpPage(): React.JSX.Element {
         </main>
     );
 }
-
-
-

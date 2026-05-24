@@ -11,6 +11,3 @@ export default function ColdPage(): React.JSX.Element {
         />
     );
 }
-
-
-

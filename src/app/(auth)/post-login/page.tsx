@@ -88,6 +88,3 @@ export default function PostLoginPage(): React.JSX.Element {
         </main>
     );
 }
-
-
-

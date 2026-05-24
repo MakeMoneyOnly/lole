@@ -6,4 +6,3 @@ export default async function MenusPage(): Promise<React.ReactElement> {
     const data = await getMenuPageData();
     return <MenusPageClient initialData={data} />;
 }
-

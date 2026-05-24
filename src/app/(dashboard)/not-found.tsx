@@ -17,6 +17,3 @@ export default function DashboardNotFound(): React.JSX.Element {
         </div>
     );
 }
-
-
-

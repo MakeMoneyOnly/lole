@@ -11,6 +11,3 @@ export default function GrillPage(): React.JSX.Element {
         />
     );
 }
-
-
-

@@ -4,6 +4,3 @@ import { KitchenPageClient } from '@/components/merchant/kitchen/KitchenPageClie
 export default function KitchenPage(): React.JSX.Element {
     return <KitchenPageClient />;
 }
-
-
-

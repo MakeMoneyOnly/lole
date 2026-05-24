@@ -4,7 +4,9 @@ import { createClient } from '@/lib/supabase/server';
 import { InviteAcceptButton } from './InviteAcceptButton';
 import { verifyOrigin } from '@/lib/security/csrf';
 
-export default async function InvitePage(props: { searchParams: Promise<{ code: string }> }): Promise<React.ReactElement> {
+export default async function InvitePage(props: {
+    searchParams: Promise<{ code: string }>;
+}): Promise<React.ReactElement> {
     const searchParams = await props.searchParams;
     const { code } = searchParams;
 
@@ -143,4 +145,3 @@ export default async function InvitePage(props: { searchParams: Promise<{ code: 
         </div>
     );
 }
-

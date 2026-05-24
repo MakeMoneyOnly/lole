@@ -11,6 +11,3 @@ export default function DessertPage(): React.JSX.Element {
         />
     );
 }
-
-
-

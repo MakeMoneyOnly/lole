@@ -100,9 +100,12 @@ export default function DeviceSetupPage(): React.JSX.Element {
         return slug.replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
     }, [restaurantName, slug]);
 
-const pairDevice = useCallback(
+    const pairDevice = useCallback(
         async (rawCode: string): Promise<void> => {
-            const normalizedCode = normalizePairingCode(rawCode).slice(0, DEVICE_PAIRING_CODE_LENGTH);
+            const normalizedCode = normalizePairingCode(rawCode).slice(
+                0,
+                DEVICE_PAIRING_CODE_LENGTH
+            );
             if (normalizedCode.length !== DEVICE_PAIRING_CODE_LENGTH) {
                 return;
             }

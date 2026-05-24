@@ -8,7 +8,8 @@ import { logger } from '@/lib/logger';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-const FALLBACK_IMAGE_URL = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=600&auto=format&fit=crop';
+const FALLBACK_IMAGE_URL =
+    'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=600&auto=format&fit=crop';
 const ALLOWED_REMOTE_IMAGE_HOSTS = new Set([
     'via.placeholder.com',
     'axuegixbqsvztdraenkz.supabase.co',
@@ -238,10 +239,10 @@ function DemoMenuContent(): React.JSX.Element {
              *   BLANK CANVAS — DEMO TABLE DESIGN GOES HERE
              * ════════════════════════════════════════════════════
              *
-*  Available: loading, activeTab, setActiveTab,
-              *             activeCategoryId, setActiveCategoryId,
-              *             filteredItems, realItems, _count, _addToCart
-              *             DEMO_CONTEXT (restaurant_id, table, slug)
+             *  Available: loading, activeTab, setActiveTab,
+             *             activeCategoryId, setActiveCategoryId,
+             *             filteredItems, realItems, _count, _addToCart
+             *             DEMO_CONTEXT (restaurant_id, table, slug)
              */}
             <p className="text-sm text-white/20 select-none">[ Demo Table — Design starts here ]</p>
         </main>
@@ -255,6 +256,3 @@ export default function DemoTablePage(): React.JSX.Element {
         </CartProvider>
     );
 }
-
-
-

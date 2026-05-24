@@ -86,5 +86,3 @@ export default function LandingPage(): React.JSX.Element {
         </LenisRoot>
     );
 }
-
-
