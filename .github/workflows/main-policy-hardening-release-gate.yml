@@ -35,7 +35,4 @@ jobs:
                   NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
                   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
                   SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
-              run: |
-                  pnpm vitest run \
-                    src/app/api/__tests__/guests-api-routes.test.ts \
-                    src/app/api/__tests__/p0-api-routes.test.ts
+run: pnpm vitest run src/app/api/v1/__tests__/guest-policy-hardening.integration.test.ts
