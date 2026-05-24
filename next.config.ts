@@ -149,6 +149,9 @@ const nextConfig: NextConfig = {
 
     cacheComponents: true,
 
+    // Server external packages - prevents Node.js-native packages from being bundled client-side
+    serverExternalPackages: ['prom-client'],
+
     // Performance: Enable experimental features for better optimization
     experimental: {
         // Optimize package imports to reduce bundle size

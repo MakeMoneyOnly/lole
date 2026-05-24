@@ -34,6 +34,9 @@ export interface Metrics {
     lolectiveRestaurants: Gauge<string> | null;
 }
 
+// Check if we are in a browser/client environment
+const isBrowser = typeof window !== 'undefined';
+
 // Check if we are in the edge runtime
 const isEdge = process.env.NEXT_RUNTIME === 'edge';
 
@@ -49,9 +52,10 @@ export let metrics: Metrics = {
     lolectiveRestaurants: null,
 };
 
-if (!isEdge) {
+// Only initialize prom-client on the server-side (Node.js only)
+if (!isBrowser && !isEdge) {
     try {
-        // Only import prom-client in Node.js runtime — not Edge safe
+        // Only import prom-client in Node.js runtime — not Edge safe or browser-safe
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         client = require('prom-client') as PromClient;
 
