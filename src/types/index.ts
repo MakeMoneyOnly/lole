@@ -21,12 +21,7 @@ export type {
 } from './models';
 
 // Re-export GraphQL types for discoverability
-export type {
-    OrderStatus,
-    OrderType,
-    PaymentStatus,
-    StaffRole,
-} from './graphql';
+export type { OrderStatus, OrderType, PaymentStatus, StaffRole } from './graphql';
 
 // Common domain status unions for convenience
 export type {
