@@ -153,11 +153,3 @@ export async function PATCH(request: Request): Promise<Response> {
 
     return apiSuccess(nextOnlineOrdering);
 }
-
-
-
-
-
-
-
-

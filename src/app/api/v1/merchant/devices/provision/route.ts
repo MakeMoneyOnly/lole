@@ -16,7 +16,7 @@ import {
     resolveProvisionedDeviceShape,
 } from '@/lib/devices/pairing';
 
-export async function POST(request:  Request): Promise<Response> {
+export async function POST(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -53,7 +53,10 @@ export async function POST(request:  Request): Promise<Response> {
         deviceProfile
     );
 
-    const insertEnterprise = async (): Promise<{ data: Record<string, unknown> | null; error: { message: string } | null }> =>
+    const insertEnterprise = async (): Promise<{
+        data: Record<string, unknown> | null;
+        error: { message: string } | null;
+    }> =>
         adminClient
             .from('hardware_devices')
             .insert({
@@ -165,11 +168,3 @@ export async function POST(request:  Request): Promise<Response> {
         201
     );
 }
-
-
-
-
-
-
-
-

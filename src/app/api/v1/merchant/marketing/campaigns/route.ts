@@ -278,11 +278,3 @@ export async function POST(request: Request): Promise<Response> {
 
     return apiSuccess({ campaign: data, idempotency_key: idempotencyKey }, 201);
 }
-
-
-
-
-
-
-
-

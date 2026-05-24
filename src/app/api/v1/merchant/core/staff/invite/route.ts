@@ -17,7 +17,7 @@ const InviteStaffSchema = z.object({
     label: z.string().trim().min(2).max(120).optional().nullable(),
 });
 
-export async function POST(request:  Request): Promise<Response> {
+export async function POST(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -102,7 +102,10 @@ export async function POST(request:  Request): Promise<Response> {
             // We don't fail the request if email fails, but we'll flag it in the response
         }
     } else {
-        log.warn('Skipping email', { hasEmail: Boolean(parsed.data.email), resendReady: Boolean(resend) });
+        log.warn('Skipping email', {
+            hasEmail: Boolean(parsed.data.email),
+            resendReady: Boolean(resend),
+        });
     }
 
     await writeAuditLog(context.supabase, {
@@ -132,11 +135,3 @@ export async function POST(request:  Request): Promise<Response> {
         201
     );
 }
-
-
-
-
-
-
-
-

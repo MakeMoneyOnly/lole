@@ -51,7 +51,10 @@ function buildEvenAmounts(totalPrice: number, splitCount: number): number[] {
     return cents.map(fromCents);
 }
 
-export async function GET(_request: Request, context: { params: Promise<{ orderId: string }> }): Promise<Response> {
+export async function GET(
+    _request: Request,
+    context: { params: Promise<{ orderId: string }> }
+): Promise<Response> {
     const auth = await getAuthenticatedUser();
     let restaurantId: string;
     let db: SupabaseClient<Database> | null = null;
@@ -203,7 +206,10 @@ type ComputedSplit = {
     metadata: Json;
 };
 
-export async function POST(request: Request, context: { params: Promise<{ orderId: string }> }): Promise<Response> {
+export async function POST(
+    request: Request,
+    context: { params: Promise<{ orderId: string }> }
+): Promise<Response> {
     // Apply rate limiting for order split (mutation endpoint)
     const rateLimitResponse = await redisRateLimiters.mutation(request as NextRequest);
     if (rateLimitResponse) {
@@ -232,41 +238,41 @@ export async function POST(request: Request, context: { params: Promise<{ orderI
         db = deviceContext.admin ?? undefined;
     }
 
-if (!db) {
-         return apiError('Database not initialized', 500, 'DB_NOT_INITIALIZED');
-     }
+    if (!db) {
+        return apiError('Database not initialized', 500, 'DB_NOT_INITIALIZED');
+    }
 
-     const orderId = (await context.params).orderId;
-     const idempotencyKey = resolveIdempotencyKey(request.headers.get('x-idempotency-key'));
-     const parsed = await parseJsonBody(request, UpsertOrderSplitSchema);
-     if (!parsed.success) {
-         return parsed.response;
-     }
-     const payload = parsed.data;
+    const orderId = (await context.params).orderId;
+    const idempotencyKey = resolveIdempotencyKey(request.headers.get('x-idempotency-key'));
+    const parsed = await parseJsonBody(request, UpsertOrderSplitSchema);
+    if (!parsed.success) {
+        return parsed.response;
+    }
+    const payload = parsed.data;
 
-     const { data: order, error: orderError } = await db
-         .from('orders')
-         .select('id, total_price, status')
-         .eq('restaurant_id', restaurantId)
-         .eq('id', orderId)
-         .maybeSingle();
+    const { data: order, error: orderError } = await db
+        .from('orders')
+        .select('id, total_price, status')
+        .eq('restaurant_id', restaurantId)
+        .eq('id', orderId)
+        .maybeSingle();
 
-     if (orderError) {
-         return apiError('Failed to load order', 500, 'ORDER_FETCH_FAILED', orderError.message);
-     }
-     if (!order) {
-         return apiError('Order not found', 404, 'ORDER_NOT_FOUND');
-     }
-     if (order.status === 'cancelled' || order.status === 'completed') {
-         return apiError(
-             'Order cannot be split in current status',
-             409,
-             'ORDER_SPLIT_INVALID_STATUS'
-         );
-     }
+    if (orderError) {
+        return apiError('Failed to load order', 500, 'ORDER_FETCH_FAILED', orderError.message);
+    }
+    if (!order) {
+        return apiError('Order not found', 404, 'ORDER_NOT_FOUND');
+    }
+    if (order.status === 'cancelled' || order.status === 'completed') {
+        return apiError(
+            'Order cannot be split in current status',
+            409,
+            'ORDER_SPLIT_INVALID_STATUS'
+        );
+    }
 
-     const totalPrice = Number(order.total_price ?? 0);
-     const computed = await computeSplitPlan(db, restaurantId, orderId, totalPrice, payload);
+    const totalPrice = Number(order.total_price ?? 0);
+    const computed = await computeSplitPlan(db, restaurantId, orderId, totalPrice, payload);
     if (!computed.ok) {
         return computed.response;
     }
@@ -375,33 +381,33 @@ if (!db) {
         insertedSplitItems = (insertItemsData ?? []) as unknown as Array<Record<string, unknown>>;
     }
 
-await writeAuditLog(db, {
-         restaurant_id: restaurantId,
-         user_id: actorUserId,
-         action: 'order_split_configured',
-         entity_type: 'order',
-         entity_id: orderId,
-         metadata: {
-             method: payload.method,
-             split_count: payload.splits.length,
-             source: 'merchant_dashboard',
-             idempotency_key: idempotencyKey,
-         },
-         new_value: {
-             method: payload.method,
-             splits: splitRowsToInsert,
-         } as Json,
-     });
+    await writeAuditLog(db, {
+        restaurant_id: restaurantId,
+        user_id: actorUserId,
+        action: 'order_split_configured',
+        entity_type: 'order',
+        entity_id: orderId,
+        metadata: {
+            method: payload.method,
+            split_count: payload.splits.length,
+            source: 'merchant_dashboard',
+            idempotency_key: idempotencyKey,
+        },
+        new_value: {
+            method: payload.method,
+            splits: splitRowsToInsert,
+        } as Json,
+    });
 
-     return apiSuccess(
-         {
-             order_id: orderId,
-             method: payload.method,
-             splits: insertedSplits ?? [],
-             split_items: insertedSplitItems,
-         },
-         201
-     );
+    return apiSuccess(
+        {
+            order_id: orderId,
+            method: payload.method,
+            splits: insertedSplits ?? [],
+            split_items: insertedSplitItems,
+        },
+        201
+    );
 }
 
 async function computeSplitPlan(

@@ -8,11 +8,3 @@ export async function GET(_request: Request): Promise<Response> {
 
     return NextResponse.json({ data: restaurants });
 }
-
-
-
-
-
-
-
-

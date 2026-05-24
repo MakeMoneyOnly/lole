@@ -126,11 +126,3 @@ export async function POST(request: Request): Promise<Response> {
 
     return apiSuccess({ program: data, idempotency_key: idempotencyKey }, 201);
 }
-
-
-
-
-
-
-
-

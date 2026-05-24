@@ -33,11 +33,3 @@ export async function GET(request: Request): Promise<Response> {
 
     return apiSuccess({ service_requests: data ?? [] });
 }
-
-
-
-
-
-
-
-

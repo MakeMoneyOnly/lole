@@ -33,7 +33,10 @@ interface UpsellRecommendation {
  * 3. Category-based items
  * 4. Personalized (based on guest history)
  */
-export async function GET(request: Request, routeContext: { params: Promise<{ itemId: string }> }): Promise<Response> {
+export async function GET(
+    request: Request,
+    routeContext: { params: Promise<{ itemId: string }> }
+): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;

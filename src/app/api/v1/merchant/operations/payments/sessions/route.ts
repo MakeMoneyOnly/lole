@@ -27,7 +27,9 @@ interface PaymentSessionRequestBody {
     payment_choice?: string;
 }
 
-async function parseJsonBody(request: NextRequest): Promise<{ success: true; data: PaymentSessionRequestBody } | { success: false; error: string }> {
+async function parseJsonBody(
+    request: NextRequest
+): Promise<{ success: true; data: PaymentSessionRequestBody } | { success: false; error: string }> {
     try {
         const body = (await request.json()) as PaymentSessionRequestBody;
         return { success: true as const, data: body };
@@ -185,11 +187,3 @@ export async function POST(request: NextRequest): Promise<Response> {
         201
     );
 }
-
-
-
-
-
-
-
-

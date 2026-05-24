@@ -33,7 +33,7 @@ function isAuthorizedJobRequest(request: NextRequest): boolean {
     return request.headers.get('x-lole-job-key') === configuredKey;
 }
 
-export async function POST(request:  NextRequest): Promise<Response> {
+export async function POST(request: NextRequest): Promise<Response> {
     if (!isAuthorizedJobRequest(request)) {
         return NextResponse.json(
             {
@@ -68,11 +68,3 @@ export async function POST(request:  NextRequest): Promise<Response> {
         data: result,
     });
 }
-
-
-
-
-
-
-
-

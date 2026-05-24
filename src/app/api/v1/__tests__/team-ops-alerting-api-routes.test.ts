@@ -90,7 +90,9 @@ describe('P1 Team Operations and Alerting API routes', () => {
     it('GET /api/alerts/rules returns 401 when unauthorized', async () => {
         setAuthUnauthorized();
 
-        const response = await getAlertRules(new Request('http://localhost/api/v1/internal/alerts/rules'));
+        const response = await getAlertRules(
+            new Request('http://localhost/api/v1/internal/alerts/rules')
+        );
 
         expect(response.status).toBe(401);
     });
@@ -127,7 +129,9 @@ describe('P1 Team Operations and Alerting API routes', () => {
     it('GET /api/v1/merchant/core/dashboard-presets returns 401 when unauthorized', async () => {
         setAuthUnauthorized();
 
-        const response = await getDashboardPresets(new Request('http://localhost/api/v1/merchant/core/dashboard-presets'));
+        const response = await getDashboardPresets(
+            new Request('http://localhost/api/v1/merchant/core/dashboard-presets')
+        );
 
         expect(response.status).toBe(401);
     });

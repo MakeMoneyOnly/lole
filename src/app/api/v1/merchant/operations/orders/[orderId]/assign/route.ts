@@ -9,7 +9,10 @@ const AssignOrderSchema = z.object({
     staff_id: z.string().uuid(),
 });
 
-export async function POST(request: Request, context: { params: Promise<{ orderId: string }> }): Promise<Response> {
+export async function POST(
+    request: Request,
+    context: { params: Promise<{ orderId: string }> }
+): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;

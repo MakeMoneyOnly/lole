@@ -85,11 +85,3 @@ export async function GET(request: Request): Promise<Response> {
         total: data?.length ?? 0,
     });
 }
-
-
-
-
-
-
-
-

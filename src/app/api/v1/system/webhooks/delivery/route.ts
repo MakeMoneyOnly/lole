@@ -136,7 +136,7 @@ function generateProviderOrderId(provider: Provider): string {
     return `${prefix}-${timestamp}-${random}`;
 }
 
-export async function POST(request:  NextRequest): Promise<Response> {
+export async function POST(request: NextRequest): Promise<Response> {
     const startTime = Date.now();
 
     // Extract headers
@@ -341,7 +341,11 @@ export async function POST(request:  NextRequest): Promise<Response> {
     );
 
     if (!aggregatorResult.success && aggregatorResult.error !== 'Order already exists') {
-        log.error('Failed to inject webhook order into aggregator runtime', undefined, aggregatorResult);
+        log.error(
+            'Failed to inject webhook order into aggregator runtime',
+            undefined,
+            aggregatorResult
+        );
     }
 
     // Check if auto-accept is enabled
@@ -392,11 +396,3 @@ export async function POST(request:  NextRequest): Promise<Response> {
         201
     );
 }
-
-
-
-
-
-
-
-

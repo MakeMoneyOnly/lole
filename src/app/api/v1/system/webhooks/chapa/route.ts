@@ -12,7 +12,7 @@ export async function GET(_request: Request): Promise<Response> {
     return apiSuccess({ received: true, ignored: true });
 }
 
-export async function POST(request:  NextRequest): Promise<Response> {
+export async function POST(request: NextRequest): Promise<Response> {
     try {
         const rawBody = await request.text();
         const signature = request.headers.get('x-chapa-signature');
@@ -38,11 +38,3 @@ export async function POST(request:  NextRequest): Promise<Response> {
         );
     }
 }
-
-
-
-
-
-
-
-

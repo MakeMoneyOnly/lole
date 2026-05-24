@@ -29,7 +29,7 @@ interface ZReportEntry {
     failed_count: number;
 }
 
-export async function POST(request:  NextRequest): Promise<Response> {
+export async function POST(request: NextRequest): Promise<Response> {
     if (!isAuthorized(request)) {
         return NextResponse.json(
             { error: { code: 'UNAUTHORIZED_JOB', message: 'Not authorized' } },
@@ -130,11 +130,3 @@ export async function POST(request:  NextRequest): Promise<Response> {
         },
     });
 }
-
-
-
-
-
-
-
-

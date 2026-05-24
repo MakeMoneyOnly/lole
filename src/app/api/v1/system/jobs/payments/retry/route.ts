@@ -139,7 +139,7 @@ async function checkRetryEligibility(paymentSessionId: string): Promise<{
     };
 }
 
-export async function POST(request:  NextRequest): Promise<Response> {
+export async function POST(request: NextRequest): Promise<Response> {
     if (!isAuthorized(request)) {
         return NextResponse.json(
             {
@@ -293,11 +293,3 @@ export async function POST(request:  NextRequest): Promise<Response> {
         { status: 400 }
     );
 }
-
-
-
-
-
-
-
-

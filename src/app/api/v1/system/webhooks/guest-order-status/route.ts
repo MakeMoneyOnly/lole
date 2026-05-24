@@ -33,7 +33,7 @@ function mapGuestOrderStatusToInternalStatus(guestOrderStatus: string): string {
     return 'cancelled';
 }
 
-export async function POST(request:  Request): Promise<Response> {
+export async function POST(request: Request): Promise<Response> {
     const configuredSecret = process.env.GUEST_ORDER_STATUS_WEBHOOK_SECRET;
     if (configuredSecret) {
         const headerSecret =
@@ -153,11 +153,3 @@ export async function POST(request:  Request): Promise<Response> {
         status: mappedStatus,
     });
 }
-
-
-
-
-
-
-
-

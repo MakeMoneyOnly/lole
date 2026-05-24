@@ -49,7 +49,10 @@ function deriveStationStatus(
     return 'pending';
 }
 
-export async function POST(request: Request, context: { params: Promise<{ kdsItemId: string }> }): Promise<Response> {
+export async function POST(
+    request: Request,
+    context: { params: Promise<{ kdsItemId: string }> }
+): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;

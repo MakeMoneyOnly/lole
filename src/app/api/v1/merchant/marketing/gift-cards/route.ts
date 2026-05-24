@@ -177,11 +177,3 @@ export async function POST(request: Request): Promise<Response> {
 
     return apiSuccess({ gift_card: giftCard, idempotency_key: idempotencyKey }, 201);
 }
-
-
-
-
-
-
-
-

@@ -43,7 +43,7 @@ export async function GET(_request: Request): Promise<Response> {
     return apiSuccess({ rules: data ?? [] });
 }
 
-export async function POST(request:  Request): Promise<Response> {
+export async function POST(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -107,11 +107,3 @@ export async function POST(request:  Request): Promise<Response> {
 
     return apiSuccess({ rule: inserted, idempotency_key: idempotencyKey }, 201);
 }
-
-
-
-
-
-
-
-

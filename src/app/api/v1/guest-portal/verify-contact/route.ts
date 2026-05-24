@@ -5,32 +5,36 @@ import { logger } from '@/lib/logger';
 
 const log = logger.child('[verify-contact]');
 
-const SendVerificationSchema = z.object({
-    guestId: z.string().uuid().optional(),
-    sessionId: z.string().uuid().optional(),
-    phone: z.string().optional(),
-    restaurantId: z.string().uuid().optional(),
-    name: z.string().optional(),
-    channel: z.enum(['sms', 'email']),
-}).refine(data => data.guestId || (data.phone && data.restaurantId), {
-    message: 'Either guestId or phone + restaurantId must be provided',
-});
+const SendVerificationSchema = z
+    .object({
+        guestId: z.string().uuid().optional(),
+        sessionId: z.string().uuid().optional(),
+        phone: z.string().optional(),
+        restaurantId: z.string().uuid().optional(),
+        name: z.string().optional(),
+        channel: z.enum(['sms', 'email']),
+    })
+    .refine(data => data.guestId || (data.phone && data.restaurantId), {
+        message: 'Either guestId or phone + restaurantId must be provided',
+    });
 
-const VerifyContactSchema = z.object({
-    guestId: z.string().uuid().optional(),
-    sessionId: z.string().uuid().optional(),
-    phone: z.string().optional(),
-    restaurantId: z.string().uuid().optional(),
-    code: z.string().length(6, 'Verification code must be 6 digits'),
-}).refine(data => data.guestId || (data.phone && data.restaurantId), {
-    message: 'Either guestId or phone + restaurantId must be provided',
-});
+const VerifyContactSchema = z
+    .object({
+        guestId: z.string().uuid().optional(),
+        sessionId: z.string().uuid().optional(),
+        phone: z.string().optional(),
+        restaurantId: z.string().uuid().optional(),
+        code: z.string().length(6, 'Verification code must be 6 digits'),
+    })
+    .refine(data => data.guestId || (data.phone && data.restaurantId), {
+        message: 'Either guestId or phone + restaurantId must be provided',
+    });
 
 /**
  * POST /api/v1/guest-portal/verify-contact
  * Send verification code to guest's contact
  */
-export async function POST(request:  Request): Promise<Response> {
+export async function POST(request: Request): Promise<Response> {
     try {
         const body = await request.json();
         const parsed = SendVerificationSchema.safeParse(body);
@@ -94,7 +98,12 @@ export async function POST(request:  Request): Promise<Response> {
                     .single();
 
                 if (createError || !newGuest) {
-                    return apiError('Failed to create guest record', 500, 'GUEST_CREATE_FAILED', createError);
+                    return apiError(
+                        'Failed to create guest record',
+                        500,
+                        'GUEST_CREATE_FAILED',
+                        createError
+                    );
                 }
                 guest = newGuest;
                 currentGuestId = newGuest.id;
@@ -263,13 +272,13 @@ export async function PATCH(request: Request): Promise<Response> {
                     auth_state: 'verified',
                     metadata: {
                         verified_guest_id: currentGuestId,
-                        verified_at: new Date().toISOString()
-                    }
+                        verified_at: new Date().toISOString(),
+                    },
                 })
                 .eq('id', sessionId);
         }
 
-        return apiSuccess({ 
+        return apiSuccess({
             message: 'Contact verified successfully',
             guestId: currentGuestId,
             guest: {
@@ -277,18 +286,10 @@ export async function PATCH(request: Request): Promise<Response> {
                 name: guest.name,
                 phone: guest.phone,
                 email: guest.email,
-            }
+            },
         });
     } catch (error) {
         log.error('Error in verify-contact PATCH', error);
         return apiError('Internal server error', 500, 'INTERNAL_ERROR');
     }
 }
-
-
-
-
-
-
-
-

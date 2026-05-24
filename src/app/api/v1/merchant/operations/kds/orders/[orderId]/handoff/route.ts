@@ -15,7 +15,10 @@ const HandoffBodySchema = z.object({
 
 const EXPEDITOR_HANDOFF_ROLES = new Set(['owner', 'admin', 'manager']);
 
-export async function POST(request: Request, context: { params: Promise<{ orderId: string }> }): Promise<Response> {
+export async function POST(
+    request: Request,
+    context: { params: Promise<{ orderId: string }> }
+): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;

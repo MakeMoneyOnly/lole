@@ -15,7 +15,10 @@ const CourseFireModeSchema = z.object({
     current_course: z.enum(['appetizer', 'main', 'dessert', 'beverage', 'side']).optional(),
 });
 
-export async function PATCH(request: Request, context: { params: Promise<{ orderId: string }> }): Promise<Response> {
+export async function PATCH(
+    request: Request,
+    context: { params: Promise<{ orderId: string }> }
+): Promise<Response> {
     const auth = await getAuthenticatedUser();
     let actorUserId: string | null = null;
     let restaurantId: string;

@@ -30,7 +30,7 @@ const PostSchema = z.object({
     category: z.string(),
 });
 
-export async function POST(request:  Request): Promise<Response> {
+export async function POST(request: Request): Promise<Response> {
     try {
         const body = await request.json();
         const validated = PostSchema.safeParse(body);
@@ -46,11 +46,3 @@ export async function POST(request:  Request): Promise<Response> {
         return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
     }
 }
-
-
-
-
-
-
-
-

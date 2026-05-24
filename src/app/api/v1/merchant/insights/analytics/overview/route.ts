@@ -134,7 +134,9 @@ export async function GET(request: Request): Promise<Response> {
     const pendingOrders = orders.filter((order: Order) =>
         ['pending', 'acknowledged', 'preparing', 'ready'].includes(order.status ?? '')
     ).length;
-    const openRequests = requests.filter((r: ServiceRequest) => (r.status ?? 'pending') === 'pending').length;
+    const openRequests = requests.filter(
+        (r: ServiceRequest) => (r.status ?? 'pending') === 'pending'
+    ).length;
 
     // Table Metrics
     const activeTables = tables.filter(
@@ -147,7 +149,10 @@ export async function GET(request: Request): Promise<Response> {
     const avgRating =
         totalReviews > 0
             ? Number(
-                  (reviews.reduce((acc: number, r: Review) => acc + (r.rating || 0), 0) / totalReviews).toFixed(1)
+                  (
+                      reviews.reduce((acc: number, r: Review) => acc + (r.rating || 0), 0) /
+                      totalReviews
+                  ).toFixed(1)
               )
             : 0;
 
@@ -242,11 +247,3 @@ export async function GET(request: Request): Promise<Response> {
         getCacheHeaders(CACHE_PRESETS.analytics)
     );
 }
-
-
-
-
-
-
-
-

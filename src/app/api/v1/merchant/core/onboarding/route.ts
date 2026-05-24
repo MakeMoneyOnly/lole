@@ -279,16 +279,16 @@ export async function POST(_request: NextRequest): Promise<Response> {
                 payoutStatus === 'active'
                     ? null
                     : subaccount.message || 'Payout destination is waiting for Chapa review.';
-} catch (error) {
-             const errorMessage = error instanceof Error ? error.message : null;
-             const message = errorMessage || 'Unknown Chapa subaccount provisioning error';
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : null;
+            const message = errorMessage || 'Unknown Chapa subaccount provisioning error';
 
-payoutStatus = normalizePayoutStatus({
-            subaccountId: activeSubaccountId ?? undefined,
-            providerMessage: message,
-        });
-             payoutError = message;
-         }
+            payoutStatus = normalizePayoutStatus({
+                subaccountId: activeSubaccountId ?? undefined,
+                providerMessage: message,
+            });
+            payoutError = message;
+        }
     }
 
     const { error: finalizeError } = await supabase

@@ -476,11 +476,3 @@ export async function POST(request: Request): Promise<Response> {
         completed_order_ids: finalizableOrderIds,
     });
 }
-
-
-
-
-
-
-
-

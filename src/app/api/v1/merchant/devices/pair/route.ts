@@ -27,7 +27,7 @@ import {
     buildOfflineStaffOutagePolicyMetadata,
 } from '@/lib/auth/offline-authz';
 
-export async function POST(request:  Request): Promise<Response> {
+export async function POST(request: Request): Promise<Response> {
     const parsed = await parseJsonBody(request, PairDeviceSchema);
     if (!parsed.success) {
         return parsed.response;
@@ -39,7 +39,9 @@ export async function POST(request:  Request): Promise<Response> {
     }
 
     const adminClient = createServiceRoleClient();
-    const fetchEnterpriseDevice = async (): Promise<PostgrestSingleResponse<Record<string, unknown> | null>> =>
+    const fetchEnterpriseDevice = async (): Promise<
+        PostgrestSingleResponse<Record<string, unknown> | null>
+    > =>
         adminClient
             .from('hardware_devices')
             .select(
@@ -238,11 +240,3 @@ export async function POST(request:  Request): Promise<Response> {
         200
     );
 }
-
-
-
-
-
-
-
-

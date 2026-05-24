@@ -108,11 +108,3 @@ export async function POST(request: Request): Promise<Response> {
 
     return apiSuccess({ discount: data }, 201);
 }
-
-
-
-
-
-
-
-

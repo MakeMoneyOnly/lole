@@ -64,7 +64,7 @@ const VapidKeyQuerySchema = z.object({
 // POST /subscribe - Register push subscription
 // =========================================================
 
-export async function POST(request:  NextRequest): Promise<Response> {
+export async function POST(request: NextRequest): Promise<Response> {
     try {
         // Parse request body
         const parseResult = await parseJsonBody(request, SubscribeRequestSchema);
@@ -207,11 +207,3 @@ export async function GET(request: NextRequest): Promise<Response> {
         );
     }
 }
-
-
-
-
-
-
-
-

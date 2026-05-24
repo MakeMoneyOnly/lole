@@ -77,11 +77,3 @@ export async function GET(request: NextRequest): Promise<Response> {
 export async function POST(request: NextRequest): Promise<Response> {
     return GET(request);
 }
-
-
-
-
-
-
-
-

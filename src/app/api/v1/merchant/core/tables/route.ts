@@ -42,7 +42,7 @@ export async function GET(_request: Request): Promise<Response> {
     return apiSuccess({ tables: data ?? [] });
 }
 
-export async function POST(request:  Request): Promise<Response> {
+export async function POST(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -99,11 +99,3 @@ export async function POST(request:  Request): Promise<Response> {
 
     return apiSuccess(data, 201);
 }
-
-
-
-
-
-
-
-

@@ -29,11 +29,3 @@ export async function GET(request: NextRequest): Promise<Response> {
         { status: 200 }
     );
 }
-
-
-
-
-
-
-
-

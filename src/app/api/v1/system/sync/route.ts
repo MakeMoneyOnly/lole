@@ -630,7 +630,7 @@ async function processSyncOperation(
  * POST /api/v1/system/sync
  * Process a batch of sync operations from client
  */
-export async function POST(request:  NextRequest): Promise<Response> {
+export async function POST(request: NextRequest): Promise<Response> {
     const startTime = Date.now();
 
     // Authenticate request
@@ -809,11 +809,3 @@ export async function GET(request: NextRequest): Promise<Response> {
         serverTime: new Date().toISOString(),
     });
 }
-
-
-
-
-
-
-
-

@@ -64,7 +64,9 @@ describe('P2 revenue API routes', () => {
     it('GET /api/v1/merchant/marketing/loyalty/programs returns 401 when unauthorized', async () => {
         setAuthUnauthorized();
 
-        const response = await getLoyaltyPrograms(new Request('http://localhost/api/v1/merchant/marketing/loyalty/programs'));
+        const response = await getLoyaltyPrograms(
+            new Request('http://localhost/api/v1/merchant/marketing/loyalty/programs')
+        );
 
         expect(response.status).toBe(401);
     });

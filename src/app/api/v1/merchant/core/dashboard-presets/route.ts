@@ -130,11 +130,3 @@ export async function PATCH(request: Request): Promise<Response> {
 
     return apiSuccess({ preset: parsed.data.preset });
 }
-
-
-
-
-
-
-
-

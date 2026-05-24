@@ -34,11 +34,3 @@ export async function POST(request: Request): Promise<Response> {
 
     return apiSuccess({ success: true });
 }
-
-
-
-
-
-
-
-

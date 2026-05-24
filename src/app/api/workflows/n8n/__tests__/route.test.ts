@@ -96,7 +96,9 @@ describe('n8n webhook route', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        mocks.validateN8nPayloadMock.mockImplementation((payload) => typeof payload === 'object' && payload !== null);
+        mocks.validateN8nPayloadMock.mockImplementation(
+            payload => typeof payload === 'object' && payload !== null
+        );
         mocks.createDefaultRegistryMock.mockReturnValue(mockRegistryInstance);
         mocks.tenantRunMock.mockImplementation((_ctx, fn) => fn());
         mocks.n8nClientCreateDefaultMock.mockReturnValue(mockN8nClientInstance);

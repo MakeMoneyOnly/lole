@@ -120,11 +120,3 @@ export async function GET(request: NextRequest): Promise<Response> {
         items: kdsItems ?? [],
     });
 }
-
-
-
-
-
-
-
-

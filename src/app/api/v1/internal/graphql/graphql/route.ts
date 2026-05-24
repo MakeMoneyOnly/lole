@@ -41,11 +41,3 @@ export async function POST(_request: NextRequest): Promise<Response> {
         docs: 'See graphql/subgraphs/ for schema definitions and router/ for Apollo Router configuration.',
     });
 }
-
-
-
-
-
-
-
-

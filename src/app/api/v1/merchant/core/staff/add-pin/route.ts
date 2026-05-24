@@ -13,7 +13,7 @@ const AddPinStaffSchema = z.object({
     assigned_zones: z.array(z.string()).optional(),
 });
 
-export async function POST(request:  Request): Promise<Response> {
+export async function POST(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) {
         return auth.response;
@@ -80,11 +80,3 @@ export async function POST(request:  Request): Promise<Response> {
         201
     );
 }
-
-
-
-
-
-
-
-

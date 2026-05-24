@@ -88,7 +88,7 @@ async function submitERCAForOrder(orderId: string): Promise<{
     }
 }
 
-export async function POST(request:  NextRequest): Promise<Response> {
+export async function POST(request: NextRequest): Promise<Response> {
     if (!isAuthorizedJobRequest(request)) {
         return NextResponse.json(
             {
@@ -169,11 +169,3 @@ export async function POST(request:  NextRequest): Promise<Response> {
         },
     });
 }
-
-
-
-
-
-
-
-

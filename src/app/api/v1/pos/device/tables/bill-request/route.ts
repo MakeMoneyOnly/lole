@@ -102,11 +102,3 @@ export async function POST(request: Request): Promise<Response> {
         status: 'bill_requested',
     });
 }
-
-
-
-
-
-
-
-

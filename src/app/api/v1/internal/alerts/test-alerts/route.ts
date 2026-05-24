@@ -42,7 +42,7 @@ export async function GET(_request: Request): Promise<Response> {
  *
  * In production, this requires an authorization header with a valid secret.
  */
-export async function POST(request:  Request): Promise<Response> {
+export async function POST(request: Request): Promise<Response> {
     const isDevelopment = process.env.NODE_ENV === 'development';
 
     // In production, require authorization
@@ -61,11 +61,3 @@ export async function POST(request:  Request): Promise<Response> {
         status: result.success ? 200 : 500,
     });
 }
-
-
-
-
-
-
-
-

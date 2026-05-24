@@ -78,11 +78,3 @@ export async function HEAD(): Promise<Response> {
         },
     });
 }
-
-
-
-
-
-
-
-

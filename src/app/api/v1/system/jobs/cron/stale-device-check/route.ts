@@ -46,7 +46,7 @@ function validateCronSecret(request: NextRequest): boolean {
  * - critical_threshold: Minutes before critical alert (default: 60)
  * - business_hours_only: Only alert during business hours (default: true)
  */
-export async function POST(request:  NextRequest): Promise<Response> {
+export async function POST(request: NextRequest): Promise<Response> {
     const startTime = Date.now();
 
     // Validate cron secret
@@ -134,11 +134,3 @@ export async function GET(_request: NextRequest): Promise<Response> {
         timestamp: new Date().toISOString(),
     });
 }
-
-
-
-
-
-
-
-

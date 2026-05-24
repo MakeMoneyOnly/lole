@@ -20,7 +20,7 @@ export async function GET(_request: Request): Promise<Response> {
     return apiSuccess({ zones });
 }
 
-export async function POST(request:  Request): Promise<Response> {
+export async function POST(request: Request): Promise<Response> {
     const auth = await getAuthenticatedUser();
     if (!auth.ok) return auth.response;
 
@@ -66,11 +66,3 @@ export async function POST(request:  Request): Promise<Response> {
         return apiError('Invalid request body', 400);
     }
 }
-
-
-
-
-
-
-
-

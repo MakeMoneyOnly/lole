@@ -28,11 +28,3 @@ export async function GET(_request: Request): Promise<Response> {
 
     return apiSuccess({ devices: data ?? [] });
 }
-
-
-
-
-
-
-
-

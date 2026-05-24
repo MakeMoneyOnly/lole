@@ -58,8 +58,8 @@ export async function GET(
         s => s.status === 'pending' || s.status === 'pending_fiscalization'
     ).length;
 
-const lastSuccess = submissions.find(s => s.status === 'success');
-     const consecutiveFailures = ((): number => {
+    const lastSuccess = submissions.find(s => s.status === 'success');
+    const consecutiveFailures = ((): number => {
         let count = 0;
         for (const s of submissions) {
             if (s.status === 'failed') count++;
@@ -68,10 +68,10 @@ const lastSuccess = submissions.find(s => s.status === 'success');
         return count;
     })();
 
-const isErcaEnabled = restaurant.erca_enabled === true && restaurant.vat_number != null;
-     const isHealthy = isErcaEnabled && (total === 0 || successful / Math.max(total, 1) >= 0.9);
-     const isWarning = isErcaEnabled && !isHealthy && consecutiveFailures < 5;
-     const _isError = isErcaEnabled && consecutiveFailures >= 5;
+    const isErcaEnabled = restaurant.erca_enabled === true && restaurant.vat_number != null;
+    const isHealthy = isErcaEnabled && (total === 0 || successful / Math.max(total, 1) >= 0.9);
+    const isWarning = isErcaEnabled && !isHealthy && consecutiveFailures < 5;
+    const _isError = isErcaEnabled && consecutiveFailures >= 5;
 
     return NextResponse.json({
         data: {
