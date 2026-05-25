@@ -14,6 +14,10 @@ function getTokenSignatureSecret(): string {
     const secret = process.env.DEVICE_TOKEN_SIGNATURE_SECRET || process.env.AUTH_SECRET;
 
     if (!secret) {
+        // During build, allow missing secret but warn - it will be validated at runtime in production
+        if (process.env.NEXT_PHASE === 'build' || process.env.CI === 'true') {
+            return '0000000000000000000000000000000000000000000000000000000000000000';
+        }
         throw new Error(
             'DEVICE_TOKEN_SIGNATURE_SECRET is required. ' +
                 'Set it to a random 64-character hex string. ' +

@@ -10,7 +10,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 
-function recordHttpRequest(_method: string, _path: string, _statusCode: number, _durationMs: number) {
+function recordHttpRequest(
+    _method: string,
+    _path: string,
+    _statusCode: number,
+    _durationMs: number
+): void {
     // Middleware runs in Edge runtime, so Prometheus Node metrics are unavailable here.
 }
 
