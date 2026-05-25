@@ -1,4 +1,5 @@
 import React, { Suspense } from 'react';
+import type { Viewport } from 'next';
 import { CartProvider } from '@/context/CartContext';
 
 export default function PosLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
@@ -16,11 +17,12 @@ export default function PosLayout({ children }: { children: React.ReactNode }): 
 export const metadata = {
     title: 'lole POS',
     description: 'Point of Sale Terminal',
+};
+
+export const viewport: Viewport = {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
     themeColor: '#000000',
-    viewport: {
-        width: 'device-width',
-        initialScale: 1,
-        maximumScale: 1,
-        userScalable: false,
-    },
 };

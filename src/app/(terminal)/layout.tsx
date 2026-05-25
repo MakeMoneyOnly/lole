@@ -1,4 +1,5 @@
 import React, { Suspense } from 'react';
+import type { Viewport } from 'next';
 
 export default function TerminalLayout({
     children,
@@ -15,5 +16,8 @@ export default function TerminalLayout({
 export const metadata = {
     title: 'lole Terminal',
     description: 'Cashier and settlement workspace',
+};
+
+export const viewport: Viewport = {
     themeColor: '#111111',
 };
