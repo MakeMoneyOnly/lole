@@ -30,7 +30,7 @@ const buildCSP = (nonce: string, isProduction: boolean): string => {
     return builder.build();
 };
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     // MED-026: Initialize request tracing for distributed tracing
     const { context: traceContext, addHeaders: addTraceHeaders } = tracingMiddleware(request);
 
