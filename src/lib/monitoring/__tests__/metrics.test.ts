@@ -2,14 +2,7 @@ import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 
-const {
-    mockSpan,
-    mockStartSpan,
-    mockAddBreadcrumb,
-    mockRecordOrderEvent,
-    mockRecordPaymentEvent,
-    sentryMetricsApiRef,
-} = vi.hoisted(() => {
+const { mockSpan, mockStartSpan, mockAddBreadcrumb, sentryMetricsApiRef } = vi.hoisted(() => {
     const span = {
         setAttribute: vi.fn(),
         setStatus: vi.fn(),
@@ -18,30 +11,21 @@ const {
         callback(span)
     );
     const addBreadcrumb = vi.fn();
-    const recordOrderEvent = vi.fn();
-    const recordPaymentEvent = vi.fn();
     const sentryMetricsApi: { current: Record<string, Mock> | null } = { current: null };
     return {
         mockSpan: span,
         mockStartSpan: startSpan,
         mockAddBreadcrumb: addBreadcrumb,
-        mockRecordOrderEvent: recordOrderEvent,
-        mockRecordPaymentEvent: recordPaymentEvent,
         sentryMetricsApiRef: sentryMetricsApi,
     };
 });
 
-vi.mock('@sentry/nextjs', () => ({
+vi.mock('@sentry/core', () => ({
     startSpan: mockStartSpan,
     addBreadcrumb: mockAddBreadcrumb,
     get metrics() {
         return sentryMetricsApiRef.current;
     },
-}));
-
-vi.mock('../prometheus', () => ({
-    recordOrderEvent: mockRecordOrderEvent,
-    recordPaymentEvent: mockRecordPaymentEvent,
 }));
 function createMockSupabase(opts?: { error?: Error }): any {
     return {
@@ -341,29 +325,6 @@ describe('metrics', () => {
             expect(insertArg.metadata.duration_ms).toBeUndefined();
         });
 
-        it('should call recordOrderEvent for Prometheus', async () => {
-            const supabase = createMockSupabase();
-            await trackOrderMetric(supabase, {
-                restaurantId: 'rest-1',
-                orderId: 'order-1',
-                event: 'created',
-            });
-            expect(mockRecordOrderEvent).toHaveBeenCalledWith('rest-1', 'created');
-        });
-
-        it('should silently ignore Prometheus recording errors', async () => {
-            const supabase = createMockSupabase();
-            mockRecordOrderEvent.mockImplementation(() => {
-                throw new Error('prometheus down');
-            });
-            const result = await trackOrderMetric(supabase, {
-                restaurantId: 'rest-1',
-                orderId: 'order-1',
-                event: 'cancelled',
-            });
-            expect(result.error).toBeNull();
-        });
-
         it('should return error when supabase insert returns error', async () => {
             const insertError = new Error('insert failed');
             const supabase = createMockSupabase({ error: insertError });
@@ -423,31 +384,6 @@ describe('metrics', () => {
             expect(insertArg.metadata.amount).toBeUndefined();
             expect(insertArg.metadata.duration_ms).toBeUndefined();
             expect(insertArg.metadata.error).toBeUndefined();
-        });
-
-        it('should call recordPaymentEvent for Prometheus', async () => {
-            const supabase = createMockSupabase();
-            await trackPaymentMetric(supabase, {
-                restaurantId: 'rest-1',
-                paymentId: 'pay-1',
-                provider: 'chapa',
-                event: 'failed',
-            });
-            expect(mockRecordPaymentEvent).toHaveBeenCalledWith('chapa', 'failed');
-        });
-
-        it('should silently ignore Prometheus recording errors', async () => {
-            const supabase = createMockSupabase();
-            mockRecordPaymentEvent.mockImplementation(() => {
-                throw new Error('prometheus unavailable');
-            });
-            const result = await trackPaymentMetric(supabase, {
-                restaurantId: 'rest-1',
-                paymentId: 'pay-1',
-                provider: 'cash',
-                event: 'refunded',
-            });
-            expect(result.error).toBeNull();
         });
 
         it('should return error when supabase insert returns error', async () => {

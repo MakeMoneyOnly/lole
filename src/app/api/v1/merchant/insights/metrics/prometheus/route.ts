@@ -11,7 +11,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { getPrometheusMetrics, getPrometheusContentType } from '@/lib/monitoring/prometheus';
+import { getPrometheusMetrics, getPrometheusContentType } from '@/lib/monitoring/prometheus.server';
 import { logger } from '@/lib/logger';
 
 const log = logger.child('merchant-insights/metrics');

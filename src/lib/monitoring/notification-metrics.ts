@@ -13,7 +13,7 @@
  * @see docs/implementation/observability-setup.md
  */
 
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from '@sentry/core';
 import { Redis } from '@upstash/redis';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { logger } from '@/lib/logger';

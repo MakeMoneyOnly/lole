@@ -11,22 +11,9 @@
  * @see docs/implementation/observability-setup.md
  */
 
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from '@sentry/core';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Json } from '@/types/database';
-
-// Import prometheus functions - they will be no-ops in Edge/Browser
-// The prometheus module handles its own environment detection
-import {
-    recordOrderEvent as _recordOrderEvent,
-    recordPaymentEvent as _recordPaymentEvent,
-} from './prometheus';
-
-// In jsdom (test environment), use the imported functions directly
-// In browser, window exists so prometheus exports no-ops
-// In Edge, NEXT_RUNTIME is 'edge' so prometheus exports no-ops
-const recordOrderEvent: (restaurantId: string, status: string) => void = _recordOrderEvent;
-const recordPaymentEvent: (provider: string, status: string) => void = _recordPaymentEvent;
 
 // Metric action types
 export const METRIC_ACTIONS = {
@@ -243,13 +230,6 @@ export async function trackOrderMetric(
                     } as Json,
                 });
 
-                // Record to Prometheus metrics (non-blocking)
-                try {
-                    recordOrderEvent(params.restaurantId, params.event);
-                } catch {
-                    // Silently ignore Prometheus recording errors
-                }
-
                 span.setStatus({ code: error ? SPAN_STATUS_ERROR : SPAN_STATUS_OK });
                 return { error };
             } catch (e) {
@@ -311,13 +291,6 @@ export async function trackPaymentMetric(
                         amount: params.amount,
                     } as Json,
                 });
-
-                // Record to Prometheus metrics (non-blocking)
-                try {
-                    recordPaymentEvent(params.provider, params.event);
-                } catch {
-                    // Silently ignore Prometheus recording errors
-                }
 
                 span.setStatus({ code: error ? SPAN_STATUS_ERROR : SPAN_STATUS_OK });
                 return { error };

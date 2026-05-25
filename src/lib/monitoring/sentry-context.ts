@@ -8,7 +8,7 @@
  * @see docs/1. Engineering Foundation/0. ENTERPRISE_MASTER_BLUEPRINT.md - Sprint 1.6
  */
 
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from '@sentry/core';
 import { logger } from '@/lib/logger';
 
 // Storage key for restaurant context in localStorage (client-side)

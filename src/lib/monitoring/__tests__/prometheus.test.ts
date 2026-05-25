@@ -9,7 +9,7 @@ describe('prometheus monitoring', () => {
     });
 
     it('should export metrics object with all metric instances', async () => {
-        const { metrics } = await import('../prometheus');
+        const { metrics } = await import('../prometheus.server');
         expect(metrics.httpRequestDurationSeconds).toBeInstanceOf(client.Histogram);
         expect(metrics.httpRequestsTotal).toBeInstanceOf(client.Counter);
         expect(metrics.loleOrdersTotal).toBeInstanceOf(client.Counter);
@@ -21,7 +21,7 @@ describe('prometheus monitoring', () => {
 
     describe('recordHttpRequest', () => {
         it('should observe histogram with duration converted to seconds and increment counter', async () => {
-            const { recordHttpRequest, metrics } = await import('../prometheus');
+            const { recordHttpRequest, metrics } = await import('../prometheus.server');
             recordHttpRequest('GET', '/api/orders', 200, 1500);
 
             const histogramValues = await metrics.httpRequestDurationSeconds!.get();
@@ -39,7 +39,7 @@ describe('prometheus monitoring', () => {
         });
 
         it('should convert statusCode to string for labels', async () => {
-            const { recordHttpRequest, metrics } = await import('../prometheus');
+            const { recordHttpRequest, metrics } = await import('../prometheus.server');
             recordHttpRequest('POST', '/api/payments', 404, 500);
 
             const counterValues = await metrics.httpRequestsTotal!.get();
@@ -54,7 +54,7 @@ describe('prometheus monitoring', () => {
         });
 
         it('should convert durationMs to seconds (divide by 1000)', async () => {
-            const { recordHttpRequest, metrics } = await import('../prometheus');
+            const { recordHttpRequest, metrics } = await import('../prometheus.server');
             recordHttpRequest('PUT', '/api/orders/1', 204, 2500);
 
             const histogramValues = await metrics.httpRequestDurationSeconds!.get();
@@ -68,7 +68,7 @@ describe('prometheus monitoring', () => {
         });
 
         it('should accumulate counts across multiple calls', async () => {
-            const { recordHttpRequest, metrics } = await import('../prometheus');
+            const { recordHttpRequest, metrics } = await import('../prometheus.server');
             recordHttpRequest('GET', '/api/test', 200, 100);
             recordHttpRequest('GET', '/api/test', 200, 200);
 
@@ -86,7 +86,7 @@ describe('prometheus monitoring', () => {
 
     describe('recordOrderEvent', () => {
         it('should increment order counter with correct labels', async () => {
-            const { recordOrderEvent, metrics } = await import('../prometheus');
+            const { recordOrderEvent, metrics } = await import('../prometheus.server');
             recordOrderEvent('rest-123', 'completed');
 
             const values = await metrics.loleOrdersTotal!.get();
@@ -99,7 +99,7 @@ describe('prometheus monitoring', () => {
         });
 
         it('should accumulate counts for same labels', async () => {
-            const { recordOrderEvent, metrics } = await import('../prometheus');
+            const { recordOrderEvent, metrics } = await import('../prometheus.server');
             recordOrderEvent('rest-456', 'cancelled');
             recordOrderEvent('rest-456', 'cancelled');
             recordOrderEvent('rest-456', 'cancelled');
@@ -116,7 +116,7 @@ describe('prometheus monitoring', () => {
 
     describe('recordPaymentEvent', () => {
         it('should increment payment counter with correct labels', async () => {
-            const { recordPaymentEvent, metrics } = await import('../prometheus');
+            const { recordPaymentEvent, metrics } = await import('../prometheus.server');
             recordPaymentEvent('telebirr', 'success');
 
             const values = await metrics.lolePaymentsTotal!.get();
@@ -129,7 +129,7 @@ describe('prometheus monitoring', () => {
         });
 
         it('should track different providers and statuses independently', async () => {
-            const { recordPaymentEvent, metrics } = await import('../prometheus');
+            const { recordPaymentEvent, metrics } = await import('../prometheus.server');
             recordPaymentEvent('amole', 'success');
             recordPaymentEvent('cbe', 'failed');
 
@@ -149,7 +149,7 @@ describe('prometheus monitoring', () => {
 
     describe('setActiveSessions', () => {
         it('should set the active sessions gauge to the given value', async () => {
-            const { setActiveSessions, metrics } = await import('../prometheus');
+            const { setActiveSessions, metrics } = await import('../prometheus.server');
             setActiveSessions(42);
 
             const values = await metrics.lolectiveSessions!.get();
@@ -157,7 +157,7 @@ describe('prometheus monitoring', () => {
         });
 
         it('should overwrite previous value', async () => {
-            const { setActiveSessions, metrics } = await import('../prometheus');
+            const { setActiveSessions, metrics } = await import('../prometheus.server');
             setActiveSessions(10);
             setActiveSessions(5);
 
@@ -166,7 +166,7 @@ describe('prometheus monitoring', () => {
         });
 
         it('should accept zero', async () => {
-            const { setActiveSessions, metrics } = await import('../prometheus');
+            const { setActiveSessions, metrics } = await import('../prometheus.server');
             setActiveSessions(0);
 
             const values = await metrics.lolectiveSessions!.get();
@@ -176,7 +176,7 @@ describe('prometheus monitoring', () => {
 
     describe('setActiveRestaurants', () => {
         it('should set the active restaurants gauge to the given value', async () => {
-            const { setActiveRestaurants, metrics } = await import('../prometheus');
+            const { setActiveRestaurants, metrics } = await import('../prometheus.server');
             setActiveRestaurants(7);
 
             const values = await metrics.lolectiveRestaurants!.get();
@@ -184,7 +184,7 @@ describe('prometheus monitoring', () => {
         });
 
         it('should overwrite previous value', async () => {
-            const { setActiveRestaurants, metrics } = await import('../prometheus');
+            const { setActiveRestaurants, metrics } = await import('../prometheus.server');
             setActiveRestaurants(20);
             setActiveRestaurants(15);
 
@@ -195,13 +195,14 @@ describe('prometheus monitoring', () => {
 
     describe('getPrometheusMetrics', () => {
         it('should return a string', async () => {
-            const { getPrometheusMetrics } = await import('../prometheus');
+            const { getPrometheusMetrics } = await import('../prometheus.server');
             const result = await getPrometheusMetrics();
             expect(typeof result).toBe('string');
         });
 
         it('should include registered metrics in output', async () => {
-            const { recordHttpRequest, getPrometheusMetrics } = await import('../prometheus');
+            const { recordHttpRequest, getPrometheusMetrics } =
+                await import('../prometheus.server');
             recordHttpRequest('GET', '/test', 200, 100);
 
             const result = await getPrometheusMetrics();
@@ -212,14 +213,14 @@ describe('prometheus monitoring', () => {
 
     describe('getPrometheusContentType', () => {
         it('should return the prometheus content type string', async () => {
-            const { getPrometheusContentType } = await import('../prometheus');
+            const { getPrometheusContentType } = await import('../prometheus.server');
             expect(getPrometheusContentType()).toBe('text/plain; version=0.0.4; charset=utf-8');
         });
     });
 
     describe('getMetricsJson', () => {
         it('should return JSON representation of metrics', async () => {
-            const { recordOrderEvent, getMetricsJson } = await import('../prometheus');
+            const { recordOrderEvent, getMetricsJson } = await import('../prometheus.server');
             recordOrderEvent('rest-1', 'pending');
 
             const result = await getMetricsJson();
@@ -228,7 +229,7 @@ describe('prometheus monitoring', () => {
         });
 
         it('should include metric entries after recording events', async () => {
-            const { recordPaymentEvent, getMetricsJson } = await import('../prometheus');
+            const { recordPaymentEvent, getMetricsJson } = await import('../prometheus.server');
             recordPaymentEvent('amole', 'success');
 
             const result = (await getMetricsJson()) as Array<{ name: string }>;
