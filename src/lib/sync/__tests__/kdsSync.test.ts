@@ -8,7 +8,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // Mock Sentry
-vi.mock('@sentry/nextjs', () => ({
+vi.mock('@sentry/core', () => ({
     startSpan: vi.fn(
         (
             _opts: unknown,

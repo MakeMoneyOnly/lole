@@ -22,7 +22,7 @@ import {
     type ConflictStrategy,
 } from './conflict-resolution';
 import { logger } from '@/lib/logger';
-import { tracePerformance } from '@/lib/monitoring';
+import { tracePerformance } from '@/lib/monitoring/metrics';
 
 // ============================================================================
 // Trace Context Utilities for KDS Operations
