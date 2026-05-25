@@ -9,7 +9,7 @@
     "scripts": {
         "dev": "next dev -p 4000",
         "build": "next build",
-        "build:analyze": "ANALYZE=true next build",
+        "build:analyze": "cross-env ANALYZE=true next build --webpack",
         "start": "next start",
         "gateway:start": "node --experimental-strip-types src/lib/gateway/entrypoint.ts",
         "cap:sync:android": "cap sync android",

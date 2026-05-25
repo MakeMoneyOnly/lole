@@ -15,7 +15,7 @@ const withPWA = require('next-pwa')({
     },
     // Additional PWA settings
     reloadOnOnline: true,
-    swcMinify: true,
+    maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
     // Handle navigation requests when offline
     navigateFallback: '/offline',
     navigateFallbackAllowlist: [/^\/(?!api).*/],
@@ -275,7 +275,7 @@ const nextConfig: NextConfig = {
                         key: 'Referrer-Policy',
                         value: 'strict-origin-when-cross-origin',
                     },
-                    // Note: CSP is handled in middleware.ts for consistency
+                    // Note: CSP is handled in proxy.ts for consistency
                     // and to avoid duplicate header issues
                     {
                         key: 'Permissions-Policy',

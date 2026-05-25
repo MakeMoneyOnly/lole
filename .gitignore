@@ -115,6 +115,9 @@ plans/
 
 # PowerSync WASM/Worker assets (copied from node_modules at install time)
 public/@powersync/
+public/sw.js
+public/workbox-*.js
+public/fallback-*.js
 
 .agents/
 
