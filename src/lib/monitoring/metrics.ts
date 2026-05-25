@@ -14,7 +14,19 @@
 import * as Sentry from '@sentry/nextjs';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Json } from '@/types/database';
-import { recordOrderEvent, recordPaymentEvent } from './prometheus';
+
+// Import prometheus functions - they will be no-ops in Edge/Browser
+// The prometheus module handles its own environment detection
+import {
+    recordOrderEvent as _recordOrderEvent,
+    recordPaymentEvent as _recordPaymentEvent,
+} from './prometheus';
+
+// In jsdom (test environment), use the imported functions directly
+// In browser, window exists so prometheus exports no-ops
+// In Edge, NEXT_RUNTIME is 'edge' so prometheus exports no-ops
+const recordOrderEvent: (restaurantId: string, status: string) => void = _recordOrderEvent;
+const recordPaymentEvent: (provider: string, status: string) => void = _recordPaymentEvent;
 
 // Metric action types
 export const METRIC_ACTIONS = {
