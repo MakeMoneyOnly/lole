@@ -188,9 +188,7 @@ async function checkProxyRateLimit(
     };
 }
 
-export async function proxyRateLimitMiddleware(
-    request: NextRequest
-): Promise<NextResponse | null> {
+export async function proxyRateLimitMiddleware(request: NextRequest): Promise<NextResponse | null> {
     const path = request.nextUrl.pathname;
     const method = request.method;
     const config = getRateLimitConfig(path, method);

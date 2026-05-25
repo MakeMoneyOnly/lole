@@ -15,7 +15,11 @@ function getTokenSignatureSecret(): string {
 
     if (!secret) {
         // During build, allow missing secret but warn - it will be validated at runtime in production
-        if (process.env.NEXT_PHASE === 'build' || process.env.CI === 'true') {
+        if (
+            process.env.NEXT_PHASE === 'build' ||
+            process.env.NEXT_PHASE === 'phase-production-build' ||
+            process.env.CI === 'true'
+        ) {
             return '0000000000000000000000000000000000000000000000000000000000000000';
         }
         throw new Error(
