@@ -1,6 +1,6 @@
 import { Skeleton } from '@/components/ui/Skeleton';
 
-export default function ChannelsLoading() {
+export default function ChannelsLoading(): React.JSX.Element {
     return (
         <div className="min-h-screen space-y-6 pb-20">
             <div className="flex items-start justify-between">

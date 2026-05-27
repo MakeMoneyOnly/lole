@@ -46,7 +46,7 @@ interface GuestProfileDrawerProps {
 const QUICK_TAGS = ['vip', 'frequent', 'weekday-lunch', 'family', 'delivery-fan'];
 const DASHBOARD_LOCALE = 'en-ET';
 
-function parseTags(value: string) {
+function parseTags(value: string): string[] {
     return value
         .split(',')
         .map(item => item.trim())
@@ -62,7 +62,7 @@ export function GuestProfileDrawer({
     saving,
     onClose,
     onSave,
-}: GuestProfileDrawerProps) {
+}: GuestProfileDrawerProps): React.JSX.Element | null {
     const drawerHeadingId = useId();
     const nameInputId = useId();
     const languageInputId = useId();
@@ -87,7 +87,7 @@ export function GuestProfileDrawer({
 
     if (!open) return null;
 
-    const handleSave = async () => {
+    const handleSave = async (): Promise<void> => {
         if (!guest) return;
         await onSave({
             guestId: guest.id,

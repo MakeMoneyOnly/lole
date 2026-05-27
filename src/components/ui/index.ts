@@ -72,3 +72,6 @@ export { PageSkeleton, ChartSkeleton, TableSkeleton, CardSkeleton } from './Skel
 
 // Export ErrorFallback
 export { ErrorFallback } from './ErrorFallback';
+
+// Export MetricCard
+export { MetricCard } from './MetricCard';

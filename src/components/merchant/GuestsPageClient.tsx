@@ -15,7 +15,7 @@ import {
     LoyaltyProgramBuilder,
     type LoyaltyProgramRow,
 } from '@/components/merchant/LoyaltyProgramBuilder';
-import { MetricCard } from '@/components/merchant/MetricCard';
+import { MetricCard } from '@/components/ui/MetricCard';
 import { useAppLocale } from '@/hooks/useAppLocale';
 import { formatETBCurrency } from '@/lib/format/et';
 import { getP2Copy } from '@/lib/i18n/p2';
@@ -54,7 +54,7 @@ type GuestVisit = {
     metadata: Record<string, unknown>;
 };
 
-export function GuestsPageClient(_props: GuestsPageClientProps) {
+export function GuestsPageClient(_props: GuestsPageClientProps): React.JSX.Element {
     const locale = useAppLocale();
     const copy = getP2Copy(locale);
     const [guests, setGuests] = useState<GuestDirectoryRow[]>([]);
@@ -104,7 +104,6 @@ export function GuestsPageClient(_props: GuestsPageClientProps) {
             }
             setGuests((payload?.data?.guests ?? []) as GuestDirectoryRow[]);
         } catch (fetchError) {
-            console.error(fetchError);
             setGuests([]);
             setError(fetchError instanceof Error ? fetchError.message : 'Failed to load guests.');
         } finally {
@@ -146,7 +145,6 @@ export function GuestsPageClient(_props: GuestsPageClientProps) {
                 }))
             );
         } catch (growthFetchError) {
-            console.error(growthFetchError);
             setGrowthError(
                 growthFetchError instanceof Error
                     ? growthFetchError.message
@@ -183,7 +181,6 @@ export function GuestsPageClient(_props: GuestsPageClientProps) {
             setSelectedGuest((guestPayload?.data ?? null) as GuestDetail | null);
             setGuestVisits((visitsPayload?.data?.visits ?? []) as GuestVisit[]);
         } catch (drawerError) {
-            console.error(drawerError);
             toast.error(
                 drawerError instanceof Error ? drawerError.message : 'Failed to load guest details.'
             );
@@ -210,11 +207,11 @@ export function GuestsPageClient(_props: GuestsPageClientProps) {
         void fetchGuestDrawerData(selectedGuestId);
     }, [selectedGuestId, fetchGuestDrawerData, refreshToken]);
 
-    const openGuest = async (guestId: string) => {
+    const openGuest = async (guestId: string): Promise<void> => {
         setSelectedGuestId(guestId);
     };
 
-    const closeDrawer = () => {
+    const closeDrawer = (): void => {
         setSelectedGuestId(null);
         setSelectedGuest(null);
         setGuestVisits([]);
@@ -227,7 +224,7 @@ export function GuestsPageClient(_props: GuestsPageClientProps) {
         tags?: string[];
         is_vip?: boolean;
         notes?: string | null;
-    }) => {
+    }): Promise<void> => {
         try {
             setDrawerSaving(true);
             const response = await fetch(`/api/guests/${payload.guestId}`, {
@@ -263,7 +260,7 @@ export function GuestsPageClient(_props: GuestsPageClientProps) {
         name: string;
         status: LoyaltyProgramRow['status'];
         points_rule_json?: Record<string, unknown>;
-    }) => {
+    }): Promise<void> => {
         try {
             setCreatingLoyalty(true);
             const isUpdate = !!payload.id;
@@ -301,7 +298,7 @@ export function GuestsPageClient(_props: GuestsPageClientProps) {
         segment_id?: string;
         scheduled_at?: string;
         template_json?: { content: string };
-    }) => {
+    }): Promise<void> => {
         try {
             setCreatingCampaign(true);
             const isUpdate = !!payload.id;
@@ -332,7 +329,7 @@ export function GuestsPageClient(_props: GuestsPageClientProps) {
         }
     };
 
-    const handleLaunchCampaign = async (campaignId: string) => {
+    const handleLaunchCampaign = async (campaignId: string): Promise<void> => {
         try {
             setLaunchingCampaignId(campaignId);
             const response = await fetch(`/api/campaigns/${campaignId}/launch`, {
@@ -356,7 +353,7 @@ export function GuestsPageClient(_props: GuestsPageClientProps) {
     };
 
     // Management Handlers
-    const handleDeleteLoyalty = async (id: string) => {
+    const handleDeleteLoyalty = async (id: string): Promise<void> => {
         try {
             const res = await fetch(`/api/loyalty/programs/${id}`, { method: 'DELETE' });
             if (!res.ok) {
@@ -370,7 +367,10 @@ export function GuestsPageClient(_props: GuestsPageClientProps) {
         }
     };
 
-    const handleStatusChangeLoyalty = async (id: string, status: LoyaltyProgramRow['status']) => {
+    const handleStatusChangeLoyalty = async (
+        id: string,
+        status: LoyaltyProgramRow['status']
+    ): Promise<void> => {
         try {
             const res = await fetch(`/api/loyalty/programs/${id}`, {
                 method: 'PATCH',
@@ -388,7 +388,7 @@ export function GuestsPageClient(_props: GuestsPageClientProps) {
         }
     };
 
-    const handleDeleteCampaign = async (id: string) => {
+    const handleDeleteCampaign = async (id: string): Promise<void> => {
         try {
             const res = await fetch(`/api/campaigns/${id}`, { method: 'DELETE' });
             if (!res.ok) {
@@ -402,7 +402,7 @@ export function GuestsPageClient(_props: GuestsPageClientProps) {
         }
     };
 
-    const handleEdit = (type: string, _id: string) => {
+    const handleEdit = (type: string, _id: string): void => {
         toast.success(`Opening edit mode for ${type}...`);
         // Implementation for opening edit modals would go here
     };

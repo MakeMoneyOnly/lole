@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 // Revalidate every 0 seconds (always fresh)
 export const revalidate = 0;
 
-export default async function ChannelsPage() {
+export default async function ChannelsPage(): Promise<React.JSX.Element> {
     // Check authentication and restaurant context
     const restaurantId = await resolveRestaurantId();
 

@@ -68,7 +68,7 @@ export function GuestDirectory({
     tagFilter,
     onTagFilterChange,
     onOpenGuest,
-}: GuestDirectoryProps) {
+}: GuestDirectoryProps): React.JSX.Element {
     const topTags = useMemo(() => {
         const counts = new Map<string, number>();
         for (const guest of guests) {

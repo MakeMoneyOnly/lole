@@ -3,13 +3,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { ChannelHealthBoard } from '@/components/merchant/ChannelHealthBoard';
-import { DeliveryPartnerHub } from '@/components/merchant/DeliveryPartnerHub';
+import { DeliveryPartnerHub } from '@/components/merchant/takeout/DeliveryPartnerHub';
 import {
     OnlineOrderingSettingsPanel,
     type OnlineOrderingSettings,
 } from '@/components/merchant/OnlineOrderingSettingsPanel';
 import { usePageLoadGuard } from '@/hooks/usePageLoadGuard';
-import { useRole } from '@/hooks/useRole';
+import { useRole } from '@/features/auth/hooks/useRole';
 
 interface ChannelsPageClientProps {
     initialData?: {
@@ -63,7 +63,7 @@ const defaultSettings: OnlineOrderingSettings = {
     throttle_limit_per_15m: 40,
 };
 
-export function ChannelsPageClient(_props: ChannelsPageClientProps) {
+export function ChannelsPageClient(_props: ChannelsPageClientProps): React.JSX.Element {
     const { loading, markLoaded } = usePageLoadGuard('channels');
     const [error, setError] = useState<string | null>(null);
 
@@ -117,7 +117,7 @@ export function ChannelsPageClient(_props: ChannelsPageClientProps) {
                 );
             }
             if (!ordersRes.ok) {
-                console.warn(ordersPayload?.error ?? 'Failed to load delivery orders.');
+                // Orders endpoint failure handled silently
             } else {
                 setOrders((ordersPayload?.data?.orders ?? []) as ExternalOrder[]);
             }
@@ -130,7 +130,6 @@ export function ChannelsPageClient(_props: ChannelsPageClientProps) {
             delete settingsData.slug;
             setSettings({ ...defaultSettings, ...settingsData });
         } catch (loadError) {
-            console.error(loadError);
             setError(
                 loadError instanceof Error ? loadError.message : 'Failed to load channels data.'
             );
@@ -145,7 +144,7 @@ export function ChannelsPageClient(_props: ChannelsPageClientProps) {
         void loadAll();
     }, [loadAll, refreshToken]);
 
-    const saveSettings = async () => {
+    const saveSettings = async (): Promise<void> => {
         try {
             setSettingsSaving(true);
             setSettingsError(null);
@@ -175,7 +174,7 @@ export function ChannelsPageClient(_props: ChannelsPageClientProps) {
     const connectPartner = async (
         provider: 'beu' | 'deliver_addis' | 'zmall' | 'esoora' | 'custom_local',
         displayName?: string
-    ) => {
+    ): Promise<void> => {
         try {
             setConnecting(true);
             const response = await fetch('/api/channels/delivery/connect', {
@@ -203,7 +202,7 @@ export function ChannelsPageClient(_props: ChannelsPageClientProps) {
         }
     };
 
-    const acknowledgeOrder = async (externalOrderId: string) => {
+    const acknowledgeOrder = async (externalOrderId: string): Promise<void> => {
         try {
             setAcknowledgingId(externalOrderId);
             const response = await fetch(`/api/channels/delivery/orders/${externalOrderId}/ack`, {

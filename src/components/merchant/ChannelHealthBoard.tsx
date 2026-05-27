@@ -1,7 +1,7 @@
 'use client';
 
 import { Activity, AlertTriangle, CheckCircle2, Truck } from 'lucide-react';
-import { MetricCard } from '@/components/merchant/MetricCard';
+import { MetricCard } from '@/components/ui/MetricCard';
 
 type ChannelSummary = {
     totals: {
@@ -28,7 +28,11 @@ interface ChannelHealthBoardProps {
     error: string | null;
 }
 
-export function ChannelHealthBoard({ loading, summary, error }: ChannelHealthBoardProps) {
+export function ChannelHealthBoard({
+    loading,
+    summary,
+    error,
+}: ChannelHealthBoardProps): React.JSX.Element | null {
     if (loading) {
         return (
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
