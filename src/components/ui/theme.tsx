@@ -62,6 +62,7 @@ export function Theme({
         <div className={cn('relative inline-block', className)}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
+                aria-label="Toggle theme selection"
                 className={cn(
                     'flex items-center gap-2 rounded-full bg-white p-2 shadow-lg shadow-black/5 backdrop-blur-md transition-all hover:bg-black/5 active:scale-95 md:px-4 md:py-2 dark:bg-black dark:shadow-none dark:hover:bg-white/10',
                     'text-foreground dark:text-white',

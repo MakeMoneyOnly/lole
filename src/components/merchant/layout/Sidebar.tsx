@@ -233,6 +233,7 @@ export function Sidebar(): React.JSX.Element {
                                                     ? 'bg-gray-100 text-black'
                                                     : 'text-gray-500 hover:bg-gray-50 hover:text-black'
                                             )}
+                                            aria-label={item.label}
                                         >
                                             <Icon
                                                 className={cn(
@@ -285,6 +286,7 @@ export function Sidebar(): React.JSX.Element {
                                 isCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5',
                                 pathname === link.href ? 'bg-gray-100 text-black' : 'text-gray-500'
                             )}
+                            aria-label={link.label}
                         >
                             <link.icon
                                 className={cn(
@@ -328,6 +330,7 @@ export function Sidebar(): React.JSX.Element {
                     onClick={() => {
                         window.location.href = '/login';
                     }}
+                    aria-label="Logout"
                 >
                     <User
                         className="h-[22px] w-[22px] shrink-0 text-gray-400 transition-colors duration-200 group-hover:text-red-400"

@@ -131,29 +131,35 @@ export function isValidE2EBypassSecret(providedSecret: string | undefined): bool
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         nodeCrypto = require('crypto');
     } catch {
-        // Crypto not available (edge runtime), deny access
+        // Fall back to pure JS timing-safe comparison in Edge Runtime
+    }
+
+    if (nodeCrypto) {
+        try {
+            const configuredBuffer = Buffer.from(configuredSecret, 'utf-8');
+            const providedBuffer = Buffer.from(providedSecret, 'utf-8');
+
+            // Length check first (but don't return early to avoid timing leaks)
+            if (configuredBuffer.length !== providedBuffer.length) {
+                return false;
+            }
+
+            return nodeCrypto.timingSafeEqual(configuredBuffer, providedBuffer);
+        } catch {
+            // Fall back to pure JS timing-safe comparison if any error occurs
+        }
+    }
+
+    // Fallback: Pure JS timing-safe comparison
+    if (configuredSecret.length !== providedSecret.length) {
         return false;
     }
 
-    if (!nodeCrypto) {
-        return false;
+    let result = 0;
+    for (let i = 0; i < configuredSecret.length; i++) {
+        result |= configuredSecret.charCodeAt(i) ^ providedSecret.charCodeAt(i);
     }
-
-    const configuredBuffer = Buffer.from(configuredSecret, 'utf-8');
-    const providedBuffer = Buffer.from(providedSecret, 'utf-8');
-
-    // Length check first (but don't return early to avoid timing leaks)
-    if (configuredBuffer.length !== providedBuffer.length) {
-        return false;
-    }
-
-    // Timing-safe comparison
-    try {
-        return nodeCrypto.timingSafeEqual(configuredBuffer, providedBuffer);
-    } catch {
-        // If comparison fails for any reason, deny access
-        return false;
-    }
+    return result === 0;
 }
 
 /**

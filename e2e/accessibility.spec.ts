@@ -135,7 +135,9 @@ test.describe('Accessibility Tests', () => {
             await page.waitForLoadState('domcontentloaded');
 
             // Wait for the station board to load
-            await page.waitForSelector('h1', { state: 'attached', timeout: 30000 });
+            await expect(
+                page.getByRole('heading', { name: /Kitchen Display|Loading/i }).first()
+            ).toBeVisible({ timeout: 30000 });
 
             // Check for proper heading hierarchy
             const h1Count = await page.locator('h1').count();
