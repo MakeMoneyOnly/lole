@@ -14,17 +14,25 @@ interface RoleGuardProps {
 }
 
 export function RoleGuard(props: RoleGuardProps): React.JSX.Element | null {
-    const [isE2EBypass, setIsE2EBypass] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
-        if (
-            process.env.NODE_ENV !== 'production' &&
-            typeof window !== 'undefined' &&
-            window.localStorage.getItem('__e2e_bypass_auth') === 'true'
-        ) {
-            setIsE2EBypass(true);
-        }
+        setIsMounted(true);
     }, []);
+
+    // SSR and first client render MUST match to avoid hydration mismatch.
+    if (!isMounted) {
+        return (
+            <div className="flex h-screen w-full items-center justify-center bg-white">
+                <Loader2 className="h-8 w-8 animate-spin text-black" />
+            </div>
+        );
+    }
+
+    const isE2EBypass =
+        process.env.NODE_ENV !== 'production' &&
+        typeof window !== 'undefined' &&
+        window.localStorage.getItem('__e2e_bypass_auth') === 'true';
 
     if (isE2EBypass) {
         return <>{props.children}</>;

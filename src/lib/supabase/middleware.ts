@@ -99,6 +99,12 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
                     sameSite: 'lax',
                     maxAge: 86400,
                 });
+                supabaseResponse.cookies.set('__e2e_bypass_auth', 'true', {
+                    path: '/',
+                    httpOnly: false,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                });
                 return supabaseResponse;
             }
         }

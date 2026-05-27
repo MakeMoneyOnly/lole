@@ -122,7 +122,7 @@ export function Header({
                             className={`h-3.5 w-px transition-colors ${isFeaturesOpen ? 'bg-gray-300' : 'bg-white/30'}`}
                         ></div>
                         <ViewTransitionLink
-                            href="/auth/signup"
+                            href="/signup"
                             className={`text-[14px] leading-[21px] font-medium transition-colors ${
                                 isFeaturesOpen
                                     ? 'text-gray-800 hover:text-black'

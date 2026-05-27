@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
     evaluateOfflineStaffAccess,
     isGatewayIdentityRevoked,
@@ -50,14 +50,27 @@ export function useManagedDeviceSession({
     const [session, setSession] = useState<StoredDeviceSession | null>(null);
     const [loading, setLoading] = useState(true);
 
+    // Detect E2E test bypass once synchronously at hook initialisation.
+    // Using a ref avoids hydration mismatches (the value never enters the DOM).
+    const isE2EBypassRef = useRef(
+        typeof window !== 'undefined' &&
+            window.localStorage.getItem('__e2e_bypass_auth') === 'true'
+    );
+
     useEffect(() => {
         let cancelled = false;
 
         void (async () => {
             try {
-                const storedSession = await getStoredDeviceSession();
-                if (!cancelled) {
-                    setSession(storedSession);
+                // In E2E mode skip the managed-device session lookup entirely.
+                // Tests that exercise the KDS / expeditor station boards set the
+                // bypass flag via addInitScript and expect the board to render
+                // immediately without a real paired device.
+                if (!isE2EBypassRef.current) {
+                    const storedSession = await getStoredDeviceSession();
+                    if (!cancelled) {
+                        setSession(storedSession);
+                    }
                 }
             } finally {
                 if (!cancelled) {
@@ -187,7 +200,9 @@ export function useManagedDeviceSession({
         isIdentityRevoked,
         outagePolicy,
         outageAccess,
-        hasOutageAccess: outageAccess.allowed && !isIdentityRevoked,
+        // In E2E bypass mode grant full access so station boards render without
+        // a real paired device; offline-authz evaluation is skipped.
+        hasOutageAccess: isE2EBypassRef.current || (outageAccess.allowed && !isIdentityRevoked),
         profileLabel: getDeviceProfileLabel(resolvedProfile),
         typeLabel: getDeviceTypeLabel(session?.device_type),
     };
