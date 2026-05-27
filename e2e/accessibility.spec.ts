@@ -59,8 +59,8 @@ test.describe('Accessibility Tests', () => {
             // Wait for the page to be fully loaded
             await page.waitForLoadState('domcontentloaded');
 
-            // Wait for main content to be visible
-            await page.waitForSelector('#main-content', { timeout: 30000 });
+            // Wait for main content to be attached to DOM
+            await page.waitForSelector('#main-content', { state: 'attached', timeout: 30000 });
 
             const accessibilityScanResults = await new AxeBuilder({ page })
                 .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
@@ -79,7 +79,7 @@ test.describe('Accessibility Tests', () => {
         }) => {
             await page.goto('/merchant/takeout');
             await page.waitForLoadState('domcontentloaded');
-            await page.waitForSelector('#main-content', { timeout: 30000 });
+            await page.waitForSelector('#main-content', { state: 'attached', timeout: 30000 });
 
             const accessibilityScanResults = await new AxeBuilder({ page })
                 .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
@@ -95,7 +95,7 @@ test.describe('Accessibility Tests', () => {
         test('merchant menus page should have no accessibility violations', async ({ page }) => {
             await page.goto('/merchant/menus');
             await page.waitForLoadState('domcontentloaded');
-            await page.waitForSelector('#main-content', { timeout: 30000 });
+            await page.waitForSelector('#main-content', { state: 'attached', timeout: 30000 });
 
             const accessibilityScanResults = await new AxeBuilder({ page })
                 .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
@@ -133,6 +133,9 @@ test.describe('Accessibility Tests', () => {
         test('KDS page should have proper heading structure', async ({ page }) => {
             await page.goto('/kds');
             await page.waitForLoadState('domcontentloaded');
+
+            // Wait for the station board to load
+            await page.waitForSelector('h1', { state: 'attached', timeout: 30000 });
 
             // Check for proper heading hierarchy
             const h1Count = await page.locator('h1').count();

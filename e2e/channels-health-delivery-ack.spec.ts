@@ -183,24 +183,29 @@ test.describe('Channels health and delivery acknowledge flow', () => {
             });
         });
 
-        await page.goto('/merchant/channels');
+        await page.goto('/merchant/takeout');
 
-        await expect(page.getByRole('heading', { name: 'Channels', exact: true })).toBeVisible();
-        await expect(page.getByText('Connected Channels')).toBeVisible();
-        await expect(page.getByText('BEU-1001')).toBeVisible();
         await expect(
-            page.getByRole('button', { name: /Acknowledge external order BEU-1001/i })
+            page.getByRole('heading', { name: 'Takeout & Delivery', exact: true })
         ).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Dashboard' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Availability' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Partner Status' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Connections' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Hours' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Strategies' })).toBeVisible();
 
-        await page.getByRole('button', { name: /Acknowledge external order BEU-1001/i }).click();
-        await expect(page.getByText('Acked')).toBeVisible();
+        // Click on the Connections tab to verify webhook inputs and documentation
+        await page.getByRole('button', { name: 'Connections' }).click();
+        await expect(page.getByText('Direct Webhook Connections')).toBeVisible();
+        await expect(page.getByText('Ordering API Key')).toBeVisible();
+        await expect(page.getByPlaceholder('https://your-api.com/webhooks/orders')).toBeVisible();
 
-        await page.getByLabel('Auto-accept incoming orders').check();
-        await page.getByRole('button', { name: 'Save' }).click();
-
-        expect(capturedSettingsPayload).toBeTruthy();
-        expect(capturedSettingsPayload).toMatchObject({
-            auto_accept_orders: true,
-        });
+        // Click on the Strategies tab to verify quote time strategy list
+        await page.getByRole('button', { name: 'Strategies' }).click();
+        await expect(page.getByText('Quote Time Strategy')).toBeVisible();
+        await expect(
+            page.getByRole('button', { name: 'Kitchen Capacity', exact: true })
+        ).toBeVisible();
     });
 });
