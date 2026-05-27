@@ -30,7 +30,11 @@ export class MerchantShellPage {
 
     async gotoDashboard() {
         await this.safeGoto('/merchant');
-        await expect(this.page.getByRole('heading', { name: /^Hello,/i })).toBeVisible({
+        await expect(
+            this.page.getByRole('heading', {
+                name: /^(Good (morning|afternoon|evening)|Welcome),/i,
+            })
+        ).toBeVisible({
             timeout: 15_000,
         });
     }
@@ -46,7 +50,11 @@ export class OverviewPage {
 
     async assertCoreWidgets() {
         // The dashboard shows "Hello, {restaurantName}" heading
-        await expect(this.page.getByRole('heading', { name: /^Hello,/i })).toBeVisible();
+        await expect(
+            this.page.getByRole('heading', {
+                name: /^(Good (morning|afternoon|evening)|Welcome),/i,
+            })
+        ).toBeVisible();
         // Active Orders section
         await expect(this.page.getByRole('heading', { name: 'Active Orders' })).toBeVisible();
         await expect(this.page.getByText('IN SYNC')).toBeVisible();

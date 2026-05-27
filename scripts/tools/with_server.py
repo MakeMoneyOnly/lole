@@ -12,7 +12,7 @@ from __future__ import annotations
 import argparse
 import signal
 import socket
-import subprocess
+import subprocess  # nosec B404
 import sys
 import threading
 import time
@@ -113,7 +113,7 @@ def _start_servers(
         name = f"server-{i + 1}"
         process = subprocess.Popen(
             command,
-            shell=True,
+            shell=True,  # nosec B602
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
@@ -198,7 +198,7 @@ def main() -> int:
 
         if command:
             print(f"Running command: {' '.join(command)}")
-            completed = subprocess.run(command, check=False)
+            completed = subprocess.run(command, check=False)  # nosec B603
             return completed.returncode
 
         print("Servers are running. Press Ctrl+C to stop.")

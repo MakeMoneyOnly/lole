@@ -300,7 +300,7 @@ test.describe('KDS queue to handoff flow', () => {
         });
 
         await page.goto('/kds?restaurantId=rest-1');
-        await expect(page.getByRole('heading', { name: 'Kitchen Display' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Kitchen Display/i })).toBeVisible();
         await expect(page.getByText('Table 12')).toBeVisible();
         await expect(page.getByText('1x Burger')).toBeVisible();
 

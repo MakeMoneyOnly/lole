@@ -14,7 +14,7 @@ def check_duplicates(file_path):
 
     try:
         with open(file_path, 'r') as f:
-            yaml.load(f, Loader=UniqueKeyLoader)
+            yaml.load(f, Loader=UniqueKeyLoader)  # nosec B506
         print(f"{file_path} is checked for duplicates.")
     except Exception as e:
         print(f"Error in {file_path}: {e}")

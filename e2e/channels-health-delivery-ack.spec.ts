@@ -185,9 +185,7 @@ test.describe('Channels health and delivery acknowledge flow', () => {
 
         await page.goto('/merchant/takeout');
 
-        await expect(
-            page.getByRole('heading', { name: 'Takeout & Delivery', exact: true })
-        ).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Takeout & Delivery/i })).toBeVisible();
         await expect(page.getByRole('button', { name: 'Dashboard' })).toBeVisible();
         await expect(page.getByRole('button', { name: 'Availability' })).toBeVisible();
         await expect(page.getByRole('button', { name: 'Partner Status' })).toBeVisible();

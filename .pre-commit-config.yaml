@@ -1,0 +1,65 @@
+# Pre-commit configuration for multi-language quality and security checks
+# Run: pre-commit install && pre-commit run --all-files
+
+default_language_version:
+    python: python3.11
+
+repos:
+    # System hooks (uses installed tools)
+    - repo: local
+      hooks:
+          - id: prettier
+            name: prettier
+            entry: pnpm exec prettier --write
+            language: system
+            types: [file]
+            exclude: '^(dist/|node_modules/|\.next/|playwright-report/|test-results/|\.col/)'
+
+          - id: eslint
+            name: eslint
+            entry: pnpm exec eslint --fix
+            language: system
+            types: [javascript, typescript]
+            exclude: '^(dist/|node_modules/|\.next/|playwright-report/|test-results/|\.col/)'
+
+          - id: typescript
+            name: typescript
+            entry: pnpm type-check
+            language: system
+            pass_filenames: false
+            always_run: true
+
+          - id: vitest
+            name: vitest
+            entry: pnpm test --run
+            language: system
+            pass_filenames: false
+
+    # Python hooks
+    - repo: local
+      hooks:
+          - id: python-bandit
+            name: bandit (Python security linter)
+            entry: bandit -r -lll
+            language: system
+            types: [file]
+            files: \.py$
+            exclude: '^(node_modules/|playwright-report/|\.col/)'
+
+    # JSON/YAML validation
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v5.0.0
+      hooks:
+          - id: check-json
+          - id: check-yaml
+          - id: end-of-file-fixer
+          - id: trailing-whitespace-fixer
+          - id: check-merge-conflict
+          - id: detect-private-key
+
+    # Detect secrets
+    - repo: https://github.com/Yelp/detect-secrets
+      rev: v1.5.0
+      hooks:
+          - id: detect-secrets
+            args: ['--baseline', '.secrets.baseline']
