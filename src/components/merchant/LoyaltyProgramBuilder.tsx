@@ -41,7 +41,7 @@ export function LoyaltyProgramBuilder({
     onStatusChange,
     onDelete,
     onEdit: _onEdit,
-}: LoyaltyProgramBuilderProps) {
+}: LoyaltyProgramBuilderProps): React.JSX.Element {
     const [name, setName] = useState('');
     const [status, setStatus] = useState<LoyaltyProgramRow['status']>('draft');
     const [spendAmount, setSpendAmount] = useState('100');
@@ -53,7 +53,7 @@ export function LoyaltyProgramBuilder({
         [programs]
     );
 
-    const handleEditInternal = (id: string) => {
+    const handleEditInternal = (id: string): void => {
         const program = programs.find(p => p.id === id);
         if (!program) return;
 
@@ -67,7 +67,7 @@ export function LoyaltyProgramBuilder({
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const cancelEdit = () => {
+    const cancelEdit = (): void => {
         setEditingId(null);
         setName('');
         setStatus('draft');
@@ -75,7 +75,7 @@ export function LoyaltyProgramBuilder({
         setEarnPoints('10');
     };
 
-    const submit = async () => {
+    const submit = async (): Promise<void> => {
         const trimmed = name.trim();
         if (trimmed.length < 2) return;
 

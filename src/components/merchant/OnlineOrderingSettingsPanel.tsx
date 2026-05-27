@@ -14,7 +14,7 @@ function ToggleSwitch({
     onChange: (c: boolean) => void;
     disabled?: boolean;
     ariaLabel?: string;
-}) {
+}): React.JSX.Element {
     return (
         <button
             type="button"
@@ -39,12 +39,18 @@ function ToggleSwitch({
     );
 }
 
-function CustomTimeSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function CustomTimeSelect({
+    value,
+    onChange,
+}: {
+    value: string;
+    onChange: (v: string) => void;
+}): React.JSX.Element {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
+        function handleClickOutside(event: MouseEvent): void {
             if (ref.current && !ref.current.contains(event.target as Node)) {
                 setOpen(false);
             }
@@ -144,7 +150,7 @@ export function OnlineOrderingSettingsPanel({
     restaurantSlug,
     onChange,
     onSave,
-}: OnlineOrderingSettingsPanelProps) {
+}: OnlineOrderingSettingsPanelProps): React.JSX.Element {
     const [copied, setCopied] = useState(false);
 
     // Derive the stable guest-facing origin:
@@ -159,14 +165,14 @@ export function OnlineOrderingSettingsPanel({
 
     const storeLink = guestOrigin && restaurantSlug ? `${guestOrigin}/${restaurantSlug}` : '';
 
-    const handleCopyLink = async () => {
+    const handleCopyLink = async (): Promise<void> => {
         if (!storeLink) return;
         try {
             await navigator.clipboard.writeText(storeLink);
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
-        } catch (err) {
-            console.error('Failed to copy', err);
+        } catch (_err) {
+            // Copy failed silently
         }
     };
 
