@@ -2,9 +2,6 @@ import { redirect } from 'next/navigation';
 import { getChannelsPageData, resolveRestaurantId } from '@/lib/services/dashboardDataService';
 import { ChannelsPageClient } from '@/components/merchant/ChannelsPageClient';
 
-// Force dynamic rendering - channel data changes frequently
-export const dynamic = 'force-dynamic';
-
 export default async function ChannelsPage(): Promise<React.JSX.Element> {
     // Check authentication and restaurant context
     const restaurantId = await resolveRestaurantId();

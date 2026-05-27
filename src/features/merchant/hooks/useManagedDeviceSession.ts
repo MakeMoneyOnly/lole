@@ -53,8 +53,7 @@ export function useManagedDeviceSession({
     // Detect E2E test bypass once synchronously at hook initialisation.
     // Using a ref avoids hydration mismatches (the value never enters the DOM).
     const isE2EBypassRef = useRef(
-        typeof window !== 'undefined' &&
-            window.localStorage.getItem('__e2e_bypass_auth') === 'true'
+        typeof window !== 'undefined' && window.localStorage.getItem('__e2e_bypass_auth') === 'true'
     );
 
     useEffect(() => {
