@@ -8,7 +8,7 @@
       136 |
       137 | // Wait for the station board to load
         > 138 | await page.waitForSelector('h1', { state: 'attached', timeout: 30000 });
-                  |                        ^
+                      |                        ^
         139 |
         140 | // Check for proper heading hierarchy
         141 | const h1Count = await page.locator('h1').count();
@@ -21,7 +21,7 @@
       136 |
       137 | // Wait for the station board to load
         > 138 | await page.waitForSelector('h1', { state: 'attached', timeout: 30000 });
-                  |                        ^
+                      |                        ^
         139 |
         140 | // Check for proper heading hierarchy
         141 | const h1Count = await page.locator('h1').count();
@@ -39,7 +39,7 @@
       136 |
       137 | // Wait for the station board to load
         > 138 | await page.waitForSelector('h1', { state: 'attached', timeout: 30000 });
-                  |                        ^
+                      |                        ^
         139 |
         140 | // Check for proper heading hierarchy
         141 | const h1Count = await page.locator('h1').count();
@@ -57,7 +57,7 @@
       186 | await page.goto('/merchant/takeout');
       187 |
         > 188 | await expect(page.getByRole('heading', { name: /Takeout & Delivery/i })).toBeVisible();
-                  |                                                                                  ^
+                      |                                                                                  ^
         189 | await expect(page.getByRole('button', { name: 'Dashboard' })).toBeVisible();
         190 | await expect(page.getByRole('button', { name: 'Availability' })).toBeVisible();
         191 | await expect(page.getByRole('button', { name: 'Partner Status' })).toBeVisible();
@@ -75,7 +75,7 @@
       186 | await page.goto('/merchant/takeout');
       187 |
         > 188 | await expect(page.getByRole('heading', { name: /Takeout & Delivery/i })).toBeVisible();
-                  |                                                                                  ^
+                      |                                                                                  ^
         189 | await expect(page.getByRole('button', { name: 'Dashboard' })).toBeVisible();
         190 | await expect(page.getByRole('button', { name: 'Availability' })).toBeVisible();
         191 | await expect(page.getByRole('button', { name: 'Partner Status' })).toBeVisible();
@@ -98,7 +98,7 @@
       186 | await page.goto('/merchant/takeout');
       187 |
         > 188 | await expect(page.getByRole('heading', { name: /Takeout & Delivery/i })).toBeVisible();
-                  |                                                                                  ^
+                      |                                                                                  ^
         189 | await expect(page.getByRole('button', { name: 'Dashboard' })).toBeVisible();
         190 | await expect(page.getByRole('button', { name: 'Availability' })).toBeVisible();
         191 | await expect(page.getByRole('button', { name: 'Partner Status' })).toBeVisible();
@@ -116,7 +116,7 @@
       7 | await expect(page).toHaveTitle(/lole/i);
       8 | // Heading h1 contains nested span so check visible text across the element
         > 9 | await expect(page.locator('h1').first()).toBeAttached();
-                 |                                                  ^
+                     |                                                  ^
         10 |
         11 | // Verify the Sign In link href points to /login (link contract check)
         12 | const signInLink = page.getByRole('link', { name: /^Log in$/ }).first();
@@ -134,7 +134,7 @@
       7 | await expect(page).toHaveTitle(/lole/i);
       8 | // Heading h1 contains nested span so check visible text across the element
         > 9 | await expect(page.locator('h1').first()).toBeAttached();
-                 |                                                  ^
+                     |                                                  ^
         10 |
         11 | // Verify the Sign In link href points to /login (link contract check)
         12 | const signInLink = page.getByRole('link', { name: /^Log in$/ }).first();
@@ -157,7 +157,7 @@
       7 | await expect(page).toHaveTitle(/lole/i);
       8 | // Heading h1 contains nested span so check visible text across the element
         > 9 | await expect(page.locator('h1').first()).toBeAttached();
-                 |                                                  ^
+                     |                                                  ^
         10 |
         11 | // Verify the Sign In link href points to /login (link contract check)
         12 | const signInLink = page.getByRole('link', { name: /^Log in$/ }).first();
@@ -176,7 +176,7 @@
       30 | await passwordInput.fill('secretpassword');
       31 | await page.getByLabel('Toggle password visibility').click();
         > 32 | await expect(passwordInput).toHaveAttribute('type', 'text');
-                 |                                     ^
+                     |                                     ^
         33 |
         34 | // Verify the Sign Up link exists and points to /signup
         35 | const signUpLink = page.getByRole('link', { name: /^Sign Up$/i }).first();
@@ -195,7 +195,7 @@
       30 | await passwordInput.fill('secretpassword');
       31 | await page.getByLabel('Toggle password visibility').click();
         > 32 | await expect(passwordInput).toHaveAttribute('type', 'text');
-                 |                                     ^
+                     |                                     ^
         33 |
         34 | // Verify the Sign Up link exists and points to /signup
         35 | const signUpLink = page.getByRole('link', { name: /^Sign Up$/i }).first();
@@ -219,7 +219,7 @@
       30 | await passwordInput.fill('secretpassword');
       31 | await page.getByLabel('Toggle password visibility').click();
         > 32 | await expect(passwordInput).toHaveAttribute('type', 'text');
-                 |                                     ^
+                     |                                     ^
         33 |
         34 | // Verify the Sign Up link exists and points to /signup
         35 | const signUpLink = page.getByRole('link', { name: /^Sign Up$/i }).first();
@@ -237,7 +237,7 @@
       106 | }
       107 | // Wait for menu items to load after context is established
         > 108 | await expect(page.getByText('Scan Burger')).toBeVisible({ timeout: 15000 });
-                  |                                                     ^
+                      |                                                     ^
         109 |
         110 | await page.getByText('Scan Burger').first().click();
         111 | await page.getByRole('button', { name: 'Add to Order' }).click();
@@ -255,7 +255,7 @@
       106 | }
       107 | // Wait for menu items to load after context is established
         > 108 | await expect(page.getByText('Scan Burger')).toBeVisible({ timeout: 15000 });
-                  |                                                     ^
+                      |                                                     ^
         109 |
         110 | await page.getByText('Scan Burger').first().click();
         111 | await page.getByRole('button', { name: 'Add to Order' }).click();
@@ -278,7 +278,7 @@
       106 | }
       107 | // Wait for menu items to load after context is established
         > 108 | await expect(page.getByText('Scan Burger')).toBeVisible({ timeout: 15000 });
-                  |                                                     ^
+                      |                                                     ^
         109 |
         110 | await page.getByText('Scan Burger').first().click();
         111 | await page.getByRole('button', { name: 'Add to Order' }).click();
@@ -296,7 +296,7 @@
       173 | await page.goto('/merchant/guests');
       174 |
         > 175 | await expect(page.getByRole('heading', { name: /Guests/i })).toBeVisible();
-                  |                                                                      ^
+                      |                                                                      ^
         176 | await expect(
         177 | page.getByRole('button', { name: /Open guest profile for Selam Guest/i })
         178 | ).toBeVisible();
@@ -314,7 +314,7 @@
       173 | await page.goto('/merchant/guests');
       174 |
         > 175 | await expect(page.getByRole('heading', { name: /Guests/i })).toBeVisible();
-                  |                                                                      ^
+                      |                                                                      ^
         176 | await expect(
         177 | page.getByRole('button', { name: /Open guest profile for Selam Guest/i })
         178 | ).toBeVisible();
@@ -337,7 +337,7 @@
       173 | await page.goto('/merchant/guests');
       174 |
         > 175 | await expect(page.getByRole('heading', { name: /Guests/i })).toBeVisible();
-                  |                                                                      ^
+                      |                                                                      ^
         176 | await expect(
         177 | page.getByRole('button', { name: /Open guest profile for Selam Guest/i })
         178 | ).toBeVisible();
@@ -355,7 +355,7 @@
       301 |
       302 | await page.goto('/kds?restaurantId=rest-1');
         > 303 | await expect(page.getByRole('heading', { name: /Kitchen Display/i })).toBeVisible();
-                  |                                                                               ^
+                      |                                                                               ^
         304 | await expect(page.getByText('Table 12')).toBeVisible();
         305 | await expect(page.getByText('1x Burger')).toBeVisible();
         306 |
@@ -373,7 +373,7 @@
       301 |
       302 | await page.goto('/kds?restaurantId=rest-1');
         > 303 | await expect(page.getByRole('heading', { name: /Kitchen Display/i })).toBeVisible();
-                  |                                                                               ^
+                      |                                                                               ^
         304 | await expect(page.getByText('Table 12')).toBeVisible();
         305 | await expect(page.getByText('1x Burger')).toBeVisible();
         306 |
@@ -396,7 +396,7 @@
       301 |
       302 | await page.goto('/kds?restaurantId=rest-1');
         > 303 | await expect(page.getByRole('heading', { name: /Kitchen Display/i })).toBeVisible();
-                  |                                                                               ^
+                      |                                                                               ^
         304 | await expect(page.getByText('Table 12')).toBeVisible();
         305 | await expect(page.getByText('1x Burger')).toBeVisible();
         306 |
@@ -415,7 +415,7 @@
       35 | name: /^(Good (morning|afternoon|evening)|Welcome),/i,
       36 | })
         > 37 | ).toBeVisible({
-                 |           ^
+                     |           ^
         38 | timeout: 15_000,
         39 | });
         40 | }
@@ -435,7 +435,7 @@
       35 | name: /^(Good (morning|afternoon|evening)|Welcome),/i,
       36 | })
         > 37 | ).toBeVisible({
-                 |           ^
+                     |           ^
         38 | timeout: 15_000,
         39 | });
         40 | }
@@ -460,7 +460,7 @@
       35 | name: /^(Good (morning|afternoon|evening)|Welcome),/i,
       36 | })
         > 37 | ).toBeVisible({
-                 |           ^
+                     |           ^
         38 | timeout: 15_000,
         39 | });
         40 | }
@@ -479,7 +479,7 @@
       140 | await page.goto('/merchant/guests');
       141 |
         > 142 | await expect(page.getByRole('heading', { name: 'Guests', exact: true })).toBeVisible();
-                  |                                                                                  ^
+                      |                                                                                  ^
         143 | await expect(page.getByLabel('Search guests by name')).toBeVisible();
         144 | await expect(page.getByText('English')).toBeVisible();
         145 | await expect(page.getByText(/ETB/).first()).toBeVisible();
@@ -497,7 +497,7 @@
       140 | await page.goto('/merchant/guests');
       141 |
         > 142 | await expect(page.getByRole('heading', { name: 'Guests', exact: true })).toBeVisible();
-                  |                                                                                  ^
+                      |                                                                                  ^
         143 | await expect(page.getByLabel('Search guests by name')).toBeVisible();
         144 | await expect(page.getByText('English')).toBeVisible();
         145 | await expect(page.getByText(/ETB/).first()).toBeVisible();
@@ -520,7 +520,7 @@
       140 | await page.goto('/merchant/guests');
       141 |
         > 142 | await expect(page.getByRole('heading', { name: 'Guests', exact: true })).toBeVisible();
-                  |                                                                                  ^
+                      |                                                                                  ^
         143 | await expect(page.getByLabel('Search guests by name')).toBeVisible();
         144 | await expect(page.getByText('English')).toBeVisible();
         145 | await expect(page.getByText(/ETB/).first()).toBeVisible();
@@ -538,7 +538,7 @@
       230 | await page.goto('/merchant/channels');
       231 |
         > 232 | await expect(page.getByRole('heading', { name: 'Channels', exact: true })).toBeVisible();
-                  |                                                                                    ^
+                      |                                                                                    ^
         233 | await expect(page.getByLabel('Connect Provider')).toBeVisible();
         234 | await expect(page.getByLabel('Provider display name')).toBeVisible();
         235 | await expect(page.getByLabel('External Orders')).toBeVisible();
@@ -556,7 +556,7 @@
       230 | await page.goto('/merchant/channels');
       231 |
         > 232 | await expect(page.getByRole('heading', { name: 'Channels', exact: true })).toBeVisible();
-                  |                                                                                    ^
+                      |                                                                                    ^
         233 | await expect(page.getByLabel('Connect Provider')).toBeVisible();
         234 | await expect(page.getByLabel('Provider display name')).toBeVisible();
         235 | await expect(page.getByLabel('External Orders')).toBeVisible();
@@ -579,7 +579,7 @@
       230 | await page.goto('/merchant/channels');
       231 |
         > 232 | await expect(page.getByRole('heading', { name: 'Channels', exact: true })).toBeVisible();
-                  |                                                                                    ^
+                      |                                                                                    ^
         233 | await expect(page.getByLabel('Connect Provider')).toBeVisible();
         234 | await expect(page.getByLabel('Provider display name')).toBeVisible();
         235 | await expect(page.getByLabel('External Orders')).toBeVisible();
@@ -597,7 +597,7 @@
       163 |
       164 | // Wait for the main Guests heading to confirm page loaded
         > 165 | await expect(page.getByRole('heading', { name: 'Guests', exact: true })).toBeVisible({
-                  |                                                                                  ^
+                      |                                                                                  ^
         166 | timeout: 15000,
         167 | });
         168 |
@@ -615,7 +615,7 @@
       163 |
       164 | // Wait for the main Guests heading to confirm page loaded
         > 165 | await expect(page.getByRole('heading', { name: 'Guests', exact: true })).toBeVisible({
-                  |                                                                                  ^
+                      |                                                                                  ^
         166 | timeout: 15000,
         167 | });
         168 |
@@ -638,7 +638,7 @@
       163 |
       164 | // Wait for the main Guests heading to confirm page loaded
         > 165 | await expect(page.getByRole('heading', { name: 'Guests', exact: true })).toBeVisible({
-                  |                                                                                  ^
+                      |                                                                                  ^
         166 | timeout: 15000,
         167 | });
         168 |
@@ -651,7 +651,7 @@
       136 |
       137 | // Wait for the station board to load
         > 138 | await page.waitForSelector('h1', { state: 'attached', timeout: 30000 });
-                  |                        ^
+                      |                        ^
         139 |
         140 | // Check for proper heading hierarchy
         141 | const h1Count = await page.locator('h1').count();
@@ -664,7 +664,7 @@
       136 |
       137 | // Wait for the station board to load
         > 138 | await page.waitForSelector('h1', { state: 'attached', timeout: 30000 });
-                  |                        ^
+                      |                        ^
         139 |
         140 | // Check for proper heading hierarchy
         141 | const h1Count = await page.locator('h1').count();
@@ -682,7 +682,7 @@
       136 |
       137 | // Wait for the station board to load
         > 138 | await page.waitForSelector('h1', { state: 'attached', timeout: 30000 });
-                  |                        ^
+                      |                        ^
         139 |
         140 | // Check for proper heading hierarchy
         141 | const h1Count = await page.locator('h1').count();
@@ -700,7 +700,7 @@
       186 | await page.goto('/merchant/takeout');
       187 |
         > 188 | await expect(page.getByRole('heading', { name: /Takeout & Delivery/i })).toBeVisible();
-                  |                                                                                  ^
+                      |                                                                                  ^
         189 | await expect(page.getByRole('button', { name: 'Dashboard' })).toBeVisible();
         190 | await expect(page.getByRole('button', { name: 'Availability' })).toBeVisible();
         191 | await expect(page.getByRole('button', { name: 'Partner Status' })).toBeVisible();
@@ -718,7 +718,7 @@
       186 | await page.goto('/merchant/takeout');
       187 |
         > 188 | await expect(page.getByRole('heading', { name: /Takeout & Delivery/i })).toBeVisible();
-                  |                                                                                  ^
+                      |                                                                                  ^
         189 | await expect(page.getByRole('button', { name: 'Dashboard' })).toBeVisible();
         190 | await expect(page.getByRole('button', { name: 'Availability' })).toBeVisible();
         191 | await expect(page.getByRole('button', { name: 'Partner Status' })).toBeVisible();
@@ -741,7 +741,7 @@
       186 | await page.goto('/merchant/takeout');
       187 |
         > 188 | await expect(page.getByRole('heading', { name: /Takeout & Delivery/i })).toBeVisible();
-                  |                                                                                  ^
+                      |                                                                                  ^
         189 | await expect(page.getByRole('button', { name: 'Dashboard' })).toBeVisible();
         190 | await expect(page.getByRole('button', { name: 'Availability' })).toBeVisible();
         191 | await expect(page.getByRole('button', { name: 'Partner Status' })).toBeVisible();
@@ -759,7 +759,7 @@
       7 | await expect(page).toHaveTitle(/lole/i);
       8 | // Heading h1 contains nested span so check visible text across the element
         > 9 | await expect(page.locator('h1').first()).toBeAttached();
-                 |                                                  ^
+                     |                                                  ^
         10 |
         11 | // Verify the Sign In link href points to /login (link contract check)
         12 | const signInLink = page.getByRole('link', { name: /^Log in$/ }).first();
@@ -777,7 +777,7 @@
       7 | await expect(page).toHaveTitle(/lole/i);
       8 | // Heading h1 contains nested span so check visible text across the element
         > 9 | await expect(page.locator('h1').first()).toBeAttached();
-                 |                                                  ^
+                     |                                                  ^
         10 |
         11 | // Verify the Sign In link href points to /login (link contract check)
         12 | const signInLink = page.getByRole('link', { name: /^Log in$/ }).first();
@@ -800,7 +800,7 @@
       7 | await expect(page).toHaveTitle(/lole/i);
       8 | // Heading h1 contains nested span so check visible text across the element
         > 9 | await expect(page.locator('h1').first()).toBeAttached();
-                 |                                                  ^
+                     |                                                  ^
         10 |
         11 | // Verify the Sign In link href points to /login (link contract check)
         12 | const signInLink = page.getByRole('link', { name: /^Log in$/ }).first();
@@ -819,7 +819,7 @@
       30 | await passwordInput.fill('secretpassword');
       31 | await page.getByLabel('Toggle password visibility').click();
         > 32 | await expect(passwordInput).toHaveAttribute('type', 'text');
-                 |                                     ^
+                     |                                     ^
         33 |
         34 | // Verify the Sign Up link exists and points to /signup
         35 | const signUpLink = page.getByRole('link', { name: /^Sign Up$/i }).first();
@@ -838,7 +838,7 @@
       30 | await passwordInput.fill('secretpassword');
       31 | await page.getByLabel('Toggle password visibility').click();
         > 32 | await expect(passwordInput).toHaveAttribute('type', 'text');
-                 |                                     ^
+                     |                                     ^
         33 |
         34 | // Verify the Sign Up link exists and points to /signup
         35 | const signUpLink = page.getByRole('link', { name: /^Sign Up$/i }).first();
@@ -862,7 +862,7 @@
       30 | await passwordInput.fill('secretpassword');
       31 | await page.getByLabel('Toggle password visibility').click();
         > 32 | await expect(passwordInput).toHaveAttribute('type', 'text');
-                 |                                     ^
+                     |                                     ^
         33 |
         34 | // Verify the Sign Up link exists and points to /signup
         35 | const signUpLink = page.getByRole('link', { name: /^Sign Up$/i }).first();
@@ -880,7 +880,7 @@
       106 | }
       107 | // Wait for menu items to load after context is established
         > 108 | await expect(page.getByText('Scan Burger')).toBeVisible({ timeout: 15000 });
-                  |                                                     ^
+                      |                                                     ^
         109 |
         110 | await page.getByText('Scan Burger').first().click();
         111 | await page.getByRole('button', { name: 'Add to Order' }).click();
@@ -898,7 +898,7 @@
       106 | }
       107 | // Wait for menu items to load after context is established
         > 108 | await expect(page.getByText('Scan Burger')).toBeVisible({ timeout: 15000 });
-                  |                                                     ^
+                      |                                                     ^
         109 |
         110 | await page.getByText('Scan Burger').first().click();
         111 | await page.getByRole('button', { name: 'Add to Order' }).click();
@@ -921,7 +921,7 @@
       106 | }
       107 | // Wait for menu items to load after context is established
         > 108 | await expect(page.getByText('Scan Burger')).toBeVisible({ timeout: 15000 });
-                  |                                                     ^
+                      |                                                     ^
         109 |
         110 | await page.getByText('Scan Burger').first().click();
         111 | await page.getByRole('button', { name: 'Add to Order' }).click();
@@ -939,7 +939,7 @@
       173 | await page.goto('/merchant/guests');
       174 |
         > 175 | await expect(page.getByRole('heading', { name: /Guests/i })).toBeVisible();
-                  |                                                                      ^
+                      |                                                                      ^
         176 | await expect(
         177 | page.getByRole('button', { name: /Open guest profile for Selam Guest/i })
         178 | ).toBeVisible();
@@ -957,7 +957,7 @@
       173 | await page.goto('/merchant/guests');
       174 |
         > 175 | await expect(page.getByRole('heading', { name: /Guests/i })).toBeVisible();
-                  |                                                                      ^
+                      |                                                                      ^
         176 | await expect(
         177 | page.getByRole('button', { name: /Open guest profile for Selam Guest/i })
         178 | ).toBeVisible();
@@ -980,6 +980,6 @@
       173 | await page.goto('/merchant/guests');
       174 |
         > 175 | await expect(page.getByRole('heading', { name: /Guests/i })).toBeVisible();
-                  |                                                                      ^
+                      |                                                                      ^
         176 | await expect(
         177 | page.getByRole('button', { name: /Open guest profile for Selam Guest/i })
